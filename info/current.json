@@ -1,0 +1,10 @@
+{
+    "test_type0": "Quantitative",
+    "test_type1": "Covid-19",
+    "operator": "CALTH0320",
+    "patient_id": "",
+    "datentime": "2025-04-25 19:28:08",
+    "control": "Positive",
+    "resultb": "POS",
+    "resulta": "POS"
+}

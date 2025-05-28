@@ -1,7 +1,13 @@
-import serial
 import time
 import threading
 from PyQt5.QtCore import QObject, pyqtSignal
+
+try:
+    import serial
+except ImportError as e:
+    print(f"Serial import error: {e}")
+    print("Please install pyserial: pip install pyserial")
+    serial = None
 
 class UARTManager(QObject):
     _instance = None
@@ -23,6 +29,9 @@ class UARTManager(QObject):
     def init_uart(self, port='/dev/ttyTHS1', baudrate=115200, timeout=1):
         """UART 초기화"""
         try:
+            if serial is None:
+                raise Exception("pyserial module not available. Please install: pip install pyserial")
+                
             if self.ser and self.ser.is_open:
                 self.ser.close()
                 

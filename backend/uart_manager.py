@@ -52,6 +52,12 @@ class UARTManager(QObject):
             else:
                 raise Exception("UART 포트를 열 수 없습니다.")
                 
+        except serial.SerialException as e:
+            self.is_connected = False
+            if "Permission denied" in str(e):
+                raise Exception(f"UART 권한 오류: {str(e)}\n\n해결 방법:\n1. sudo usermod -a -G dialout $USER\n2. 재부팅 또는 로그아웃 후 재로그인\n3. 또는 sudo로 프로그램 실행")
+            else:
+                raise Exception(f"UART 연결 실패: {str(e)}")
         except Exception as e:
             self.is_connected = False
             raise Exception(f"UART 초기화 실패: {str(e)}")

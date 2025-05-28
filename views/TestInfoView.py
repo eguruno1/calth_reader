@@ -222,6 +222,16 @@ class TestInfoView(QMainWindow):
         patient_id = self.lineEdit_PatientID.text() if self.lineEdit_PatientID else ""
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        # self.update_json_file(operator, patient_id, current_datetime)
+
+        # # lineEdit 값 출력 (테스트용)
+        # print(f"Operator: {operator}")
+        # print(f"Patient ID: {patient_id}")
+        # print(f"Date and Time: {current_datetime}")
+
+        # self.reset_widget_positions()
+        # self.switch_to_measure.emit()
+
         # Create test data dictionary
         test_data = {
             'patient_id': patient_id,
@@ -268,6 +278,8 @@ class TestInfoView(QMainWindow):
     def set_selected_test_type(self, test_type):
         self.selected_test_type = test_type
         if self.label_NOTE1:
+            # self.label_NOTE1.setText(f"{self.selected_test_type}")
+
             # Get test info from backend service
             test_info = self.test_service.get_test_info(test_type)
             if test_info:

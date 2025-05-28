@@ -1,9 +1,9 @@
 {
     "test_type0": "Quantitative",
-    "test_type1": "Covid-19",
-    "operator": "CALTH0320",
+    "test_type1": "Cardiac Troponin I",
+    "operator": "qwer1234",
     "patient_id": "",
-    "datentime": "2025-04-25 19:28:08",
+    "datentime": "2025-05-29 01:03:42",
     "control": "Positive",
     "resultb": "POS",
     "resulta": "POS"

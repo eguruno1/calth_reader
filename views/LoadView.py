@@ -1,9 +1,10 @@
 import json
 import os
-
-from PyQt5.QtWidgets    import QMainWindow
-from PyQt5.QtCore       import QTimer, pyqtSignal, Qt
-from PyQt5              import uic
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtCore import QTimer, pyqtSignal, Qt
+from PyQt5 import uic
+from backend.camera_manager import CameraManager
+from backend.uart_manager import UARTManager
 
 
 class LoadView(QMainWindow):
@@ -54,16 +55,49 @@ class LoadView(QMainWindow):
 
         # 프로그레스바 초기화
         self.progressBar.setValue(0)
-                
+        
+        # 카메라 초기화 상태
+        self.camera_initialized = False
+        
+        # info.json에서 버전 정보 읽기 및 표시
+        self.display_version()
+        
+        # 카메라 초기화 시작 (로딩 시작하자마자)
+        self.init_camera()
+        
+        # UART 초기화
+        self.init_uart()
+        
         # 타이머 설정
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
-        self.timer.start(50)  # 50ms 간격으로 업데이트 (5초 동안 100번 업데이트)
+        self.timer.start(50)  # 50ms 간격으로 업데이트
         
         self.progress_value = 0
 
-        # info.json에서 버전 정보 읽기 및 표시
-        self.display_version()
+    def init_camera(self):
+        """카메라 초기화"""
+        try:
+            camera = CameraManager()
+            camera.init_camera()
+            camera.start_capture()
+            self.camera_initialized = True
+            print("카메라 초기화 성공")
+            
+        except Exception as e:
+            self.camera_initialized = False
+            QMessageBox.critical(self, "카메라 초기화 실패", f"카메라를 초기화할 수 없습니다.\n\n오류: {str(e)}")
+            print(f"카메라 초기화 실패: {str(e)}")
+
+    def init_uart(self):
+        """UART 초기화"""
+        try:
+            uart = UARTManager()
+            uart.init_uart()
+            print("UART 초기화 성공")
+        except Exception as e:
+            QMessageBox.critical(self, "UART 초기화 실패", f"UART를 초기화할 수 없습니다.\n\n오류: {str(e)}")
+            print(f"UART 초기화 실패: {str(e)}")
 
     def update_progress(self):
         self.progress_value += 1

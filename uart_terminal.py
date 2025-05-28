@@ -43,6 +43,10 @@ class UARTTerminal:
         """현재 시간 타임스탬프 반환"""
         return datetime.now().strftime("%H:%M:%S.%f")[:-3]  # 밀리초까지
     
+    def format_hex(self, data):
+        """바이트 데이터를 헥스 문자열로 변환 (Python 호환성)"""
+        return ' '.join(f'{b:02X}' for b in data)
+    
     def read_thread(self):
         """수신 데이터 읽기 스레드 (주기적 모니터링)"""
         print(f"\n[{self.get_timestamp()}] 수신 모니터링 시작...")
@@ -57,7 +61,7 @@ class UARTTerminal:
                         timestamp = self.get_timestamp()
                         print(f"\n📨 [{timestamp}] 수신 데이터:")
                         print(f"   Raw bytes: {data}")
-                        print(f"   Hex:       {data.hex(' ').upper()}")
+                        print(f"   Hex:       {self.format_hex(data)}")
                         print(f"   Length:    {len(data)} bytes")
                         
                         # ASCII 디코딩 시도
@@ -95,7 +99,7 @@ class UARTTerminal:
             print(f"\n📤 [{timestamp}] 전송:")
             print(f"   Command: '{command}'")
             print(f"   Bytes:   {data}")
-            print(f"   Hex:     {data.hex(' ').upper()}")
+            print(f"   Hex:     {self.format_hex(data)}")
             print("-" * 60)
         except Exception as e:
             print(f"❌ 전송 오류: {e}")

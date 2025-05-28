@@ -9,7 +9,6 @@ from PyQt5           import uic
 
 from views.Utils     import set_current_date, update_date_time, stop_date_time_update
 from views.VKeyboard import VKeyboard
-from backend.test_service import TestService  # Import the backend service
 
 class TestInfoView(QMainWindow):
     switch_to_select  = pyqtSignal()  
@@ -17,8 +16,6 @@ class TestInfoView(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # Initialize backend service
-        self.test_service = TestService()
         
         self.load_ui()
         self.init_ui()
@@ -222,16 +219,6 @@ class TestInfoView(QMainWindow):
         patient_id = self.lineEdit_PatientID.text() if self.lineEdit_PatientID else ""
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # self.update_json_file(operator, patient_id, current_datetime)
-
-        # # lineEdit 값 출력 (테스트용)
-        # print(f"Operator: {operator}")
-        # print(f"Patient ID: {patient_id}")
-        # print(f"Date and Time: {current_datetime}")
-
-        # self.reset_widget_positions()
-        # self.switch_to_measure.emit()
-
         # Create test data dictionary
         test_data = {
             'patient_id': patient_id,
@@ -240,23 +227,18 @@ class TestInfoView(QMainWindow):
             'datetime': current_datetime
         }
 
-        # Validate data using backend service
-        if not self.test_service.validate_test_data(test_data):
+        # Validate data
+        if not patient_id or not operator:
             QMessageBox.warning(self, "Validation Error", 
                               "Please fill in all required fields (Patient ID, Operator)")
             return
 
-        # Save test data using backend service
-        if self.test_service.save_test_info(test_data):
-            # Update JSON file
-            self.update_json_file(operator, patient_id, current_datetime)
-            
-            # Proceed to measure view
-            self.reset_widget_positions()
-            self.switch_to_measure.emit()
-        else:
-            QMessageBox.critical(self, "Error", 
-                               "Failed to save test information")
+        # Save test data
+        self.update_json_file(operator, patient_id, current_datetime)
+        
+        # Proceed to measure view
+        self.reset_widget_positions()
+        self.switch_to_measure.emit()
 
     def update_json_file(self, operator, patient_id, datentime):
         try:
@@ -278,14 +260,8 @@ class TestInfoView(QMainWindow):
     def set_selected_test_type(self, test_type):
         self.selected_test_type = test_type
         if self.label_NOTE1:
-            # self.label_NOTE1.setText(f"{self.selected_test_type}")
-
-            # Get test info from backend service
-            test_info = self.test_service.get_test_info(test_type)
-            if test_info:
-                self.label_NOTE1.setText(f"Selected Test: {test_info['name']}\n{test_info['description']}")
-            else:
-                self.label_NOTE1.setText(f"Selected Test: {test_type}")
+            # Simple test type display
+            self.label_NOTE1.setText(f"Selected Test: {test_type}")
         else:
             print("Warning: Cannot set selected test type. label_NOTE1 not found.")
 

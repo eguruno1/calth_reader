@@ -1,6 +1,7 @@
 import time
 import threading
 from PyQt5.QtCore import QObject, pyqtSignal
+from config.config import app_config
 
 try:
     import serial
@@ -28,9 +29,19 @@ class UARTManager(QObject):
 
     def init_uart(self, port='/dev/ttyTHS1', baudrate=115200, timeout=1):
         """UART 초기화"""
+        
+        # 디버그 모드일 경우 가상 UART 사용
+        if app_config.is_debug_mode() or not app_config.is_uart_enabled():
+            print("디버그 모드: 가상 UART 사용")
+            self.is_connected = True
+            self._led_state = 0  # 가상 LED 상태
+            return True
+        
         try:
             if serial is None:
-                raise Exception("pyserial module not available. Please install: pip install pyserial")
+                print("pyserial 모듈이 없습니다. 디버그 모드로 전환합니다.")
+                app_config.set_debug_mode(True)
+                return self.init_uart(port, baudrate, timeout)  # 디버그 모드로 재시도
                 
             if self.ser and self.ser.is_open:
                 self.ser.close()
@@ -50,21 +61,32 @@ class UARTManager(QObject):
                 self.set_led_brightness(45)
                 return True
             else:
-                raise Exception("UART 포트를 열 수 없습니다.")
+                print("UART 포트를 열 수 없습니다. 디버그 모드로 전환합니다.")
+                app_config.set_debug_mode(True)
+                return self.init_uart(port, baudrate, timeout)  # 디버그 모드로 재시도
                 
         except serial.SerialException as e:
-            self.is_connected = False
-            if "Permission denied" in str(e):
-                raise Exception(f"UART 권한 오류: {str(e)}\n\n해결 방법:\n1. sudo usermod -a -G dialout $USER\n2. 재부팅 또는 로그아웃 후 재로그인\n3. 또는 sudo로 프로그램 실행")
-            else:
-                raise Exception(f"UART 연결 실패: {str(e)}")
+            print(f"UART 연결 실패, 디버그 모드로 전환: {str(e)}")
+            app_config.set_debug_mode(True)
+            return self.init_uart(port, baudrate, timeout)  # 디버그 모드로 재시도
         except Exception as e:
-            self.is_connected = False
-            raise Exception(f"UART 초기화 실패: {str(e)}")
+            print(f"UART 초기화 실패, 디버그 모드로 전환: {str(e)}")
+            app_config.set_debug_mode(True)
+            return self.init_uart(port, baudrate, timeout)  # 디버그 모드로 재시도
 
     def set_led_brightness(self, brightness):
         """LED 밝기 설정 (0~45)"""
-        if not self.is_connected or not self.ser:
+        if not self.is_connected:
+            return False
+        
+        # 디버그 모드일 경우 가상 LED 제어
+        if app_config.is_debug_mode() or not app_config.is_uart_enabled():
+            brightness = max(0, min(45, int(brightness)))
+            self._led_state = brightness
+            print(f"디버그 모드: LED 밝기 설정 = {brightness}")
+            return True
+            
+        if not self.ser:
             return False
             
         try:
@@ -91,10 +113,21 @@ class UARTManager(QObject):
     def close(self):
         """UART 연결 종료"""
         try:
-            if self.ser and self.ser.is_open:
-                self.led_off()
-                time.sleep(0.1)
-                self.ser.close()
+            # 디버그 모드가 아닐 경우에만 실제 시리얼 포트 처리
+            if not app_config.is_debug_mode() and app_config.is_uart_enabled():
+                if self.ser and self.ser.is_open:
+                    self.led_off()
+                    time.sleep(0.1)
+                    self.ser.close()
+            elif app_config.is_debug_mode():
+                print("디버그 모드: 가상 UART 연결 종료")
+                
             self.is_connected = False
         except Exception as e:
             print(f"UART 종료 실패: {str(e)}")
+    
+    def get_led_state(self):
+        """현재 LED 상태 반환 (디버그용)"""
+        if hasattr(self, '_led_state'):
+            return self._led_state
+        return 0

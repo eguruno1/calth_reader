@@ -6,7 +6,7 @@
 import sys
 import os
 from PyQt5.QtWidgets      import QApplication, QShortcut, QMainWindow, QStackedWidget, QMessageBox
-from PyQt5.QtCore         import Qt
+from PyQt5.QtCore         import Qt, QTimer
 from PyQt5.QtGui          import QKeySequence
 
 from views.Utils          import set_app_font
@@ -20,6 +20,9 @@ from views.SelectView     import SelectView
 from views.TestInfoView   import TestInfoView
 from views.MeasureView    import MeasureView
 from views.ResultView0    import ResultView0
+
+from backend.backend_manager import backend_manager
+from config.config import app_config
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -40,11 +43,18 @@ class MainWindow(QMainWindow):
         self.shutdown_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_X), self)
         self.shutdown_shortcut.activated.connect(self.confirm_shutdown)
 
+        # CTRL+D 단축키 설정 (디버그 모드 토글)
+        self.debug_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_D), self)
+        self.debug_shortcut.activated.connect(self.toggle_debug_mode)
+
         # 창 테두리 제거
         # self.setWindowFlags(Qt.FramelessWindowHint)
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
+
+        # 백엔드 초기화
+        self.init_backend()
 
         self.load_view       = LoadView(self)
         self.home_view       = HomeView(self)
@@ -103,9 +113,74 @@ class MainWindow(QMainWindow):
         # 시작화면으로 LoadView 표시
         self.stacked_widget.setCurrentWidget(self.load_view)
 
+    def init_backend(self):
+        """백엔드 서비스 초기화"""
+        try:
+            # 백엔드 매니저 시그널 연결
+            backend_manager.camera_initialized.connect(self.on_camera_initialized)
+            backend_manager.uart_initialized.connect(self.on_uart_initialized)
+            backend_manager.system_ready.connect(self.on_system_ready)
+            backend_manager.error_occurred.connect(self.on_backend_error)
+            
+            # 백엔드 초기화를 별도 타이머로 실행 (UI 블로킹 방지)
+            QTimer.singleShot(1000, self.initialize_backend_services)
+            
+        except Exception as e:
+            print(f"백엔드 초기화 설정 실패: {str(e)}")
+    
+    def initialize_backend_services(self):
+        """백엔드 서비스들을 실제로 초기화"""
+        try:
+            success = backend_manager.initialize_all()
+            if success:
+                print("모든 백엔드 서비스 초기화 완료")
+            else:
+                print("일부 백엔드 서비스 초기화 실패 (디버그 모드에서는 정상)")
+        except Exception as e:
+            print(f"백엔드 서비스 초기화 실패: {str(e)}")
+    
+    def on_camera_initialized(self, success):
+        """카메라 초기화 완료 시 호출"""
+        if success:
+            print("카메라 초기화 성공")
+        else:
+            print("카메라 초기화 실패 - 디버그 모드 사용")
+    
+    def on_uart_initialized(self, success):
+        """UART 초기화 완료 시 호출"""
+        if success:
+            print("UART 초기화 성공")
+        else:
+            print("UART 초기화 실패 - 디버그 모드 사용")
+    
+    def on_system_ready(self, ready):
+        """시스템 준비 완료 시 호출"""
+        if ready:
+            print("전체 시스템 준비 완료")
+        else:
+            print("시스템 일부 기능 제한 (디버그 모드)")
+    
+    def on_backend_error(self, error_message):
+        """백엔드 오류 발생 시 호출"""
+        print(f"백엔드 오류: {error_message}")
+
+    def toggle_debug_mode(self):
+        """디버그 모드 토글"""
+        current_mode = app_config.is_debug_mode()
+        new_mode = not current_mode
+        app_config.set_debug_mode(new_mode)
+        
+        mode_text = "디버그 모드" if new_mode else "실제 하드웨어 모드"
+        QMessageBox.information(self, '모드 변경', 
+                               f"{mode_text}로 변경되었습니다.\n재시작 후 적용됩니다.")
+
     def closeEvent(self, event):
-        # 여기에 종료 전 수행할 작업을 추가할 수 있습니다.
-        # 예: 설정 저장, 연결 종료 등
+        # 백엔드 서비스 종료
+        try:
+            backend_manager.shutdown()
+        except Exception as e:
+            print(f"백엔드 종료 중 오류: {str(e)}")
+        
         event.accept()
 
     def confirm_shutdown(self):

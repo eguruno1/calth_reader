@@ -24,13 +24,15 @@ def set_current_date(view):
 
 def start_date_time_update(view):
     update_date_time(view)
-    if not hasattr(view, 'date_time_timer'):
+    if not hasattr(view, 'date_time_timer') or view.date_time_timer is None:
         view.date_time_timer = QTimer(view)
         view.date_time_timer.timeout.connect(lambda: update_date_time(view))
-    view.date_time_timer.start(1000)  # 1초마다 업데이트
+    
+    if not view.date_time_timer.isActive():
+        view.date_time_timer.start(1000)  # 1초마다 업데이트
 
 def stop_date_time_update(view):
-    if hasattr(view, 'date_time_timer'):
+    if hasattr(view, 'date_time_timer') and view.date_time_timer is not None:
         view.date_time_timer.stop()
 
 

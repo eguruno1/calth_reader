@@ -5,7 +5,7 @@ from PyQt5           import uic
 
 from views.Utils     import start_date_time_update, stop_date_time_update
 from views.SystemStatus import add_status_overlay, remove_status_overlay
-from backend.backend_manager import backend_manager
+from controllers import app_controller
 from config.config import app_config
 
 class OperatorView(QMainWindow):
@@ -67,39 +67,41 @@ class OperatorView(QMainWindow):
         print("Camset 버튼 클릭됨")
         
         # 카메라 상태 확인 및 테스트
-        camera_manager = backend_manager.get_camera_manager()
-        if camera_manager:
-            frame = backend_manager.get_current_frame()
-            if frame is not None:
-                # 테스트 이미지 저장
-                success = backend_manager.save_image("test_capture.jpg")
+        try:
+            system_info = app_controller.get_system_info()
+            if system_info['camera_ready']:
+                # 카메라 테스트 이미지 캡처
+                success = app_controller.capture_test_image("test_capture.jpg")
                 if success:
                     QMessageBox.information(self, "카메라 테스트", "테스트 이미지가 저장되었습니다.")
                 else:
                     QMessageBox.warning(self, "카메라 테스트", "이미지 저장에 실패했습니다.")
             else:
-                QMessageBox.warning(self, "카메라 상태", "카메라에서 이미지를 가져올 수 없습니다.")
-        else:
-            QMessageBox.warning(self, "카메라 상태", "카메라가 초기화되지 않았습니다.")
+                QMessageBox.warning(self, "카메라 상태", "카메라가 연결되지 않았습니다.")
+        except Exception as e:
+            QMessageBox.warning(self, "카메라 오류", f"카메라 테스트 중 오류가 발생했습니다: {str(e)}")
 
     def on_settings_button_clicked(self):
         """설정 버튼 클릭"""
         print("Settings 버튼 클릭됨")
         
         # 현재 시스템 상태 정보 표시
-        status = backend_manager.get_status_info()
-        status_text = f"""현재 시스템 상태:
+        try:
+            system_info = app_controller.get_system_info()
+            status_text = f"""현재 시스템 상태:
         
-디버그 모드: {'켜짐' if status['debug_mode'] else '꺼짐'}
-카메라: {'연결됨' if status['camera_ready'] else '연결 실패'}
-UART: {'연결됨' if status['uart_ready'] else '연결 실패'}
-전체 시스템: {'준비됨' if status['system_ready'] else '제한 모드'}
+디버그 모드: {'켜짐' if system_info['debug_mode'] else '꺼짐'}
+카메라: {'연결됨' if system_info['camera_ready'] else '연결 실패'}
+UART: {'연결됨' if system_info['uart_ready'] else '연결 실패'}
+전체 시스템: {'준비됨' if system_info['system_ready'] else '제한 모드'}
 
 Ctrl+D: 디버그 모드 토글
 Ctrl+Q: 애플리케이션 종료
 Ctrl+X: 시스템 종료"""
         
-        QMessageBox.information(self, "시스템 정보", status_text)
+            QMessageBox.information(self, "시스템 정보", status_text)
+        except Exception as e:
+            QMessageBox.warning(self, "시스템 오류", f"시스템 정보 조회 중 오류가 발생했습니다: {str(e)}")
 
     def on_network_button_clicked(self):
         """네트워크 버튼 클릭"""

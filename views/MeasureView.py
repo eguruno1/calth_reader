@@ -5,7 +5,7 @@ from PyQt5.QtCore       import QTimer, pyqtSignal, Qt
 from PyQt5              import uic
 
 from views.Utils        import update_date_time, start_date_time_update, stop_date_time_update
-from backend.backend_manager import backend_manager
+from controllers import measurement_controller
 
 
 class MeasureView(QMainWindow):
@@ -68,21 +68,14 @@ class MeasureView(QMainWindow):
         # 프로그레스바 초기화
         self.progressBar_Meas.setValue(0)
 
-        # 타이머 설정
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_progress)
-        self.elapsed_time = 0
-        self.total_time = 5000  # 총 5000ms (5초)
+        # 타이머 설정 (측정 컨트롤러 사용)
+        self.measurement_controller = measurement_controller
         
-        # 측정 단계
-        self.measurement_phases = [
-            {"name": "LED 켜기", "duration": 1000},
-            {"name": "카메라 캡처", "duration": 2000},
-            {"name": "이미지 분석", "duration": 1500},
-            {"name": "LED 끄기", "duration": 500}
-        ]
-        self.current_phase = 0
-        self.phase_start_time = 0
+        # 측정 컨트롤러 시그널 연결
+        self.measurement_controller.measurement_started.connect(self.on_measurement_started)
+        self.measurement_controller.measurement_finished.connect(self.on_measurement_finished)
+        self.measurement_controller.progress_updated.connect(self.on_progress_updated)
+        self.measurement_controller.error_occurred.connect(self.on_measurement_error)
 
         # 날짜와 시간 표시
         self.update_date_time()
@@ -93,90 +86,42 @@ class MeasureView(QMainWindow):
         QTimer.singleShot(500, self.start_measurement)  # 측정 시작
 
     def start_measurement(self):
-        """측정 시작"""
-        print("측정 시작")
-        self.elapsed_time = 0
-        self.current_phase = 0
-        self.phase_start_time = 0
+        """측정 시작 - 컨트롤러에 위임"""
+        print("측정 시작 요청")
+        success = self.measurement_controller.start_measurement()
+        if not success:
+            print("측정 시작 실패")
+
+    def on_measurement_started(self):
+        """측정 시작됨 (컨트롤러에서 알림)"""
+        print("측정이 시작되었습니다")
         self.progressBar_Meas.setValue(0)
-        
-        # 카메라 캡처 시작 (아직 시작되지 않았다면)
-        if backend_manager.is_camera_ready():
-            backend_manager.start_camera_capture()
-        
-        self.timer.start(50)  # 50ms마다 update_progress 호출
-        self.execute_current_phase()
+        self.progressBar_Meas.setFormat("측정 준비 중... - %p%")
 
-    def execute_current_phase(self):
-        """현재 측정 단계 실행"""
-        if self.current_phase >= len(self.measurement_phases):
-            return
-            
-        phase = self.measurement_phases[self.current_phase]
-        print(f"측정 단계: {phase['name']}")
-        
-        if phase['name'] == "LED 켜기":
-            backend_manager.led_on(45)  # 최대 밝기로 LED 켜기
-        elif phase['name'] == "카메라 캡처":
-            # 카메라에서 이미지 캡처 및 저장
-            import datetime
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"measurement_{timestamp}.jpg"
-            success = backend_manager.save_image(filename)
-            if success:
-                print(f"이미지 캡처 완료: {filename}")
-            else:
-                print("이미지 캡처 실패 (디버그 모드에서는 정상)")
-        elif phase['name'] == "LED 끄기":
-            backend_manager.led_off()
-
-    def update_progress(self):
-        """진행률 업데이트"""
-        self.elapsed_time += 50
-        
-        # 현재 단계가 완료되었는지 확인
-        if self.current_phase < len(self.measurement_phases):
-            current_phase_duration = self.measurement_phases[self.current_phase]['duration']
-            phase_elapsed = self.elapsed_time - self.phase_start_time
-            
-            if phase_elapsed >= current_phase_duration:
-                self.current_phase += 1
-                self.phase_start_time = self.elapsed_time
-                if self.current_phase < len(self.measurement_phases):
-                    self.execute_current_phase()
-        
-        # 전체 진행률 계산
-        progress = min(100, int(self.elapsed_time / self.total_time * 100))
+    def on_progress_updated(self, progress: int, phase_name: str):
+        """진행률 업데이트 (컨트롤러에서 알림)"""
         self.progressBar_Meas.setValue(progress)
-        
-        # 현재 단계 표시
-        if self.current_phase < len(self.measurement_phases):
-            phase_name = self.measurement_phases[self.current_phase]['name']
-            self.progressBar_Meas.setFormat(f"{phase_name} - %p%")
-        
-        if self.elapsed_time >= self.total_time:
-            self.timer.stop()
-            self.measurement_finished()
+        self.progressBar_Meas.setFormat(f"{phase_name} - %p%")
 
-    def measurement_finished(self):
-        """측정 완료"""
-        print("측정이 완료되었습니다.")
+    def on_measurement_finished(self, result: dict):
+        """측정 완료 (컨트롤러에서 알림)"""
+        print(f"측정 완료: {result}")
         self.progressBar_Meas.setFormat("측정 완료 - %p%")
-        
-        # LED 끄기 (확실히 하기 위해)
-        backend_manager.led_off()
-        
-        # 결과 화면으로 전환
+        # 1초 후 결과 화면으로 전환
         QTimer.singleShot(1000, lambda: self.switch_to_result.emit())
+
+    def on_measurement_error(self, error_message: str):
+        """측정 오류 (컨트롤러에서 알림)"""
+        print(f"측정 오류: {error_message}")
+        self.progressBar_Meas.setFormat(f"오류: {error_message}")
 
     def closeEvent(self, event):
         """뷰 종료시 정리"""
         stop_date_time_update(self)
-        if hasattr(self, 'timer'):
-            self.timer.stop()
         
-        # LED 끄기
-        backend_manager.led_off()
+        # 측정 중이라면 중지
+        if hasattr(self, 'measurement_controller'):
+            self.measurement_controller.stop_measurement()
         
         super().closeEvent(event)
 

@@ -21,7 +21,7 @@ from views.TestInfoView   import TestInfoView
 from views.MeasureView    import MeasureView
 from views.ResultView0    import ResultView0
 
-from backend.backend_manager import backend_manager
+from controllers import app_controller
 from config.config import app_config
 
 class MainWindow(QMainWindow):
@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.stacked_widget)
 
         # 백엔드 초기화
-        self.init_backend()
+        self.init_application_controller()
 
         self.load_view       = LoadView(self)
         self.home_view       = HomeView(self)
@@ -113,73 +113,59 @@ class MainWindow(QMainWindow):
         # 시작화면으로 LoadView 표시
         self.stacked_widget.setCurrentWidget(self.load_view)
 
-    def init_backend(self):
-        """백엔드 서비스 초기화"""
+    def init_application_controller(self):
+        """애플리케이션 컨트롤러 초기화"""
         try:
-            # 백엔드 매니저 시그널 연결
-            backend_manager.camera_initialized.connect(self.on_camera_initialized)
-            backend_manager.uart_initialized.connect(self.on_uart_initialized)
-            backend_manager.system_ready.connect(self.on_system_ready)
-            backend_manager.error_occurred.connect(self.on_backend_error)
+            # 애플리케이션 컨트롤러 시그널 연결
+            app_controller.system_ready.connect(self.on_system_ready)
+            app_controller.initialization_complete.connect(self.on_initialization_complete)
+            app_controller.error_occurred.connect(self.on_controller_error)
+            app_controller.status_changed.connect(self.on_status_changed)
             
-            # 백엔드 초기화를 별도 타이머로 실행 (UI 블로킹 방지)
-            QTimer.singleShot(1000, self.initialize_backend_services)
+            # 애플리케이션 초기화를 별도 타이머로 실행 (UI 블로킹 방지)
+            QTimer.singleShot(1000, self.initialize_application)
             
         except Exception as e:
-            print(f"백엔드 초기화 설정 실패: {str(e)}")
+            print(f"애플리케이션 컨트롤러 초기화 설정 실패: {str(e)}")
     
-    def initialize_backend_services(self):
-        """백엔드 서비스들을 실제로 초기화"""
+    def initialize_application(self):
+        """애플리케이션 실제 초기화"""
         try:
-            success = backend_manager.initialize_all()
-            if success:
-                print("모든 백엔드 서비스 초기화 완료")
-            else:
-                print("일부 백엔드 서비스 초기화 실패 (디버그 모드에서는 정상)")
+            app_controller.initialize()
         except Exception as e:
-            print(f"백엔드 서비스 초기화 실패: {str(e)}")
+            print(f"애플리케이션 초기화 실패: {str(e)}")
     
-    def on_camera_initialized(self, success):
-        """카메라 초기화 완료 시 호출"""
-        if success:
-            print("카메라 초기화 성공")
-        else:
-            print("카메라 초기화 실패 - 디버그 모드 사용")
-    
-    def on_uart_initialized(self, success):
-        """UART 초기화 완료 시 호출"""
-        if success:
-            print("UART 초기화 성공")
-        else:
-            print("UART 초기화 실패 - 디버그 모드 사용")
-    
-    def on_system_ready(self, ready):
+    def on_system_ready(self, ready: bool):
         """시스템 준비 완료 시 호출"""
         if ready:
             print("전체 시스템 준비 완료")
         else:
-            print("시스템 일부 기능 제한 (디버그 모드)")
+            print("시스템 일부 기능 제한")
     
-    def on_backend_error(self, error_message):
-        """백엔드 오류 발생 시 호출"""
-        print(f"백엔드 오류: {error_message}")
+    def on_initialization_complete(self):
+        """초기화 완료 시 호출"""
+        print("애플리케이션 초기화 완료")
+    
+    def on_controller_error(self, error_message: str):
+        """컨트롤러 오류 발생 시 호출"""
+        print(f"애플리케이션 오류: {error_message}")
+    
+    def on_status_changed(self, status_message: str):
+        """상태 변경 시 호출"""
+        print(f"상태: {status_message}")
 
     def toggle_debug_mode(self):
         """디버그 모드 토글"""
-        current_mode = app_config.is_debug_mode()
-        new_mode = not current_mode
-        app_config.set_debug_mode(new_mode)
-        
-        mode_text = "디버그 모드" if new_mode else "실제 하드웨어 모드"
+        app_controller.toggle_debug_mode()
         QMessageBox.information(self, '모드 변경', 
-                               f"{mode_text}로 변경되었습니다.\n재시작 후 적용됩니다.")
+                               "모드가 변경되었습니다.\n재시작 후 적용됩니다.")
 
     def closeEvent(self, event):
-        # 백엔드 서비스 종료
+        # 애플리케이션 컨트롤러 종료
         try:
-            backend_manager.shutdown()
+            app_controller.shutdown()
         except Exception as e:
-            print(f"백엔드 종료 중 오류: {str(e)}")
+            print(f"애플리케이션 종료 중 오류: {str(e)}")
         
         event.accept()
 

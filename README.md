@@ -1,9 +1,9 @@
 # PyCalthReader
 
 PyCalthReader는 PyQt5를 사용하여 개발된 의료진단장비용 파이썬 애플리케이션입니다. 
-백엔드/프론트엔드 구조적 분리와 디버그 모드를 지원하여 개발과 실제 운영 환경을 구분할 수 있습니다.
+**MVC(Model-View-Controller) 패턴**을 적용하여 구조적으로 분리되었으며, 디버그 모드를 지원하여 개발과 실제 운영 환경을 구분할 수 있습니다.
 
-## 프로젝트 구조
+## 프로젝트 구조 (MVC 패턴)
 
 ```
 calth_reader/
@@ -11,13 +11,14 @@ calth_reader/
 ├── requirements.txt        # 패키지 의존성
 ├── README.md              # 프로젝트 문서
 ├── config/                # 설정 관리
-│   ├── config.py          # 애플리케이션 설정 (디버그 모드 등)
+│   ├── config.py          # 애플리케이션 설정
 │   └── settings.json      # 설정 파일 (자동 생성)
-├── backend/               # 백엔드 서비스
-│   ├── backend_manager.py # 백엔드 통합 관리자
-│   ├── camera_manager.py  # 카메라 제어 매니저
-│   └── uart_manager.py    # UART 통신 매니저
-├── views/                 # 프론트엔드 뷰들
+├── models/                # MVC - Model 레이어
+│   ├── __init__.py        # 모델 패키지
+│   ├── application_model.py # 애플리케이션 상태 모델
+│   ├── camera_model.py    # 카메라 데이터 모델
+│   └── uart_model.py      # UART 통신 모델
+├── views/                 # MVC - View 레이어
 │   ├── Utils.py           # 뷰 유틸리티
 │   ├── SystemStatus.py    # 시스템 상태 표시
 │   ├── VKeyboard.py       # 가상 키보드
@@ -31,6 +32,14 @@ calth_reader/
 │   ├── ResultListView.py  # 결과 목록 화면
 │   ├── SettingsView.py    # 설정 화면
 │   └── InfoView.py        # 정보 화면
+├── controllers/           # MVC - Controller 레이어
+│   ├── __init__.py        # 컨트롤러 패키지
+│   ├── application_controller.py # 메인 애플리케이션 컨트롤러
+│   └── measurement_controller.py # 측정 프로세스 컨트롤러
+├── services/              # 서비스 레이어 (하드웨어 인터페이스)
+│   ├── __init__.py        # 서비스 패키지
+│   ├── camera_service.py  # 카메라 하드웨어 제어
+│   └── uart_service.py    # UART 하드웨어 제어
 ├── ui/                    # UI 파일들
 │   └── *.ui              # Qt Designer 파일들
 ├── fonts/                 # 폰트 파일들
@@ -38,12 +47,32 @@ calth_reader/
 └── ...
 ```
 
-## 주요 기능
+## MVC 패턴 적용
 
-### 백엔드/프론트엔드 분리
-- **백엔드**: 카메라, UART 등 하드웨어 제어
-- **프론트엔드**: PyQt5 기반 사용자 인터페이스
-- **통합 관리**: BackendManager를 통한 백엔드 서비스 통합 관리
+### Model (모델)
+- **데이터와 비즈니스 로직 담당**
+- `models/application_model.py`: 애플리케이션 전체 상태 관리
+- `models/camera_model.py`: 카메라 프레임 및 설정 데이터
+- `models/uart_model.py`: UART 통신 및 LED 제어 데이터
+- **옵저버 패턴 적용**: 데이터 변경시 자동으로 컨트롤러에 알림
+
+### View (뷰)
+- **사용자 인터페이스 담당**
+- PyQt5 기반 UI 컴포넌트들
+- 사용자 입력을 컨트롤러로 전달
+- 컨트롤러로부터 받은 데이터를 화면에 표시
+
+### Controller (컨트롤러)
+- **Model과 View 사이의 중재자**
+- `controllers/application_controller.py`: 전체 애플리케이션 흐름 제어
+- `controllers/measurement_controller.py`: 측정 프로세스 제어
+- 사용자 입력 처리 및 비즈니스 로직 실행
+
+### Service (서비스)
+- **하드웨어 및 외부 시스템 인터페이스**
+- `services/camera_service.py`: 실제/가상 카메라 제어
+- `services/uart_service.py`: 실제/가상 UART 통신
+- 디버그 모드와 실제 하드웨어 모드 지원
 
 ### 디버그 모드 지원
 - **실제 하드웨어 모드**: 실제 카메라와 UART 사용

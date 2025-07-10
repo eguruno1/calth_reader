@@ -1,9 +1,9 @@
 {
-    "test_type0": "Quantitative",
-    "test_type1": "Cardiac Troponin I",
+    "test_type0": "Qualitative",
+    "test_type1": "Covid-19",
     "operator": "qwer1234",
     "patient_id": "1",
-    "datentime": "2025-07-03 10:16:21",
+    "datentime": "2025-07-09 12:06:57",
     "control": "Positive",
     "resultb": "POS",
     "resulta": "POS"

@@ -3,8 +3,7 @@ import os
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import QTimer, pyqtSignal, Qt
 from PyQt5 import uic
-from backend.camera_manager import CameraManager
-from backend.uart_manager import UARTManager
+from controllers import app_controller
 
 
 class LoadView(QMainWindow):
@@ -56,17 +55,15 @@ class LoadView(QMainWindow):
         # 프로그레스바 초기화
         self.progressBar.setValue(0)
         
-        # 카메라 초기화 상태
-        self.camera_initialized = False
+        # 애플리케이션 컨트롤러 초기화 상태 체크
+        self.initialization_complete = False
         
         # info.json에서 버전 정보 읽기 및 표시
         self.display_version()
         
-        # 카메라 초기화 시작 (로딩 시작하자마자)
-        self.init_camera()
-        
-        # UART 초기화
-        self.init_uart()
+        # 애플리케이션 컨트롤러 시그널 연결
+        app_controller.initialization_complete.connect(self.on_initialization_complete)
+        app_controller.system_ready.connect(self.on_system_ready)
         
         # 타이머 설정
         self.timer = QTimer(self)
@@ -75,29 +72,17 @@ class LoadView(QMainWindow):
         
         self.progress_value = 0
 
-    def init_camera(self):
-        """카메라 초기화"""
-        try:
-            camera = CameraManager()
-            camera.init_camera()
-            camera.start_capture()
-            self.camera_initialized = True
-            print("카메라 초기화 성공")
-            
-        except Exception as e:
-            self.camera_initialized = False
-            QMessageBox.critical(self, "카메라 초기화 실패", f"카메라를 초기화할 수 없습니다.\n\n오류: {str(e)}")
-            print(f"카메라 초기화 실패: {str(e)}")
-
-    def init_uart(self):
-        """UART 초기화"""
-        try:
-            uart = UARTManager()
-            uart.init_uart()
-            print("UART 초기화 성공")
-        except Exception as e:
-            QMessageBox.critical(self, "UART 초기화 실패", f"UART를 초기화할 수 없습니다.\n\n오류: {str(e)}")
-            print(f"UART 초기화 실패: {str(e)}")
+    def on_initialization_complete(self):
+        """애플리케이션 초기화 완료 시 호출"""
+        self.initialization_complete = True
+        print("애플리케이션 초기화 완료")
+        
+    def on_system_ready(self, ready):
+        """시스템 준비 상태 변경 시 호출"""
+        if ready:
+            print("시스템 준비 완료")
+        else:
+            print("시스템 일부 제한 모드")
 
     def update_progress(self):
         self.progress_value += 1

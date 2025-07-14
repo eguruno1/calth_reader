@@ -2,7 +2,12 @@
 """
 Camera Service - 카메라 하드웨어 제어 서비스
 """
-import cv2
+try:
+    import cv2
+except ImportError:
+    print("OpenCV(cv2) not found. Camera service will work in debug mode only.")
+    cv2 = None
+
 import numpy as np
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal
 from models.camera_model import CameraModel
@@ -133,6 +138,54 @@ class CameraService(QObject):
     def _on_frame_captured(self, frame: np.ndarray):
         """프레임 캡처 완료 시 모델 업데이트"""
         self.model.set_frame(frame)
+    
+    def get_current_frame(self):
+        """현재 프레임 가져오기"""
+        if self._is_debug_mode or not app_config.is_camera_enabled():
+            if self.dummy_frame is not None:
+                return self.dummy_frame.copy()
+            else:
+                self._create_dummy_frame()
+                return self.dummy_frame.copy()
+        
+        current_frame = self.model.get_current_frame()
+        if current_frame is not None:
+            return current_frame.copy()
+        else:
+            print("실제 카메라에서 프레임을 가져올 수 없습니다.")
+            return None
+    
+    def save_image(self, filename: str, folder_path: str = "./CalthReaderResult/images") -> bool:
+        """현재 프레임을 이미지로 저장"""
+        try:
+            import os
+            
+            # 폴더가 없으면 생성
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            
+            # 현재 프레임 가져오기
+            frame = self.get_current_frame()
+            if frame is None:
+                print("저장할 프레임이 없습니다.")
+                return False
+            
+            # 파일 경로 생성
+            file_path = os.path.join(folder_path, filename)
+            
+            # 이미지 저장
+            success = cv2.imwrite(file_path, frame)
+            if success:
+                print(f"이미지 저장 성공: {file_path}")
+                return True
+            else:
+                print(f"이미지 저장 실패: {file_path}")
+                return False
+                
+        except Exception as e:
+            error_msg = f"이미지 저장 오류: {str(e)}"
+            self.error_occurred.emit(error_msg)
+            return False
     
     def save_current_frame(self, filename: str, folder_path: str = "./CalthReaderResult/images") -> bool:
         """현재 프레임 저장"""

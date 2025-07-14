@@ -156,6 +156,85 @@ class UARTService(QObject):
         """현재 LED 밝기 반환"""
         return self.model.get_led_brightness()
     
+    def get_led_state(self) -> dict:
+        """LED 상태 반환"""
+        brightness = self.model.get_led_brightness()
+        return {
+            'brightness': brightness,
+            'is_on': brightness > 0
+        }
+    
+    def get_battery_status(self):
+        """배터리 상태 읽기"""
+        # 디버그 모드일 경우 가상 배터리 상태 반환
+        if self._is_debug_mode or not app_config.is_uart_enabled():
+            # 가상 배터리 상태 시뮬레이션
+            import random
+            import time
+            
+            # 시간 기반으로 일정한 패턴의 배터리 레벨 생성 (테스트용)
+            current_time = int(time.time())
+            base_level = 60 + (current_time % 40)  # 60-100% 사이에서 변화
+            is_charging = (current_time // 60) % 2 == 0  # 1분마다 충전상태 토글
+            
+            voltage = 3.7 + (base_level / 100) * 0.5  # 3.7V ~ 4.2V
+            temperature = 25.0 + random.uniform(-5, 10)  # 20-35도
+            
+            print(f"디버그 모드: 배터리 상태 - {base_level}%, 충전중: {is_charging}")
+            
+            return {
+                'level': base_level,
+                'is_charging': is_charging,
+                'voltage': voltage,
+                'temperature': temperature
+            }
+        
+        if not self.ser or not self.model.is_connected:
+            return None
+            
+        try:
+            # 실제 UART로 배터리 상태 요청 명령 전송
+            command = "BAT"  # 배터리 상태 요청 명령
+            
+            with self._lock:
+                self.ser.write(command.encode('utf-8'))
+                self.ser.flush()
+                
+                # 응답 대기 (최대 2초)
+                time.sleep(0.1)
+                if self.ser.in_waiting > 0:
+                    response = self.ser.readline().decode('utf-8').strip()
+                    return self._parse_battery_response(response)
+                else:
+                    print("UART: 배터리 상태 응답 없음")
+                    return None
+                    
+        except Exception as e:
+            print(f"배터리 상태 읽기 실패: {str(e)}")
+            return None
+    
+    def _parse_battery_response(self, response):
+        """UART 응답에서 배터리 정보 파싱"""
+        try:
+            # 예상 응답 형식: "BAT:85,0,3.95,28.5"
+            # (레벨, 충전상태, 전압, 온도)
+            if response.startswith("BAT:"):
+                parts = response[4:].split(',')
+                if len(parts) >= 4:
+                    return {
+                        'level': int(parts[0]),
+                        'is_charging': bool(int(parts[1])),
+                        'voltage': float(parts[2]),
+                        'temperature': float(parts[3])
+                    }
+            
+            print(f"UART: 잘못된 배터리 응답 형식: {response}")
+            return None
+            
+        except (ValueError, IndexError) as e:
+            print(f"UART: 배터리 응답 파싱 오류: {str(e)}")
+            return None
+    
     def shutdown(self):
         """서비스 종료"""
         try:

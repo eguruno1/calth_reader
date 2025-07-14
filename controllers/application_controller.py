@@ -5,7 +5,9 @@ MVC 패턴의 메인 컨트롤러
 """
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from models import ApplicationModel, CameraModel, UARTModel, SystemStatus
+from models.user_model import UserModel
 from services import CameraService, UARTService
+from services.user_service import UserService
 from config.config import app_config
 
 class ApplicationController(QObject):
@@ -24,10 +26,12 @@ class ApplicationController(QObject):
         self.app_model = ApplicationModel()
         self.camera_model = CameraModel()
         self.uart_model = UARTModel()
+        self.user_model = UserModel()
         
         # 서비스 생성
         self.camera_service = CameraService(self.camera_model)
         self.uart_service = UARTService(self.uart_model)
+        self.user_service = UserService(self.user_model)
         
         # 시그널 연결
         self._connect_signals()
@@ -36,6 +40,7 @@ class ApplicationController(QObject):
         self.app_model.add_observer(self)
         self.camera_model.add_observer(self)
         self.uart_model.add_observer(self)
+        self.user_model.add_observer(self)
     
     def _connect_signals(self):
         """시그널 연결"""
@@ -109,14 +114,18 @@ class ApplicationController(QObject):
     
     def start_camera_capture(self) -> bool:
         """카메라 캡처 시작"""
-        if self.camera_service.start_capture():
-            self.app_model.set_system_status(SystemStatus.RUNNING)
-            return True
-        return False
+        try:
+            return self.camera_service.start_capture()
+        except Exception as e:
+            print(f"카메라 캡처 시작 오류: {str(e)}")
+            return False
     
     def stop_camera_capture(self):
         """카메라 캡처 중지"""
-        self.camera_service.stop_capture()
+        try:
+            self.camera_service.stop_capture()
+        except Exception as e:
+            print(f"카메라 캡처 중지 오류: {str(e)}")
     
     def capture_image(self, filename: str) -> bool:
         """이미지 캡처"""
@@ -127,26 +136,70 @@ class ApplicationController(QObject):
         return success
     
     def set_led_brightness(self, brightness: int) -> bool:
-        """LED 밝기 설정"""
-        return self.uart_service.set_led_brightness(brightness)
+        """LED 밝기 설정 (0~45)"""
+        try:
+            return self.uart_service.set_led_brightness(brightness)
+        except Exception as e:
+            self.app_model.add_error(f"LED 밝기 설정 실패: {str(e)}", "uart")
+            return False
     
     def led_on(self, brightness: int = 45) -> bool:
         """LED 켜기"""
-        return self.uart_service.led_on(brightness)
+        try:
+            return self.uart_service.led_on(brightness)
+        except Exception as e:
+            self.app_model.add_error(f"LED 켜기 실패: {str(e)}", "uart")
+            return False
     
     def led_off(self) -> bool:
         """LED 끄기"""
-        return self.uart_service.led_off()
+        try:
+            return self.uart_service.led_off()
+        except Exception as e:
+            self.app_model.add_error(f"LED 끄기 실패: {str(e)}", "uart")
+            return False
     
-    def get_system_info(self) -> dict:
-        """시스템 정보 반환"""
-        return {
-            'app_status': self.app_model.get_system_status_info(),
-            'camera_info': self.camera_model.get_info(),
-            'uart_info': self.uart_model.get_info(),
-            'performance': self.app_model.get_performance_summary(),
-            'recent_errors': self.app_model.get_recent_errors(5)
-        }
+    def get_led_state(self) -> dict:
+        """LED 상태 반환"""
+        try:
+            return self.uart_service.get_led_state()
+        except Exception as e:
+            self.app_model.add_error(f"LED 상태 읽기 실패: {str(e)}", "uart")
+            return {'brightness': 0, 'is_on': False}
+    
+    def get_battery_status(self):
+        """배터리 상태 가져오기"""
+        try:
+            battery_data = self.uart_service.get_battery_status()
+            if battery_data:
+                # 배터리 정보 업데이트
+                self.uart_model.update_battery_info(
+                    battery_data.get('level', 50),
+                    battery_data.get('is_charging', False),
+                    battery_data.get('voltage', 0.0),
+                    battery_data.get('temperature', 0.0)
+                )
+                return battery_data
+            return None
+        except Exception as e:
+            print(f"배터리 상태 가져오기 오류: {str(e)}")
+            return None
+    
+    def get_current_frame(self):
+        """현재 카메라 프레임 가져오기"""
+        try:
+            return self.camera_service.get_current_frame()
+        except Exception as e:
+            print(f"카메라 프레임 가져오기 오류: {str(e)}")
+            return None
+    
+    def save_image(self, filename: str, folder_path: str = "./CalthReaderResult/images") -> bool:
+        """이미지 저장"""
+        try:
+            return self.camera_service.save_image(filename, folder_path)
+        except Exception as e:
+            print(f"이미지 저장 오류: {str(e)}")
+            return False
     
     def shutdown(self):
         """애플리케이션 종료"""
@@ -163,6 +216,22 @@ class ApplicationController(QObject):
         except Exception as e:
             error_msg = f"시스템 종료 중 오류: {str(e)}"
             self.app_model.add_error(error_msg, "shutdown")
+    
+    def get_system_info(self) -> dict:
+        """시스템 정보 반환"""
+        return {
+            'app_status': self.app_model.get_system_status_info(),
+            'camera_info': self.camera_model.get_info(),
+            'uart_info': self.uart_model.get_info(),
+            'performance': self.app_model.get_performance_summary(),
+            'recent_errors': self.app_model.get_recent_errors(5)
+        }
+    
+    def is_system_ready(self) -> bool:
+        """시스템 준비 상태 확인"""
+        camera_ready = self.camera_model.is_initialized
+        uart_ready = self.uart_model.is_connected
+        return camera_ready and uart_ready
     
     # 옵저버 메서드들
     def on_app_event(self, event_type: str, data):

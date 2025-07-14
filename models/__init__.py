@@ -6,9 +6,11 @@ Models Package - MVC 패턴의 Model 레이어
 from .camera_model import CameraModel, CameraFrame, CameraSettings
 from .uart_model import UARTModel, LEDControl, LEDState, UARTSettings
 from .application_model import ApplicationModel, SystemMode, SystemStatus, ApplicationSettings
+from .user_model import UserModel, User, UserRole
 
 __all__ = [
     'CameraModel', 'CameraFrame', 'CameraSettings',
     'UARTModel', 'LEDControl', 'LEDState', 'UARTSettings', 
-    'ApplicationModel', 'SystemMode', 'SystemStatus', 'ApplicationSettings'
+    'ApplicationModel', 'SystemMode', 'SystemStatus', 'ApplicationSettings',
+    'UserModel', 'User', 'UserRole'
 ]

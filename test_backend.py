@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-테스트 스크립트 - 백엔드 매니저 및 설정 확인
+테스트 스크립트 - 애플리케이션 컨트롤러 및 MVC 구조 확인
 """
 
 import sys
@@ -38,77 +38,98 @@ def test_config():
         print(f"❌ 설정 시스템 테스트 실패: {str(e)}")
         return False
 
-def test_backend_manager():
-    """백엔드 매니저 테스트"""
-    print("\n=== 백엔드 매니저 테스트 ===")
+def test_application_controller():
+    """애플리케이션 컨트롤러 테스트"""
+    print("\n=== 애플리케이션 컨트롤러 테스트 ===")
     try:
-        from backend.backend_manager import backend_manager
+        from controllers.application_controller import app_controller
         
-        # 백엔드 초기화 (디버그 모드)
-        print("백엔드 초기화 중...")
-        success = backend_manager.initialize_all()
-        print(f"초기화 결과: {success}")
+        # 애플리케이션 초기화 (디버그 모드)
+        print("애플리케이션 초기화 중...")
+        app_controller.initialize()
+        print("✅ 초기화 완료")
         
         # 상태 정보 확인
-        status = backend_manager.get_status_info()
+        system_info = app_controller.get_system_info()
         print("\n시스템 상태:")
-        for key, value in status.items():
+        for key, value in system_info.items():
             print(f"  {key}: {value}")
+        
+        # 시스템 준비 상태 확인
+        is_ready = app_controller.is_system_ready()
+        print(f"\n시스템 준비 상태: {is_ready}")
         
         # 카메라 테스트
         print("\n카메라 기능 테스트...")
-        if backend_manager.start_camera_capture():
+        if app_controller.start_camera_capture():
             print("✅ 카메라 캡처 시작 성공")
             
-            frame = backend_manager.get_current_frame()
+            frame = app_controller.get_current_frame()
             if frame is not None:
                 print(f"✅ 프레임 가져오기 성공 (크기: {frame.shape if hasattr(frame, 'shape') else 'N/A'})")
+                
+                # 이미지 저장 테스트
+                if app_controller.save_image("test_capture.jpg"):
+                    print("✅ 이미지 저장 성공")
+                else:
+                    print("⚠️ 이미지 저장 실패")
             else:
                 print("⚠️ 프레임 가져오기 실패 (정상 - 디버그 모드)")
         else:
             print("⚠️ 카메라 캡처 시작 실패")
         
-        # UART 테스트
-        print("\nUART 기능 테스트...")
-        if backend_manager.led_on(30):
+        # UART/LED 테스트
+        print("\nUART/LED 기능 테스트...")
+        if app_controller.led_on(30):
             print("✅ LED 켜기 성공")
+            
+            led_state = app_controller.get_led_state()
+            print(f"LED 상태: {led_state}")
         else:
             print("⚠️ LED 켜기 실패")
             
-        if backend_manager.led_off():
+        if app_controller.led_off():
             print("✅ LED 끄기 성공")
         else:
             print("⚠️ LED 끄기 실패")
         
+        # 배터리 상태 테스트
+        print("\n배터리 상태 테스트...")
+        battery_status = app_controller.get_battery_status()
+        if battery_status:
+            print(f"✅ 배터리 상태: {battery_status}")
+        else:
+            print("⚠️ 배터리 상태 읽기 실패")
+        
         # 정리
-        backend_manager.shutdown()
-        print("✅ 백엔드 매니저 테스트 완료")
+        app_controller.shutdown()
+        print("✅ 애플리케이션 컨트롤러 테스트 완료")
         return True
         
     except Exception as e:
-        print(f"❌ 백엔드 매니저 테스트 실패: {str(e)}")
+        print(f"❌ 애플리케이션 컨트롤러 테스트 실패: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
 
 def main():
     """메인 테스트 함수"""
-    print("Calth Reader 백엔드 구조 테스트")
+    print("Calth Reader MVC 구조 테스트")
     print("=" * 50)
     
     # 설정 테스트
     config_ok = test_config()
     
-    # 백엔드 매니저 테스트
-    backend_ok = test_backend_manager()
+    # 애플리케이션 컨트롤러 테스트
+    controller_ok = test_application_controller()
     
     print("\n" + "=" * 50)
     print("테스트 결과 요약:")
     print(f"설정 시스템: {'✅ 성공' if config_ok else '❌ 실패'}")
-    print(f"백엔드 매니저: {'✅ 성공' if backend_ok else '❌ 실패'}")
+    print(f"애플리케이션 컨트롤러: {'✅ 성공' if controller_ok else '❌ 실패'}")
     
-    if config_ok and backend_ok:
-        print("\n🎉 모든 테스트 통과! 프로젝트 구조가 올바르게 설정되었습니다.")
+    if config_ok and controller_ok:
+        print("\n🎉 모든 테스트 통과! 새로운 MVC 구조가 올바르게 설정되었습니다.")
         return 0
     else:
         print("\n⚠️ 일부 테스트 실패. 설정을 확인해주세요.")

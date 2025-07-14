@@ -6,8 +6,10 @@ Services Package - MVC 패턴의 Service 레이어
 
 from .camera_service import CameraService
 from .uart_service import UARTService
+from .user_service import UserService
 
 __all__ = [
     'CameraService',
-    'UARTService'
+    'UARTService',
+    'UserService'
 ]

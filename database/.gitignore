@@ -1,0 +1,9 @@
+# Database specific ignores
+database/data/
+database/.env.local
+*.sql.backup
+*.dump
+
+# PostgreSQL
+*.log
+*.pid

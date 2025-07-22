@@ -69,6 +69,13 @@ class ApplicationController(QObject):
     def _initialize_services(self):
         """서비스들 초기화"""
         try:
+            # 사용자 서비스 초기화 (먼저 초기화)
+            user_success = self.user_service.initialize()
+            if user_success:
+                self.status_changed.emit("사용자 서비스 초기화 완료")
+            else:
+                self.app_model.add_warning("사용자 서비스 초기화 실패")
+            
             # 카메라 서비스 초기화
             camera_success = self.camera_service.initialize()
             if camera_success:
@@ -84,7 +91,7 @@ class ApplicationController(QObject):
                 self.app_model.add_warning("UART 초기화 실패 - 디버그 모드 사용")
             
             # 시스템 상태 업데이트
-            if camera_success and uart_success:
+            if camera_success and uart_success and user_success:
                 self.app_model.set_system_status(SystemStatus.READY)
                 self.status_changed.emit("시스템 준비 완료")
                 self.system_ready.emit(True)

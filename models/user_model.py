@@ -34,9 +34,7 @@ class UserModel:
     
     def __init__(self):
         self.current_user: Optional[User] = None
-        self.users: Dict[str, User] = {}
         self._observers = []  # 옵저버 패턴을 위한 리스트
-        self._init_dummy_users()
     
     def add_observer(self, observer):
         """옵저버 추가"""
@@ -57,45 +55,60 @@ class UserModel:
                 except Exception as e:
                     print(f"옵저버 알림 오류: {e}")
     
-    def _init_dummy_users(self):
-        """더미 사용자 데이터 초기화"""
-        dummy_users = [
-            User(
-                id="admin",
-                password="admin123",
-                name="Administrator",
-                role=UserRole.ADMIN,
-                email="admin@calth.com"
-            ),
-            User(
-                id="operator1",
-                password="op123",
-                name="Operator One",
-                role=UserRole.OPERATOR,
-                email="op1@calth.com"
-            ),
-            User(
-                id="viewer1",
-                password="view123",
-                name="Viewer One",
-                role=UserRole.VIEWER,
-                email="viewer1@calth.com"
-            )
-        ]
-        
-        for user in dummy_users:
-            self.users[user.id] = user
-    
     def authenticate(self, user_id: str, password: str) -> bool:
-        """사용자 인증"""
-        if user_id in self.users:
-            user = self.users[user_id]
-            if user.password == password and user.is_active:
-                self.current_user = user
-                user.last_login = datetime.now()
-                self.notify_observers('user_authenticated', user)
-                return True
-        return False
+        """사용자 인증 (데이터베이스 기반)"""
+        try:
+            from models.database_models import get_db_manager, UserDB, UserRoleEnum
+            
+            db_manager = get_db_manager()
+            session = db_manager.get_session()
+            
+            # 데이터베이스에서 사용자 검색
+            db_user = session.query(UserDB).filter(
+                UserDB.user_id == user_id,
+                UserDB.is_active == True
+            ).first()
+            
+            if db_user is None:
+                session.close()
+                return False
+            
+            # 비밀번호 확인
+            if db_user.password != password:
+                session.close()
+                return False
+            
+            # UserRole Enum 변환
+            role_mapping = {
+                UserRoleEnum.ADMIN: UserRole.ADMIN,
+                UserRoleEnum.OPERATOR: UserRole.OPERATOR,
+                UserRoleEnum.VIEWER: UserRole.VIEWER
+            }
+            
+            # User 객체 생성
+            user = User(
+                id=db_user.user_id,
+                password=db_user.password,
+                name=db_user.name,
+                role=role_mapping[db_user.role],
+                email=db_user.email
+            )
+            
+            # 로그인 성공 처리
+            self.current_user = user
+            
+            # 마지막 로그인 시간 업데이트
+            from datetime import datetime
+            db_user.last_login = datetime.utcnow()
+            session.commit()
+            session.close()
+            
+            self.notify_observers('user_authenticated', user)
+            return True
+            
+        except Exception as e:
+            print(f"인증 중 오류 발생: {str(e)}")
+            return False
     
     def logout(self):
         """로그아웃"""

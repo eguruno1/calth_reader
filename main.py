@@ -13,6 +13,7 @@ from views.Utils          import set_app_font
 from views.LoadView       import LoadView
 from views.HomeView       import HomeView
 from views.LoginView      import LoginView
+from views.AdminLoginView import AdminLoginView
 from views.OperatorView   import OperatorView
 from views.ResultListView import ResultListView
 from views.SettingsView   import SettingsView
@@ -60,6 +61,7 @@ class MainWindow(QMainWindow):
         self.load_view       = LoadView(self)
         self.home_view       = HomeView(self)
         self.login_view      = LoginView(self)
+        self.admin_login_view = AdminLoginView(self)
         self.operator_view   = OperatorView(self)
         self.settings_view   = SettingsView(self)
         self.resultList_view = ResultListView(self)
@@ -73,6 +75,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.load_view)
         self.stacked_widget.addWidget(self.home_view)
         self.stacked_widget.addWidget(self.login_view)
+        self.stacked_widget.addWidget(self.admin_login_view)
         self.stacked_widget.addWidget(self.operator_view)
         self.stacked_widget.addWidget(self.settings_view)
         self.stacked_widget.addWidget(self.resultList_view)
@@ -93,10 +96,15 @@ class MainWindow(QMainWindow):
         self.home_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.home_view.switch_to_info.connect(self.switch_to_info_view)
         self.home_view.switch_to_login.connect(self.switch_to_login_view)
+        self.home_view.switch_to_admin_login.connect(self.switch_to_admin_login_view)
 
         # LoginView의 시그널 연결
         self.login_view.switch_to_home.connect(self.switch_to_home_view)
         self.login_view.login_success.connect(self.switch_to_home_view)
+
+        # AdminLoginView의 시그널 연결
+        self.admin_login_view.switch_to_home.connect(self.switch_to_home_view)
+        self.admin_login_view.login_success.connect(self.on_admin_login_success)
 
         # View의 시그널을 HomeView의 슬롯에 연결
         self.info_view.switch_to_home.connect(self.switch_to_home_view)
@@ -228,6 +236,26 @@ class MainWindow(QMainWindow):
 
     def switch_to_login_view(self):
         self.stacked_widget.setCurrentWidget(self.login_view)
+
+    def switch_to_admin_login_view(self, target: str):
+        """Admin 로그인 화면으로 전환"""
+        self.admin_login_view.set_target(target)
+        self.stacked_widget.setCurrentWidget(self.admin_login_view)
+
+    def on_admin_login_success(self, target: str):
+        """Admin 로그인 성공 후 대상 화면으로 이동"""
+        if target == "calibration":
+            print("Admin 로그인 성공: Calibration 기능으로 이동")
+            # TODO: Calibration 화면 구현 후 실제 이동
+            # self.switch_to_calibration_view()
+            QMessageBox.information(self, "Calibration", "Calibration 기능에 접근했습니다.\n(기능 구현 예정)")
+            self.switch_to_home_view()
+        elif target == "settings":
+            print("Admin 로그인 성공: Settings 화면으로 이동")
+            self.switch_to_settings_view()
+        else:
+            print("Admin 로그인 성공: 홈 화면으로 이동")
+            self.switch_to_home_view()
 
 # 메인 코드에서 set_app_font 함수 호출
 if __name__ == "__main__":

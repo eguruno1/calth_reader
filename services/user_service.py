@@ -18,6 +18,25 @@ class UserService(QObject):
     def __init__(self, user_model: UserModel):
         super().__init__()
         self.model = user_model
+        self._initialized = False
+    
+    def initialize(self) -> bool:
+        """사용자 서비스 초기화"""
+        try:
+            if self._initialized:
+                return True
+                
+            # 데이터베이스 연결 및 초기 데이터 확인
+            from models.database_models import initialize_database
+            initialize_database()
+            
+            self._initialized = True
+            print("사용자 서비스 초기화 완료")
+            return True
+            
+        except Exception as e:
+            print(f"사용자 서비스 초기화 실패: {str(e)}")
+            return False
     
     def login(self, user_id: str, password: str) -> bool:
         """로그인 시도"""
@@ -79,9 +98,40 @@ class UserService(QObject):
         return self.model.get_user_info()
     
     def get_available_users(self) -> list:
-        """사용 가능한 사용자 목록 (개발/테스트용)"""
-        return [
-            {'id': 'admin', 'name': 'Administrator', 'role': 'admin'},
-            {'id': 'operator1', 'name': 'Operator One', 'role': 'operator'},
-            {'id': 'viewer1', 'name': 'Viewer One', 'role': 'viewer'}
-        ]
+        """사용 가능한 사용자 목록 (데이터베이스 기반)"""
+        try:
+            from models.database_models import get_db_manager, UserDB, UserRoleEnum
+            
+            db_manager = get_db_manager()
+            session = db_manager.get_session()
+            
+            db_users = session.query(UserDB).filter(
+                UserDB.is_active == True
+            ).all()
+            
+            users = []
+            role_mapping = {
+                UserRoleEnum.ADMIN: 'admin',
+                UserRoleEnum.OPERATOR: 'operator',
+                UserRoleEnum.VIEWER: 'viewer'
+            }
+            
+            for db_user in db_users:
+                user_info = {
+                    'id': db_user.user_id,
+                    'name': db_user.name,
+                    'role': role_mapping[db_user.role]
+                }
+                users.append(user_info)
+            
+            session.close()
+            return users
+            
+        except Exception as e:
+            print(f"사용자 목록 조회 오류: {e}")
+            # 오류 시 기본값 반환
+            return [
+                {'id': 'admin', 'name': 'Administrator', 'role': 'admin'},
+                {'id': 'operator1', 'name': 'Operator One', 'role': 'operator'},
+                {'id': 'viewer1', 'name': 'Viewer One', 'role': 'viewer'}
+            ]

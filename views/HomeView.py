@@ -15,6 +15,7 @@ class HomeView(QMainWindow):
     switch_to_operator   = pyqtSignal()
     switch_to_settings   = pyqtSignal()
     switch_to_login      = pyqtSignal()  # 로그인 화면으로 전환
+    switch_to_admin_login = pyqtSignal(str)  # Admin 전용 로그인 (target 포함)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -115,26 +116,8 @@ class HomeView(QMainWindow):
 
     def on_calibration_button_clicked(self):
         print("Calibration 버튼이 클릭되었습니다.")
-        try:
-            from controllers import app_controller
-            from models.user_model import UserRole
-            
-            # Admin 권한 확인
-            if app_controller.user_service.has_permission(UserRole.ADMIN):
-                print("Admin 권한 확인됨: Calibration 기능 접근 허용")
-                # Calibration 관련 로직 추가 예정
-                pass
-            else:
-                from PyQt5.QtWidgets import QMessageBox
-                current_user = app_controller.user_service.get_current_user()
-                if current_user:
-                    QMessageBox.warning(self, "권한 부족", 
-                                      f"Calibration 기능은 Admin 권한이 필요합니다.\n현재 권한: {current_user.role.value}")
-                else:
-                    QMessageBox.warning(self, "로그인 필요", 
-                                      "Calibration 기능을 사용하려면 Admin 계정으로 로그인해주세요.")
-        except Exception as e:
-            print(f"Calibration 버튼 처리 오류: {e}")
+        # Admin 전용 로그인 창으로 이동 (target: calibration)
+        self.switch_to_admin_login.emit("calibration")
 
     def on_review_button_clicked(self):
         print("Review 버튼이 클릭되었습니다.")
@@ -142,26 +125,8 @@ class HomeView(QMainWindow):
 
     def on_settings_button_clicked(self):
         print("Settings 버튼이 클릭되었습니다.")
-        try:
-            from controllers import app_controller
-            from models.user_model import UserRole
-            
-            # Admin 권한 확인
-            if app_controller.user_service.has_permission(UserRole.ADMIN):
-                print("Admin 권한 확인됨: Settings 기능 접근 허용")
-                self.switch_to_settings.emit()
-            else:
-                current_user = app_controller.user_service.get_current_user()
-                if current_user:
-                    QMessageBox.warning(self, "권한 부족", 
-                                      f"Settings 기능은 Admin 권한이 필요합니다.\n현재 권한: {current_user.role.value}")
-                else:
-                    QMessageBox.warning(self, "로그인 필요", 
-                                      "Settings 기능을 사용하려면 Admin 계정으로 로그인해주세요.")
-        except Exception as e:
-            print(f"Settings 버튼 처리 오류: {e}")
-            # 오류 시 기본 동작
-            self.switch_to_settings.emit()
+        # Admin 전용 로그인 창으로 이동 (target: settings)
+        self.switch_to_admin_login.emit("settings")
 
     def on_statistics_button_clicked(self):
         print("로그인/로그아웃 버튼이 클릭되었습니다.")
@@ -298,109 +263,27 @@ class HomeView(QMainWindow):
         self.update_login_button()
     
     def update_login_button(self):
-        """로그인 상태에 따라 버튼 텍스트 업데이트"""
+        """Admin 로그인 상태에 따라 버튼 텍스트 업데이트"""
         try:
             from controllers import app_controller
             
             if app_controller.user_service.is_logged_in():
-                # 로그인된 상태: 사용자 ID와 Log Out 표시
-                user_id = app_controller.user_service.get_current_user_id()
-                user_name = app_controller.user_service.get_current_user_display_name()
-                
-                # 버튼 텍스트 변경
-                button_text = f"{user_id}\nLog Out"
+                # Admin으로 로그인된 상태: admin과 Log Out 표시
+                button_text = "admin\nLog Out"
                 self.pushButton_Statistics.setText(button_text)
-                
-                print(f"로그인 상태: {user_name} ({user_id})")
+                print("Admin 로그인 상태")
             else:
                 # 로그아웃된 상태: Log In 표시
                 self.pushButton_Statistics.setText("Log In")
                 print("로그아웃 상태")
-            
-            # 권한 기반 UI 업데이트
-            self.update_permission_based_ui()
                 
         except Exception as e:
             print(f"로그인 버튼 업데이트 오류: {e}")
             self.pushButton_Statistics.setText("Log In")
     
-    def update_permission_based_ui(self):
-        """권한에 따른 UI 업데이트"""
-        try:
-            from controllers import app_controller
-            from models.user_model import UserRole
-            
-            # Admin 권한 확인
-            has_admin_permission = app_controller.user_service.has_permission(UserRole.ADMIN)
-            
-            # Calibration 버튼 권한 제어
-            self.update_button_permission(
-                self.pushButton_Calibration, 
-                has_admin_permission, 
-                "Calibration"
-            )
-            
-            # Settings 버튼 권한 제어
-            self.update_button_permission(
-                self.pushButton_Settings, 
-                has_admin_permission, 
-                "Settings"
-            )
-            
-            if has_admin_permission:
-                print("Admin 권한: Calibration, Settings 버튼 활성화")
-            else:
-                current_user = app_controller.user_service.get_current_user()
-                if current_user:
-                    print(f"{current_user.role.value} 권한: Calibration, Settings 버튼 비활성화")
-                else:
-                    print("비로그인 상태: Calibration, Settings 버튼 비활성화")
-                    
-        except Exception as e:
-            print(f"권한 기반 UI 업데이트 오류: {e}")
-    
-    def update_button_permission(self, button, has_permission: bool, button_name: str):
-        """버튼 권한 상태 업데이트"""
-        try:
-            if has_permission:
-                # 권한 있음: 버튼 활성화
-                button.setEnabled(True)
-                button.setStyleSheet("""
-                    QPushButton {
-                        background-color: #505050;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                    }
-                    QPushButton:hover {
-                        background-color: #606060;
-                    }
-                    QPushButton:pressed {
-                        background-color: #404040;
-                    }
-                """)
-            else:
-                # 권한 없음: 버튼 비활성화
-                button.setEnabled(False)
-                button.setStyleSheet("""
-                    QPushButton {
-                        background-color: #303030;
-                        color: #808080;
-                        border: none;
-                        border-radius: 5px;
-                    }
-                    QPushButton:disabled {
-                        background-color: #303030;
-                        color: #606060;
-                    }
-                """)
-                
-        except Exception as e:
-            print(f"{button_name} 버튼 권한 업데이트 오류: {e}")
-    
     def showEvent(self, event):
         """화면 표시시 로그인 상태 업데이트"""
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        # 로그인 상태 및 권한 업데이트
+        # 로그인 상태 업데이트
         QTimer.singleShot(200, self.update_login_button)

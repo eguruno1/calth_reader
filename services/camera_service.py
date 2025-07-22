@@ -2,19 +2,13 @@
 """
 Camera Service - 카메라 하드웨어 제어 서비스
 """
-import cv2
-import numpy as np
-import os
-import logging
-from datetime import datetime
-from typing import Optional
-
 try:
-    from services.database_service import get_database_service
-    DATABASE_SERVICE_AVAILABLE = True
+    import cv2
 except ImportError:
-    DATABASE_SERVICE_AVAILABLE = False
+    print("OpenCV(cv2) not found. Camera service will work in debug mode only.")
+    cv2 = None
 
+import numpy as np
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal
 from models.camera_model import CameraModel
 from config.config import app_config
@@ -164,6 +158,8 @@ class CameraService(QObject):
     def save_image(self, filename: str, folder_path: str = "./CalthReaderResult/images") -> bool:
         """현재 프레임을 이미지로 저장"""
         try:
+            import os
+            
             # 폴더가 없으면 생성
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
@@ -197,6 +193,7 @@ class CameraService(QObject):
         if current_frame is None or not current_frame.is_valid:
             return False
         
+        import os
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, filename)
         
@@ -217,50 +214,3 @@ class CameraService(QObject):
             self.cap.release()
         self.model.set_initialized(False)
         print("카메라 서비스 종료")
-    
-    def capture_frame(self) -> Optional[np.ndarray]:
-        """프레임 캡처"""
-        if not self.model.is_initialized:
-            return None
-        
-        frame = None
-        try:
-            if self._is_debug_mode:
-                frame = self._capture_debug_frame()
-            else:
-                frame = self._capture_real_frame()
-            
-            # 데이터베이스에 이벤트 로그 기록
-            if DATABASE_SERVICE_AVAILABLE and frame is not None:
-                db_service = get_database_service()
-                log_data = {
-                    'log_level': 'INFO',
-                    'module': 'camera_service',
-                    'function_name': 'capture_frame',
-                    'message': f'Frame captured successfully. Shape: {frame.shape}',
-                    'details': {
-                        'frame_shape': frame.shape,
-                        'debug_mode': self._is_debug_mode,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                }
-                db_service.create_system_log(log_data)
-            
-            return frame
-        except Exception as e:
-            error_msg = f"프레임 캡처 실패: {str(e)}"
-            self.error_occurred.emit(error_msg)
-            
-            # 에러 로그 기록
-            if DATABASE_SERVICE_AVAILABLE:
-                db_service = get_database_service()
-                log_data = {
-                    'log_level': 'ERROR',
-                    'module': 'camera_service',
-                    'function_name': 'capture_frame',
-                    'message': error_msg,
-                    'details': {'error_type': type(e).__name__}
-                }
-                db_service.create_system_log(log_data)
-            
-            return None

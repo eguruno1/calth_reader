@@ -16,6 +16,7 @@ from views.LoginView      import LoginView
 from views.AdminLoginView import AdminLoginView
 from views.OperatorView   import OperatorView
 from views.ResultListView import ResultListView
+from views.ResultCategoryView import ResultCategoryView
 from views.SettingsView   import SettingsView
 from views.InfoView       import InfoView
 from views.SelectView     import SelectView
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
         self.operator_view   = OperatorView(self)
         self.settings_view   = SettingsView(self)
         self.resultList_view = ResultListView(self)
+        self.result_category_view = ResultCategoryView(self)
         self.info_view       = InfoView(self)        
         self.select_view     = SelectView(self)
         self.test_info_view  = TestInfoView(self)
@@ -79,6 +81,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.operator_view)
         self.stacked_widget.addWidget(self.settings_view)
         self.stacked_widget.addWidget(self.resultList_view)
+        self.stacked_widget.addWidget(self.result_category_view)
         self.stacked_widget.addWidget(self.info_view)
         self.stacked_widget.addWidget(self.select_view)
         self.stacked_widget.addWidget(self.test_info_view)
@@ -92,7 +95,7 @@ class MainWindow(QMainWindow):
         # HomeView의 시그널을 MainWindow의 슬롯에 연결
         self.home_view.switch_to_select.connect(self.switch_to_select_view)
         self.home_view.switch_to_operator.connect(self.switch_to_operator_view)
-        self.home_view.switch_to_resultList.connect(self.switch_to_resultList_view)
+        self.home_view.switch_to_resultList.connect(self.switch_to_result_category_view)  # ResultCategoryView로 변경
         self.home_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.home_view.switch_to_info.connect(self.switch_to_info_view)
         self.home_view.switch_to_login.connect(self.switch_to_login_view)
@@ -105,6 +108,12 @@ class MainWindow(QMainWindow):
         # AdminLoginView의 시그널 연결
         self.admin_login_view.switch_to_home.connect(self.switch_to_home_view)
         self.admin_login_view.login_success.connect(self.on_admin_login_success)
+
+        # ResultCategoryView의 시그널 연결
+        self.result_category_view.switch_to_home.connect(self.switch_to_home_view)
+        self.result_category_view.switch_to_patient_results.connect(self.switch_to_resultList_view)
+        self.result_category_view.switch_to_calibration_results.connect(self.switch_to_calibration_results)
+        self.result_category_view.switch_to_qc_results.connect(self.switch_to_qc_results)
 
         # View의 시그널을 HomeView의 슬롯에 연결
         self.info_view.switch_to_home.connect(self.switch_to_home_view)
@@ -216,6 +225,24 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.settings_view)
     
     def switch_to_resultList_view(self):
+        self.stacked_widget.setCurrentWidget(self.resultList_view)
+
+    def switch_to_result_category_view(self):
+        """ResultCategoryView로 전환"""
+        print("Result Category View로 전환")
+        self.result_category_view.reset_view()
+        self.stacked_widget.setCurrentWidget(self.result_category_view)
+
+    def switch_to_calibration_results(self):
+        """Calibration Results로 전환 (현재는 ResultListView 사용)"""
+        print("Calibration Results로 전환")
+        # TODO: 향후 별도의 CalibrationResultView 구현시 변경
+        self.stacked_widget.setCurrentWidget(self.resultList_view)
+
+    def switch_to_qc_results(self):
+        """QC Results로 전환 (현재는 ResultListView 사용)"""
+        print("QC Results로 전환")
+        # TODO: 향후 별도의 QCResultView 구현시 변경
         self.stacked_widget.setCurrentWidget(self.resultList_view)
 
     def switch_to_info_view(self):

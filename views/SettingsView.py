@@ -123,22 +123,19 @@ class SettingsView(QMainWindow):
         # Date and Time 버튼
         self.btn_date_time = self.create_setting_button(
             "Date and Time",
-            "Set system date and time",
-            "#4CAF50"
+            color="#606060"
         )
         
         # Manage Operator 버튼
         self.btn_manage_operator = self.create_setting_button(
             "Manage Operator",
-            "Add, edit, or remove operators",
-            "#2196F3"
+            color="#606060"
         )
         
         # Update 버튼
         self.btn_update = self.create_setting_button(
             "Update",
-            "System and software updates",
-            "#FF9800"
+            color="#606060"
         )
         
         top_row.addWidget(self.btn_date_time)
@@ -152,22 +149,19 @@ class SettingsView(QMainWindow):
         # Calibration / QC days 버튼
         self.btn_calibration_qc = self.create_setting_button(
             "Calibration / QC days",
-            "Configure calibration and QC schedules",
-            "#9C27B0"
+            color="#606060"
         )
         
         # General Settings 버튼
         self.btn_general_settings = self.create_setting_button(
             "General Settings",
-            "System preferences and configurations",
-            "#607D8B"
+            color="#606060"
         )
         
         # Power Management 버튼
         self.btn_power_management = self.create_setting_button(
             "Power Management",
-            "Battery and power saving options",
-            "#795548"
+            color="#606060"
         )
         
         bottom_row.addWidget(self.btn_calibration_qc)
@@ -179,7 +173,7 @@ class SettingsView(QMainWindow):
         
         return settings_widget
 
-    def create_setting_button(self, title, description, color):
+    def create_setting_button(self, title, color):
         """설정 버튼 생성"""
         button = QPushButton()
         button.setFixedSize(250, 150)
@@ -189,7 +183,7 @@ class SettingsView(QMainWindow):
                 color: white;
                 border: none;
                 border-radius: 10px;
-                text-align: left;
+                text-align: center;
                 padding: 20px;
                 font-size: 16px;
                 font-weight: bold;
@@ -203,7 +197,7 @@ class SettingsView(QMainWindow):
         """)
         
         # 버튼 텍스트 설정
-        button.setText(f"{title}\n\n{description}")
+        button.setText(f"{title}")
         
         return button
 
@@ -211,12 +205,7 @@ class SettingsView(QMainWindow):
         """색상을 어둡게 만드는 헬퍼 함수"""
         # 간단한 색상 어둡게 만들기
         color_map = {
-            "#4CAF50": "#45a049",  # Green
-            "#2196F3": "#1976D2",  # Blue
-            "#FF9800": "#F57C00",  # Orange
-            "#9C27B0": "#7B1FA2",  # Purple
-            "#607D8B": "#455A64",  # Blue Grey
-            "#795548": "#5D4037"   # Brown
+            "#606060":"#707070"
         }
         return color_map.get(hex_color, hex_color)
 

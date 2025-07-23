@@ -105,14 +105,13 @@ class AdminLoginView(QWidget):
                 font-size: 20px;
                 font-weight: bold;
                 color: #333333;
-                margin-bottom: 10px;
             }
         """)
         form_layout.addWidget(login_title)
         
         # 사용자 ID 입력 (고정 및 비활성화)
         id_label = QLabel("User ID:")
-        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555;")
+        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555; border: none;")
         form_layout.addWidget(id_label)
         
         self.user_id_input = QLineEdit()
@@ -125,15 +124,17 @@ class AdminLoginView(QWidget):
                 border-radius: 5px;
                 padding: 8px 12px;
                 font-size: 14px;
-                background-color: #f5f5f5;
-                color: #666666;
+                background-color: #ffffff;
+            }
+            QLineEdit:focus {
+                border-color: #606060;
             }
         """)
         form_layout.addWidget(self.user_id_input)
         
         # 비밀번호 입력
         password_label = QLabel("Password:")
-        password_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555;")
+        password_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555; border: none;")
         form_layout.addWidget(password_label)
         
         self.password_input = QLineEdit()
@@ -157,7 +158,7 @@ class AdminLoginView(QWidget):
                 font-family: 'Courier New', monospace;
             }
             QLineEdit:focus {
-                border-color: #D32F2F;
+                border-color: #606060;
             }
         """)
         self.password_input.returnPressed.connect(self.attempt_login)  # Enter 키로 로그인
@@ -168,7 +169,7 @@ class AdminLoginView(QWidget):
         self.login_button.setFixedHeight(45)
         self.login_button.setStyleSheet("""
             QPushButton {
-                background-color: #D32F2F;
+                background-color: #606060;
                 color: white;
                 border: none;
                 border-radius: 8px;
@@ -176,10 +177,10 @@ class AdminLoginView(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #B71C1C;
+                background-color: #707070;
             }
             QPushButton:pressed {
-                background-color: #A00020;
+                background-color: #505050;
             }
         """)
         self.login_button.clicked.connect(self.attempt_login)

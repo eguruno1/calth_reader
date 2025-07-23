@@ -104,17 +104,18 @@ class LoginView(QWidget):
         login_title.setAlignment(Qt.AlignCenter)
         login_title.setStyleSheet("""
             QLabel {
-                font-size: 20px;
+                font-size: 16px;
                 font-weight: bold;
                 color: #333333;
-                margin-bottom: 10px;
+
+                border: none;
             }
         """)
         form_layout.addWidget(login_title)
         
         # 사용자 ID 입력
         id_label = QLabel("User ID:")
-        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555;")
+        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555; border: none;")
         form_layout.addWidget(id_label)
         
         self.user_id_input = QLineEdit()
@@ -140,7 +141,7 @@ class LoginView(QWidget):
         
         # 비밀번호 입력
         password_label = QLabel("Password:")
-        password_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555;")
+        password_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555; border: none;")
         form_layout.addWidget(password_label)
         
         self.password_input = QLineEdit()

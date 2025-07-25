@@ -2,10 +2,10 @@
 """
 Admin Login View - Admin 전용 로그인 화면
 """
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                            QLineEdit, QPushButton, QFrame, QMessageBox)
+import os
+from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QEvent, QPoint, QPropertyAnimation, QEasingCurve
-from PyQt5.QtGui import QFont
+from PyQt5 import uic
 from views.VKeyboard import VKeyboard
 
 class AdminLoginView(QWidget):
@@ -26,205 +26,37 @@ class AdminLoginView(QWidget):
         self.connect_signals()
     
     def setup_ui(self):
-        """UI 설정"""
-        self.setFixedSize(1024, 600)
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f0f0f0;
-                font-family: 'Pretendard';
-            }
-        """)
+        """UI 설정 - UI 파일 로드"""
+        # 프로젝트 루트 디렉토리
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
         
-        # 메인 레이아웃
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        # UI 파일 경로 설정
+        ui_filename = 'AdminLoginViewWindow.ui'
+        ui_folder = next(folder for folder in os.listdir(project_root) if folder.lower() == 'ui')
+        ui_file = os.path.join(project_root, ui_folder, ui_filename)
         
-        # 상단 헤더
-        header_layout = QHBoxLayout()
-        header_layout.setContentsMargins(50, 30, 50, 30)
+        # UI 파일 존재 여부 확인 및 로드
+        if os.path.exists(ui_file):
+            uic.loadUi(ui_file, self)
+        else:
+            raise FileNotFoundError(f"UI file not found: {ui_file}")
         
-        # 뒤로가기 버튼
-        self.back_button = QPushButton("← Back")
-        self.back_button.setFixedSize(100, 40)
-        self.back_button.setStyleSheet("""
-            QPushButton {
-                background-color: #606060;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #707070;
-            }
-            QPushButton:pressed {
-                background-color: #505050;
-            }
-        """)
+        # UI 요소 참조 설정 (애니메이션용)
+        self.login_frame = self.frame_login
+        self.password_input = self.lineEdit_password
+        self.login_button = self.pushButton_login
+        self.back_button = self.pushButton_back
+    
+    def connect_signals(self):
+        """시그널 연결"""
+        # UI 요소 시그널 연결
         self.back_button.clicked.connect(self.go_back)
-        
-        # 타이틀
-        title_label = QLabel("ADMIN LOGIN")
-        title_label.setAlignment(Qt.AlignCenter)
-        title_label.setStyleSheet("""
-            QLabel {
-                font-size: 24px;
-                font-weight: bold;
-                color: #D32F2F;
-            }
-        """)
-        
-        header_layout.addWidget(self.back_button)
-        header_layout.addStretch()
-        header_layout.addWidget(title_label)
-        header_layout.addStretch()
-        header_layout.addWidget(QLabel(""))  # 공간 맞추기용
-        
-        # 로그인 폼 프레임
-        login_frame = QFrame()
-        login_frame.setFixedSize(400, 300)
-        login_frame.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border: 2px solid #d0d0d0;
-                border-radius: 10px;
-            }
-        """)
-        
-        # 로그인 폼 레이아웃
-        form_layout = QVBoxLayout(login_frame)
-        form_layout.setContentsMargins(40, 40, 40, 40)
-        form_layout.setSpacing(20)
-        
-        # 로그인 타이틀
-        login_title = QLabel("Administrator Access")
-        login_title.setAlignment(Qt.AlignCenter)
-        login_title.setStyleSheet("""
-            QLabel {
-                font-size: 20px;
-                font-weight: bold;
-                color: #333333;
-            }
-        """)
-        form_layout.addWidget(login_title)
-        
-        # 사용자 ID 입력 (고정 및 비활성화)
-        id_label = QLabel("User ID:")
-        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555; border: none;")
-        form_layout.addWidget(id_label)
-        
-        self.user_id_input = QLineEdit()
-        self.user_id_input.setFixedHeight(40)
-        self.user_id_input.setText("admin")  # admin으로 고정
-        self.user_id_input.setEnabled(False)  # 입력 비활성화
-        self.user_id_input.setStyleSheet("""
-            QLineEdit {
-                border: 2px solid #d0d0d0;
-                border-radius: 5px;
-                padding: 8px 12px;
-                font-size: 14px;
-                background-color: #ffffff;
-            }
-            QLineEdit:focus {
-                border-color: #606060;
-            }
-        """)
-        form_layout.addWidget(self.user_id_input)
-        
-        # 비밀번호 입력
-        password_label = QLabel("Password:")
-        password_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #555555; border: none;")
-        form_layout.addWidget(password_label)
-        
-        self.password_input = QLineEdit()
-        self.password_input.setFixedHeight(40)
-        self.password_input.setPlaceholderText("Enter admin password")
-        self.password_input.setEchoMode(QLineEdit.Password)
-        
-        # 영문 입력 모드로 고정
-        self.password_input.setInputMethodHints(Qt.ImhLatinOnly | Qt.ImhNoPredictiveText)
+        self.login_button.clicked.connect(self.attempt_login)
+        self.password_input.returnPressed.connect(self.attempt_login)
         
         # 이벤트 필터 설치 (키보드 표시용)
         self.password_input.installEventFilter(self)
-        
-        self.password_input.setStyleSheet("""
-            QLineEdit {
-                border: 2px solid #d0d0d0;
-                border-radius: 5px;
-                padding: 8px 12px;
-                font-size: 14px;
-                background-color: #ffffff;
-                font-family: 'Courier New', monospace;
-            }
-            QLineEdit:focus {
-                border-color: #606060;
-            }
-        """)
-        self.password_input.returnPressed.connect(self.attempt_login)  # Enter 키로 로그인
-        form_layout.addWidget(self.password_input)
-        
-        # 로그인 버튼
-        self.login_button = QPushButton("Login as Admin")
-        self.login_button.setFixedHeight(45)
-        self.login_button.setStyleSheet("""
-            QPushButton {
-                background-color: #606060;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #707070;
-            }
-            QPushButton:pressed {
-                background-color: #505050;
-            }
-        """)
-        self.login_button.clicked.connect(self.attempt_login)
-        form_layout.addWidget(self.login_button)
-        
-        # 참고 정보
-        info_label = QLabel("Admin password required for Calibration and Settings access")
-        info_label.setAlignment(Qt.AlignCenter)
-        info_label.setStyleSheet("""
-            QLabel {
-                font-size: 12px;
-                color: #888888;
-                background-color: #f8f8f8;
-                border: 1px solid #e0e0e0;
-                border-radius: 5px;
-                padding: 10px;
-                margin-top: 10px;
-            }
-        """)
-        form_layout.addWidget(info_label)
-        
-        # 메인 레이아웃에 추가
-        main_layout.addLayout(header_layout)
-        main_layout.addStretch()
-        
-        # 로그인 프레임을 중앙에 배치
-        center_layout = QHBoxLayout()
-        center_layout.addStretch()
-        center_layout.addWidget(login_frame)
-        center_layout.addStretch()
-        
-        main_layout.addLayout(center_layout)
-        main_layout.addStretch()
-        
-        self.setLayout(main_layout)
-        
-        # 로그인 프레임 참조 저장 (애니메이션용)
-        self.login_frame = login_frame
-        self.center_layout = center_layout
-    
-    def connect_signals(self):
-        """시그널 연결 - 화면 표시 시에만 연결"""
-        # 초기화 시에는 시그널 연결하지 않음 (showEvent에서 연결)
-        pass
     
     def _connect_login_signals(self):
         """로그인 시그널 연결"""
@@ -251,18 +83,10 @@ class AdminLoginView(QWidget):
         self.target = target
         
         # 타이틀 업데이트
-        if target == "calibration":
-            title_text = "ADMIN LOGIN - Calibration Access"
-        elif target == "settings":
-            title_text = "ADMIN LOGIN - Settings Access"
-        else:
-            title_text = "ADMIN LOGIN"
+        title_text = "ADMIN LOGIN"
         
-        # 헤더의 타이틀 찾아서 업데이트
-        for child in self.findChildren(QLabel):
-            if "ADMIN LOGIN" in child.text():
-                child.setText(title_text)
-                break
+        # 헤더의 타이틀 업데이트
+        self.label_title.setText(title_text)
     
     def attempt_login(self):
         """로그인 시도"""
@@ -480,16 +304,14 @@ class AdminLoginView(QWidget):
             return False
         keyboard_rect = self.vkeyboard.geometry()
         keyboard_global_pos = self.mapToGlobal(keyboard_rect.topLeft())
-        keyboard_global_rect = QFrame(keyboard_global_pos.x(), keyboard_global_pos.y(), 
-                                     keyboard_rect.width(), keyboard_rect.height()).geometry()
+        keyboard_global_rect = keyboard_rect.translated(keyboard_global_pos - keyboard_rect.topLeft())
         return keyboard_global_rect.contains(global_pos)
 
     def is_click_on_password_field(self, global_pos):
         """비밀번호 필드 영역 클릭 확인"""
         field_rect = self.password_input.geometry()
         field_global_pos = self.mapToGlobal(field_rect.topLeft())
-        field_global_rect = QFrame(field_global_pos.x(), field_global_pos.y(), 
-                                  field_rect.width(), field_rect.height()).geometry()
+        field_global_rect = field_rect.translated(field_global_pos - field_rect.topLeft())
         return field_global_rect.contains(global_pos)
 
     def _focus_and_show_keyboard(self):

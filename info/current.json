@@ -1,6 +1,6 @@
 {
     "test_type0": "StandardTest",
-    "test_type1": "Cardiac Troponin I",
+    "test_type1": "Covid-19",
     "operator": "qwer1234",
     "patient_id": "123",
     "datentime": "2025-07-11 10:29:51",

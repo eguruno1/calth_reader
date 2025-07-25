@@ -6,7 +6,8 @@ from PyQt5.QtCore    import QTimer, pyqtSignal, QDateTime
 from PyQt5.QtGui     import QPixmap
 from PyQt5           import uic
 
-from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update,
+                            update_battery_status, start_battery_update, stop_battery_update)
 
 class HomeView(QMainWindow):
     switch_to_select     = pyqtSignal()
@@ -148,90 +149,15 @@ class HomeView(QMainWindow):
 
     def init_battery_status(self):
         """배터리 상태 초기화"""
-        try:
-            # 실제 배터리 상태로 초기화
-            self.update_battery_status()
-        except Exception as e:
-            print(f"배터리 상태 초기화 오류: {e}")
-            # 기본값으로 설정
-            try:
-                from controllers import app_controller
-                app_controller.uart_model.update_battery_info(75, False)
-                self.update_battery_display()
-            except:
-                self.set_battery_icon("Battery_Icon-050.png")
+        start_battery_update(self)
     
     def update_battery_status(self):
-        """배터리 상태 업데이트 (UART 서비스를 통해 실제 배터리 정보 읽기)"""
-        try:
-            from controllers import app_controller
-            
-            # 컨트롤러를 통해 배터리 상태 읽기
-            battery_data = app_controller.get_battery_status()
-            
-            if battery_data:
-                print(f"배터리 상태 업데이트: {battery_data.get('level', 50)}% (충전중: {battery_data.get('is_charging', False)})")
-            else:
-                print("배터리 상태를 읽을 수 없습니다.")
-            
-            # UI 업데이트
-            self.update_battery_display()
-            
-        except Exception as e:
-            print(f"배터리 상태 업데이트 오류: {e}")
-            # 오류 발생 시 기본값으로 설정
-            try:
-                from controllers import app_controller
-                app_controller.uart_model.update_battery_info(50, False)
-                self.update_battery_display()
-            except:
-                pass
+        """배터리 상태 업데이트 (Utils.py 함수 사용)"""
+        update_battery_status(self)
     
     def update_battery_display(self):
-        """배터리 디스플레이 업데이트"""
-        try:
-            from controllers import app_controller
-            battery_info = app_controller.uart_model.get_battery_info()
-            
-            if battery_info:
-                # 아이콘 업데이트
-                icon_name = battery_info.get_icon_name()
-                self.set_battery_icon(icon_name)
-                
-                # 텍스트 업데이트
-                # status_text = battery_info.get_status_text()
-                # self.label_BatteryGuage.setText(status_text)
-                
-                # 배터리 레벨에 따른 색상 변경
-                if battery_info.level <= 10:
-                    color = "color: red;"
-                elif battery_info.level <= 25:
-                    color = "color: orange;"
-                else:
-                    color = "color: black;"
-                
-                # self.label_BatteryGuage.setStyleSheet(f"QLabel {{ {color} }}")
-                
-        except Exception as e:
-            print(f"배터리 디스플레이 업데이트 오류: {e}")
-    
-    def set_battery_icon(self, icon_filename: str):
-        """배터리 아이콘 설정"""
-        try:
-            # 프로젝트 루트에서 이미지 경로 설정
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(current_dir)
-            icon_path = os.path.join(project_root, 'ui', 'image', 'Icon', icon_filename)
-            
-            if os.path.exists(icon_path):
-                pixmap = QPixmap(icon_path)
-                self.label_4.setPixmap(pixmap)
-                print(f"배터리 아이콘 변경: {icon_filename}")
-            else:
-                print(f"배터리 아이콘 파일 없음: {icon_path}")
-                
-        except Exception as e:
-            print(f"배터리 아이콘 설정 오류: {e}")
+        """배터리 디스플레이 업데이트 (Utils.py 함수 사용)"""
+        update_battery_status(self)
     
     def on_uart_event(self, event_type: str, data=None):
         """UART 이벤트 핸들러 (옵저버 패턴)"""

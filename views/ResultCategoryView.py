@@ -8,7 +8,8 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import pyqtSignal, QTimer, QDateTime
 from PyQt5 import uic
 
-from views.Utils import update_date_time, start_date_time_update, stop_date_time_update
+from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
+                        update_battery_status, start_battery_update, stop_battery_update)
 
 class ResultCategoryView(QMainWindow):
     """결과 카테고리 선택 뷰"""
@@ -61,19 +62,33 @@ class ResultCategoryView(QMainWindow):
     def showEvent(self, event):
         """화면이 표시될 때 호출"""
         super().showEvent(event)
-        # 날짜/시간 업데이트 시작
+        # 날짜/시간 및 배터리 업데이트 시작
         QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
         print("ResultCategoryView가 표시되었습니다.")
+    
+    def hideEvent(self, event):
+        """화면이 숨김될 때 호출"""
+        super().hideEvent(event)
+        # 날짜/시간 및 배터리 업데이트 중지
+        stop_date_time_update(self)
+        stop_battery_update(self)
+        print("ResultCategoryView가 숨겨졌습니다.")
     
     def closeEvent(self, event):
         """화면이 닫힐 때 호출"""
         stop_date_time_update(self)
+        stop_battery_update(self)
         super().closeEvent(event)
         print("ResultCategoryView가 닫혔습니다.")
     
     def update_date_time(self):
         """날짜와 시간 업데이트"""
         update_date_time(self)
+    
+    def update_battery_status(self):
+        """배터리 상태 업데이트"""
+        update_battery_status(self)
     
     # 버튼 이벤트 핸들러들
     def on_patient_results_clicked(self):
@@ -100,3 +115,4 @@ class ResultCategoryView(QMainWindow):
         """뷰 초기화"""
         print("ResultCategoryView 초기화")
         self.update_date_time()
+        self.update_battery_status()

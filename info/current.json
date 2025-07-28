@@ -1,5 +1,5 @@
 {
-    "test_type0": "StandardTest",
+    "test_type0": "ReadOnly",
     "test_type1": "Covid-19",
     "operator": "qwer1234",
     "patient_id": "123",

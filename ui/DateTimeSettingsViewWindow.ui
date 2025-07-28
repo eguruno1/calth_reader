@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DateTimeSettingsViewWindow</class>
+ <widget class="QMainWindow" name="DateTimeSettingsViewWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">Date and Time Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #f0f0f0;
+    font-family: 'Pretendard';
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <!-- 뒤로가기 버튼 -->
+   <widget class="QPushButton" name="pushButton_BackArrow">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>100</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #606060;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #707070;
+}
+QPushButton:pressed {
+    background-color: #505050;
+}</string>
+    </property>
+    <property name="text">
+     <string>← Back</string>
+    </property>
+   </widget>
+   
+   <!-- 타이틀 -->
+   <widget class="QLabel" name="label_Title">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>20</y>
+      <width>424</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>22</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333333;
+}</string>
+    </property>
+    <property name="text">
+     <string>DATE AND TIME SETTINGS</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   
+   <widget class="QLabel" name="label_DateNClock">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>20</y>
+      <width>300</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="palette">
+     <palette>
+      <active>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>79</red>
+          <green>79</green>
+          <blue>79</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>79</red>
+          <green>79</green>
+          <blue>79</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>120</red>
+          <green>120</green>
+          <blue>120</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>17</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>2000-00-00 00:00</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>   
+   <!-- 시간 소스 선택 그룹 -->
+   <widget class="QGroupBox" name="groupBox_TimeSource">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>100</y>
+      <width>864</width>
+      <height>180</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>18</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333333;
+    border: 2px solid #d0d0d0;
+    border-radius: 10px;
+    margin-top: 15px;
+    padding-top: 10px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 20px;
+    padding: 0 10px 0 10px;
+    background-color: #f0f0f0;
+}</string>
+    </property>
+    <property name="title">
+     <string>Time Source</string>
+    </property>
+    
+    <!-- 시스템 시간 사용 라디오 버튼 -->
+    <widget class="QRadioButton" name="radio_system_time">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>40</y>
+       <width>200</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>16</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QRadioButton {
+    font-size: 16px;
+    color: #333333;
+    spacing: 10px;
+    padding: 5px;
+}
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 9px;
+    background-color: white;
+}
+QRadioButton::indicator:checked {
+    background-color: #2c5aa0;
+    border-color: #2c5aa0;
+}</string>
+     </property>
+     <property name="text">
+      <string>시스템 시간 사용</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    
+    <!-- UTC 시간 사용 라디오 버튼 -->
+    <widget class="QRadioButton" name="radio_utc_time">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>80</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>16</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QRadioButton {
+    font-size: 16px;
+    color: #333333;
+    spacing: 10px;
+    padding: 5px;
+}
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 9px;
+    background-color: white;
+}
+QRadioButton::indicator:checked {
+    background-color: #2c5aa0;
+    border-color: #2c5aa0;
+}</string>
+     </property>
+     <property name="text">
+      <string>UTC 시간 사용</string>
+     </property>
+    </widget>
+    
+    <!-- UTC 오프셋 콤보박스 -->
+    <widget class="QComboBox" name="combo_utc_offset">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>80</y>
+       <width>150</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QComboBox {
+    font-size: 14px;
+    border: 2px solid #d0d0d0;
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color: white;
+}
+QComboBox:disabled {
+    background-color: #f5f5f5;
+    color: #888888;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+QComboBox::down-arrow {
+    image: none;
+    border: none;
+}</string>
+     </property>
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+    
+    <!-- 커스텀 시간 사용 라디오 버튼 -->
+    <widget class="QRadioButton" name="radio_custom_time">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>120</y>
+       <width>180</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>16</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QRadioButton {
+    font-size: 16px;
+    color: #333333;
+    spacing: 10px;
+    padding: 5px;
+}
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 9px;
+    background-color: white;
+}
+QRadioButton::indicator:checked {
+    background-color: #2c5aa0;
+    border-color: #2c5aa0;
+}</string>
+     </property>
+     <property name="text">
+      <string>커스텀 시간 사용</string>
+     </property>
+    </widget>
+    
+    <!-- 커스텀 날짜/시간 편집기 -->
+    <widget class="QDateTimeEdit" name="datetime_custom">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>120</y>
+       <width>200</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QDateTimeEdit {
+    font-size: 14px;
+    border: 2px solid #d0d0d0;
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color: white;
+}
+QDateTimeEdit:disabled {
+    background-color: #f5f5f5;
+    color: #888888;
+}</string>
+     </property>
+     <property name="displayFormat">
+      <string>yyyy-MM-dd HH:mm:ss</string>
+     </property>
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+   
+   <!-- 현재 시간 표시 그룹 -->
+   <widget class="QGroupBox" name="groupBox_CurrentTime">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>300</y>
+      <width>864</width>
+      <height>120</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>18</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333333;
+    border: 2px solid #d0d0d0;
+    border-radius: 10px;
+    margin-top: 15px;
+    padding-top: 10px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 20px;
+    padding: 0 10px 0 10px;
+    background-color: #f0f0f0;
+}</string>
+    </property>
+    <property name="title">
+     <string>Current Time Display</string>
+    </property>
+    
+    <!-- 현재 시간 표시 라벨 -->
+    <widget class="QLabel" name="label_current_time">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>40</y>
+       <width>804</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c5aa0;
+    background-color: white;
+    border: 2px solid #2c5aa0;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}</string>
+     </property>
+     <property name="text">
+      <string>현재 시간: 2024-01-01 12:00:00</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   
+   <!-- 적용 버튼 -->
+   <widget class="QPushButton" name="btn_apply">
+    <property name="geometry">
+     <rect>
+      <x>452</x>
+      <y>450</y>
+      <width>120</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+    </property>
+    <property name="text">
+     <string>적용</string>
+    </property>
+   </widget>
+   
+   <!-- 하단 상태바 -->
+   <widget class="QWidget" name="widget_statusbar">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>540</y>
+      <width>1024</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget {
+    background-color: #f0f0f0;
+    border-top: 2px solid #d0d0d0;
+}</string>
+    </property>
+    
+    <widget class="QLabel" name="label_status">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>15</y>
+       <width>400</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 14px;
+    color: #666666;
+}</string>
+     </property>
+     <property name="text">
+      <string>Ready to configure date and time settings</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

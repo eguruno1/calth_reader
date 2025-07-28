@@ -1,0 +1,30 @@
+{
+  "system": {
+    "debug_mode": true,
+    "camera_enabled": true,
+    "uart_enabled": true,
+    "language": "ko",
+    "theme": "light",
+    "auto_sleep": false,
+    "sleep_timeout": 10,
+    "time_mode": "system",
+    "utc_offset": "0",
+    "custom_datetime": "2025-07-28T15:44:55"
+  },
+  "device": {
+    "uart_port": "/dev/ttyUSB0",
+    "uart_baudrate": 115200,
+    "camera_resolution": "1920x1080"
+  },
+  "business": {
+    "auto_save_interval": 300,
+    "measurement_timeout": 30,
+    "qc_reminder_days": 7,
+    "backup_retention_days": 26
+  },
+  "user_template": {
+    "default_operator": "",
+    "quick_patient_id": true,
+    "sound_enabled": true
+  }
+}

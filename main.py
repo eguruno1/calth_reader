@@ -18,6 +18,7 @@ from views.OperatorView   import OperatorView
 from views.ResultListView import ResultListView
 from views.ResultCategoryView import ResultCategoryView
 from views.SettingsView   import SettingsView
+from views.DateTimeSettingsView import DateTimeSettingsView
 from views.InfoView       import InfoView
 from views.SelectView     import SelectView
 from views.TestInfoView   import TestInfoView
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
         self.admin_login_view = AdminLoginView(self)
         self.operator_view   = OperatorView(self)
         self.settings_view   = SettingsView(self)
+        self.datetime_settings_view = DateTimeSettingsView(self)
         self.resultList_view = ResultListView(self)
         self.result_category_view = ResultCategoryView(self)
         self.info_view       = InfoView(self)        
@@ -80,6 +82,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.admin_login_view)
         self.stacked_widget.addWidget(self.operator_view)
         self.stacked_widget.addWidget(self.settings_view)
+        self.stacked_widget.addWidget(self.datetime_settings_view)
         self.stacked_widget.addWidget(self.resultList_view)
         self.stacked_widget.addWidget(self.result_category_view)
         self.stacked_widget.addWidget(self.info_view)
@@ -119,6 +122,8 @@ class MainWindow(QMainWindow):
         self.info_view.switch_to_home.connect(self.switch_to_home_view)
         self.operator_view.switch_to_home.connect(self.switch_to_home_view)
         self.settings_view.switch_to_home.connect(self.switch_to_home_view)
+        self.settings_view.switch_to_datetime_settings.connect(self.switch_to_datetime_settings_view)
+        self.datetime_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.resultList_view.switch_to_home.connect(self.switch_to_home_view)
         self.resultList_view.switch_to_result_category.connect(self.switch_to_result_category_view)
 
@@ -135,6 +140,9 @@ class MainWindow(QMainWindow):
 
         # ResultView의 버튼 연결
         self.result_view0.switch_to_home.connect(self.switch_to_home_view)
+
+        # DateTimeSettingsView의 시간 설정 변경 시그널 연결
+        self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
 
         # 시작화면으로 LoadView 표시
         self.stacked_widget.setCurrentWidget(self.load_view)
@@ -221,10 +229,13 @@ class MainWindow(QMainWindow):
 
     def switch_to_operator_view(self):
         self.stacked_widget.setCurrentWidget(self.operator_view)
-
+        
     def switch_to_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.settings_view)
-    
+
+    def switch_to_datetime_settings_view(self):
+        self.stacked_widget.setCurrentWidget(self.datetime_settings_view)
+
     def switch_to_resultList_view(self):
         """Patient Results로 전환"""
         print("Patient Results로 전환")
@@ -287,6 +298,34 @@ class MainWindow(QMainWindow):
         else:
             print("Admin 로그인 성공: 홈 화면으로 이동")
             self.switch_to_home_view()
+
+    def on_time_setting_changed(self, setting):
+        """시간 설정 변경 시 모든 화면의 시간 표시 업데이트"""
+        print(f"시간 설정 변경됨: {setting}")
+        
+        # 모든 View의 시간 표시 강제 업데이트
+        views_to_update = [
+            self.load_view,
+            self.home_view,
+            self.login_view,
+            self.admin_login_view,
+            self.operator_view,
+            self.settings_view,
+            self.datetime_settings_view,
+            self.resultList_view,
+            self.result_category_view,
+            self.info_view,
+            self.select_view,
+            self.test_info_view,
+            self.measure_view,
+            self.result_view0
+        ]
+        
+        # Utils.py의 update_date_time 함수를 사용하여 각 뷰 업데이트
+        from views.Utils import update_date_time
+        for view in views_to_update:
+            if hasattr(view, 'label_DateNClock'):
+                update_date_time(view)
 
 # 메인 코드에서 set_app_font 함수 호출
 if __name__ == "__main__":

@@ -4,23 +4,57 @@ from PyQt5.QtCore       import QDateTime, QTimer, QDate
 from PyQt5.QtGui        import QFontDatabase, QFont
 from PyQt5.QtWidgets    import QApplication
 
+# TimeService 임포트 추가
+from services.time_service import TimeService
+
+# 글로벌 TimeService 인스턴스
+_time_service = None
+
+def get_time_service():
+    """전역 TimeService 인스턴스 반환"""
+    global _time_service
+    if _time_service is None:
+        _time_service = TimeService()
+    return _time_service
+
 
 ################################################################################
 # 시간 업데이트
 ################################################################################
 
 def update_date_time(view):
-    current_datetime = QDateTime.currentDateTime()
-    formatted_datetime = current_datetime.toString("yyyy-MM-dd  HH:mm")
-    if hasattr(view, 'label_DateNClock'):
-        view.label_DateNClock.setText(formatted_datetime)
+    """시간 설정에 따라 날짜/시간 업데이트"""
+    try:
+        time_service = get_time_service()
+        current_datetime = time_service.get_current_display_time()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d  %H:%M")
+        if hasattr(view, 'label_DateNClock'):
+            view.label_DateNClock.setText(formatted_datetime)
+    except Exception as e:
+        # 오류 발생 시 시스템 시간으로 폴백
+        current_datetime = QDateTime.currentDateTime()
+        formatted_datetime = current_datetime.toString("yyyy-MM-dd  HH:mm")
+        if hasattr(view, 'label_DateNClock'):
+            view.label_DateNClock.setText(formatted_datetime)
+        print(f"시간 업데이트 오류: {e}")
 
 def set_current_date(view):
-    current_date = QDate.currentDate().toString("yyyy-MM-dd")
-    if hasattr(view, 'label_Input_Date'):
-        view.label_Input_Date.setText(current_date)
-    if hasattr(view, 'lineEdit_label_Input_Date'):
-        view.lineEdit_label_Input_Date.setText(current_date)
+    """현재 날짜 설정 (시간 설정 반영)"""
+    try:
+        time_service = get_time_service()
+        current_date = time_service.get_current_display_time().strftime("%Y-%m-%d")
+        if hasattr(view, 'label_Input_Date'):
+            view.label_Input_Date.setText(current_date)
+        if hasattr(view, 'lineEdit_label_Input_Date'):
+            view.lineEdit_label_Input_Date.setText(current_date)
+    except Exception as e:
+        # 오류 발생 시 시스템 날짜로 폴백
+        current_date = QDate.currentDate().toString("yyyy-MM-dd")
+        if hasattr(view, 'label_Input_Date'):
+            view.label_Input_Date.setText(current_date)
+        if hasattr(view, 'lineEdit_label_Input_Date'):
+            view.lineEdit_label_Input_Date.setText(current_date)
+        print(f"날짜 설정 오류: {e}")
 
 def start_date_time_update(view):
     update_date_time(view)

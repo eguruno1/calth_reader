@@ -120,6 +120,7 @@ class MainWindow(QMainWindow):
         self.operator_view.switch_to_home.connect(self.switch_to_home_view)
         self.settings_view.switch_to_home.connect(self.switch_to_home_view)
         self.resultList_view.switch_to_home.connect(self.switch_to_home_view)
+        self.resultList_view.switch_to_result_category.connect(self.switch_to_result_category_view)
 
         # SelectView의 버튼 연결
         self.select_view.switch_to_home.connect(self.switch_to_home_view)
@@ -225,6 +226,9 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.settings_view)
     
     def switch_to_resultList_view(self):
+        """Patient Results로 전환"""
+        print("Patient Results로 전환")
+        self.resultList_view.set_result_type("patient")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
 
     def switch_to_result_category_view(self):
@@ -234,15 +238,15 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.result_category_view)
 
     def switch_to_calibration_results(self):
-        """Calibration Results로 전환 (현재는 ResultListView 사용)"""
+        """Calibration Results로 전환"""
         print("Calibration Results로 전환")
-        # TODO: 향후 별도의 CalibrationResultView 구현시 변경
+        self.resultList_view.set_result_type("calibration")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
 
     def switch_to_qc_results(self):
-        """QC Results로 전환 (현재는 ResultListView 사용)"""
+        """QC Results로 전환"""
         print("QC Results로 전환")
-        # TODO: 향후 별도의 QCResultView 구현시 변경
+        self.resultList_view.set_result_type("qc")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
 
     def switch_to_info_view(self):

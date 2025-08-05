@@ -3,7 +3,7 @@
 Measurement Controller - 측정 프로세스 제어
 """
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
-from controllers.application_controller import app_controller
+from controllers.system_controller import app_controller
 from datetime import datetime
 
 class MeasurementController(QObject):

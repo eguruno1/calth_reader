@@ -28,11 +28,13 @@ class DateTimeSettingsView(QMainWindow):
         
         # UI 파일 경로 설정
         ui_filename = 'DateTimeSettingsViewWindow.ui'
-        ui_folder = next(folder for folder in os.listdir(project_root) if folder.lower() == 'ui')
-        ui_file = os.path.join(project_root, ui_folder, ui_filename)
+        ui_file = os.path.join(project_root, 'ui', 'Settings', ui_filename)
         
         # UI 파일 로드
-        uic.loadUi(ui_file, self)
+        if os.path.exists(ui_file):
+            uic.loadUi(ui_file, self)
+        else:
+            raise FileNotFoundError(f"UI file not found: {ui_file}")
         
         self.init_ui()
         self.load_current_settings()

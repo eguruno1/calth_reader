@@ -7,8 +7,8 @@
     "theme": "light",
     "auto_sleep": false,
     "sleep_timeout": 10,
-    "time_mode": "system",
-    "utc_offset": "0",
+    "time_mode": "utc",
+    "utc_offset": "-12",
     "custom_datetime": "2025-07-28T15:44:55"
   },
   "device": {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsViewWindow</class>
- <widget class="QMainWindow" name="SettingsViewWindow">
+ <class>CalibrationCompleteView</class>
+ <widget class="QMainWindow" name="CalibrationCompleteView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,13 +11,14 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string notr="true">Home</string>
+   <string>Calibration - Complete</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton_SettingsBackArrow">
+   <!-- Header Section -->
+   <widget class="QPushButton" name="pushButton_Back">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -67,57 +68,20 @@ QPushButton:pressed {
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/Icon/Battery_Icon-050.png</pixmap>
+     <pixmap>../image/Icon/Battery_Icon-050.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label_5">
+   <widget class="QLabel" name="label_title">
     <property name="geometry">
      <rect>
-      <x>462</x>
+      <x>412</x>
       <y>20</y>
-      <width>100</width>
+      <width>200</width>
       <height>40</height>
      </rect>
-    </property>
-    <property name="palette">
-     <palette>
-      <active>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>0</red>
-          <green>0</green>
-          <blue>0</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </active>
-      <inactive>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>0</red>
-          <green>0</green>
-          <blue>0</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </inactive>
-      <disabled>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>120</red>
-          <green>120</green>
-          <blue>120</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </disabled>
-     </palette>
     </property>
     <property name="font">
      <font>
@@ -128,7 +92,7 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>SETTINGS</string>
+     <string>CALIBRATION</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -189,7 +153,7 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>2000-00-00 00:00</string>
+     <string></string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -200,7 +164,7 @@ QPushButton:pressed {
      <rect>
       <x>820</x>
       <y>20</y>
-      <width>150</width>
+      <width>30</width>
       <height>40</height>
      </rect>
     </property>
@@ -244,25 +208,278 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>13</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="text">
-     <string>55%</string>
+     <string>55</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_date_time">
+
+   <!-- Main Content Section -->
+   <widget class="QFrame" name="frame_complete">
     <property name="geometry">
      <rect>
-      <x>127</x>
-      <y>140</y>
-      <width>250</width>
-      <height>150</height>
+      <x>112</x>
+      <y>100</y>
+      <width>800</width>
+      <height>400</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame {
+    background-color: white;
+    border: 2px solid #d0d0d0;
+    border-radius: 10px;
+}</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    
+    <!-- Complete Title -->
+    <widget class="QLabel" name="label_complete_title">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>30</y>
+       <width>720</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>28</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 28px;
+    font-weight: bold;
+    color: #388e3c;
+    border: none;
+}</string>
+     </property>
+     <property name="text">
+      <string>🎉 Calibration Complete!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    
+    <!-- Complete Message -->
+    <widget class="QLabel" name="label_complete_message">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>130</y>
+       <width>720</width>
+       <height>120</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>16</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 16px;
+    color: #333333;
+    border: none;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    line-height: 1.6;
+}</string>
+     </property>
+     <property name="text">
+      <string>The calibration process has been completed successfully.
+
+Your device is now properly calibrated and ready for accurate measurements.
+All calibration data has been saved and the next calibration date has been scheduled.
+
+Thank you for following the calibration procedure.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    
+    <!-- Summary Frame -->
+    <widget class="QFrame" name="frame_summary">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>270</y>
+       <width>720</width>
+       <height>100</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QFrame {
+    background-color: #e8f5e8;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+}</string>
+     </property>
+     
+     <!-- Summary Info -->
+     <widget class="QLabel" name="label_summary1">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>15</y>
+        <width>340</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>✓ Calibration Status: PASSED</string>
+      </property>
+     </widget>
+     
+     <widget class="QLabel" name="label_summary2">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>15</y>
+        <width>320</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>✓ Date: 2025-08-05</string>
+      </property>
+     </widget>
+     
+     <widget class="QLabel" name="label_summary3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>45</y>
+        <width>340</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>✓ Device ID: CAL-2025-001</string>
+      </property>
+     </widget>
+     
+     <widget class="QLabel" name="label_summary4">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>45</y>
+        <width>320</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>✓ Next Due: 2026-08-05</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+
+   <!-- Navigation Buttons -->
+   <widget class="QPushButton" name="pushButton_home">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>520</y>
+      <width>220</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 15px;
+}
+QPushButton:hover {
+    background-color: #1e3f73;
+}
+QPushButton:pressed {
+    background-color: #1a3866;
+}</string>
+    </property>
+    <property name="text">
+     <string>Return to Home</string>
+    </property>
+   </widget>
+   
+   <widget class="QPushButton" name="pushButton_print_report">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>520</y>
+      <width>220</width>
+      <height>50</height>
      </rect>
     </property>
     <property name="font">
@@ -278,11 +495,10 @@ QPushButton:pressed {
     background-color: #606060;
     color: white;
     border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
+    border-radius: 8px;
     font-size: 16px;
     font-weight: bold;
+    padding: 15px;
 }
 QPushButton:hover {
     background-color: #707070;
@@ -292,202 +508,7 @@ QPushButton:pressed {
 }</string>
     </property>
     <property name="text">
-     <string>Date and Time</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_manage_operator">
-    <property name="geometry">
-     <rect>
-      <x>387</x>
-      <y>140</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Manage Operator</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_update">
-    <property name="geometry">
-     <rect>
-      <x>647</x>
-      <y>140</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Update</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_calibration_qc">
-    <property name="geometry">
-     <rect>
-      <x>127</x>
-      <y>330</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Calibration / QC days</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_general_settings">
-    <property name="geometry">
-     <rect>
-      <x>387</x>
-      <y>330</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>General Settings</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_power_management">
-    <property name="geometry">
-     <rect>
-      <x>647</x>
-      <y>330</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Power Management</string>
+     <string>Print Report</string>
     </property>
    </widget>
   </widget>

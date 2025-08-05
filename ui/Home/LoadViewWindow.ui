@@ -46,7 +46,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/01_Loading/Calth_logo.png</pixmap>
+     <pixmap>../image/01_Loading/Calth_logo.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

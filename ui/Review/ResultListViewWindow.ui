@@ -39,7 +39,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>image/Icon/BackArrow.png</normaloff>image/Icon/BackArrow.png</iconset>
+      <normaloff>../image/Icon/BackArrow.png</normaloff>../image/Icon/BackArrow.png</iconset>
     </property>
     <property name="flat">
      <bool>true</bool>
@@ -59,7 +59,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>image/06_Result/Result_Home.png</normaloff>image/06_Result/Result_Home.png</iconset>
+      <normaloff>../image/06_Result/Result_Home.png</normaloff>../image/06_Result/Result_Home.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -85,7 +85,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>image/06_Result/Result_Send.png</normaloff>image/06_Result/Result_Send.png</iconset>
+      <normaloff>../image/06_Result/Result_Send.png</normaloff>../image/06_Result/Result_Send.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -111,7 +111,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>image/07_TestResult/TestResult_Delete.png</normaloff>image/07_TestResult/TestResult_Delete.png</iconset>
+      <normaloff>../image/07_TestResult/TestResult_Delete.png</normaloff>../image/07_TestResult/TestResult_Delete.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -136,7 +136,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/Icon/Battery_Icon-050.png</pixmap>
+     <pixmap>../image/Icon/Battery_Icon-050.png</pixmap>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -155,7 +155,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/07_TestResult/TestResult_TableBar.png</pixmap>
+     <pixmap>../image/07_TestResult/TestResult_TableBar.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

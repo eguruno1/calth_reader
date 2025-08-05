@@ -114,9 +114,7 @@ def set_app_font():
 def update_battery_status(view):
     """배터리 상태 업데이트"""
     try:
-        from controllers import app_controller
-        
-        # 컨트롤러를 통해 배터리 상태 읽기
+        from controllers.system_controller import app_controller
         battery_data = app_controller.get_battery_status()
         
         if battery_data:
@@ -210,3 +208,28 @@ def stop_battery_update(view):
     """배터리 상태 업데이트 중지"""
     if hasattr(view, 'battery_timer') and view.battery_timer is not None:
         view.battery_timer.stop()
+
+
+################################################################################
+# 윈도우 유틸리티
+################################################################################
+
+def center_window(window):
+    """윈도우를 화면 중앙에 배치"""
+    try:
+        # 화면 정보 가져오기
+        screen = QApplication.desktop().screenGeometry()
+        
+        # 윈도우 크기 가져오기
+        window_geometry = window.geometry()
+        
+        # 중앙 위치 계산
+        x = (screen.width() - window_geometry.width()) // 2
+        y = (screen.height() - window_geometry.height()) // 2
+        
+        # 윈도우 위치 설정
+        window.move(x, y)
+    except Exception as e:
+        print(f"윈도우 중앙 배치 오류: {e}")
+        # 오류 발생 시 기본 위치 사용
+        window.move(100, 100)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MeasureViewWindow</class>
- <widget class="QMainWindow" name="MeasureViewWindow">
+ <class>SelectViewWindow</class>
+ <widget class="QMainWindow" name="SelectViewWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,11 +17,117 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="label_2">
+   <widget class="QPushButton" name="pushButton_Covid19">
+    <property name="geometry">
+     <rect>
+      <x>82</x>
+      <y>190</y>
+      <width>240</width>
+      <height>240</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../image/03_Select/Select_Covid.png</normaloff>../image/03_Select/Select_Covid.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>235</width>
+      <height>235</height>
+     </size>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Influenza">
+    <property name="geometry">
+     <rect>
+      <x>392</x>
+      <y>190</y>
+      <width>240</width>
+      <height>240</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../image/03_Select/Select_Influ.png</normaloff>../image/03_Select/Select_Influ.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>235</width>
+      <height>235</height>
+     </size>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_Cadiac">
+    <property name="geometry">
+     <rect>
+      <x>702</x>
+      <y>190</y>
+      <width>240</width>
+      <height>240</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../image/03_Select/Select_Troponin.png</normaloff>../image/03_Select/Select_Troponin.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>235</width>
+      <height>235</height>
+     </size>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_SelectBackArrow">
+    <property name="geometry">
+     <rect>
+      <x>14</x>
+      <y>16</y>
+      <width>50</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>12</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../image/Icon/BackArrow.png</normaloff>../image/Icon/BackArrow.png</iconset>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
       <x>934</x>
-      <y>26</y>
+      <y>25</y>
       <width>64</width>
       <height>30</height>
      </rect>
@@ -30,115 +136,10 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/Icon/Battery_Icon-050.png</pixmap>
+     <pixmap>../image/Icon/Battery_Icon-050.png</pixmap>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>461</x>
-      <y>160</y>
-      <width>102</width>
-      <height>102</height>
-     </rect>
-    </property>
-    <property name="sizeIncrement">
-     <size>
-      <width>102</width>
-      <height>102</height>
-     </size>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>image/05_Measure/Measure_search.png</pixmap>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QProgressBar" name="progressBar_Meas">
-    <property name="geometry">
-     <rect>
-      <x>350</x>
-      <y>450</y>
-      <width>340</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="value">
-     <number>24</number>
-    </property>
-    <property name="textVisible">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>412</x>
-      <y>270</y>
-      <width>200</width>
-      <height>60</height>
-     </rect>
-    </property>
-    <property name="palette">
-     <palette>
-      <active>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>74</red>
-          <green>74</green>
-          <blue>106</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </active>
-      <inactive>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>74</red>
-          <green>74</green>
-          <blue>106</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </inactive>
-      <disabled>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>120</red>
-          <green>120</green>
-          <blue>120</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </disabled>
-     </palette>
-    </property>
-    <property name="font">
-     <font>
-      <family>Arial</family>
-      <pointsize>26</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Analyze</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
       <x>407</x>
@@ -193,7 +194,7 @@
      </font>
     </property>
     <property name="text">
-     <string>MEASURMENT</string>
+     <string>SELECT ITEM</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -264,7 +265,7 @@
     <property name="geometry">
      <rect>
       <x>945</x>
-      <y>26</y>
+      <y>25</y>
       <width>38</width>
       <height>30</height>
      </rect>
@@ -321,13 +322,6 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <zorder>progressBar_Meas</zorder>
-   <zorder>label_2</zorder>
-   <zorder>label_4</zorder>
-   <zorder>label_6</zorder>
-   <zorder>label</zorder>
-   <zorder>label_DateNClock</zorder>
-   <zorder>label_BatteryGuage</zorder>
   </widget>
  </widget>
  <resources/>

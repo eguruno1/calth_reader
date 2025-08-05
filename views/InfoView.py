@@ -22,8 +22,7 @@ class InfoView(QMainWindow):
         
         # UI 파일 경로 설정 (대소문자 구분 없이)
         ui_filename = 'InfoViewWindow.ui'
-        ui_folder = next(folder for folder in os.listdir(project_root) if folder.lower() == 'ui')
-        ui_file = os.path.join(project_root, ui_folder, ui_filename)
+        ui_file = os.path.join(project_root, 'ui', 'Home', ui_filename)
         
         # 파일 존재 여부 확인 및 로드
         if os.path.exists(ui_file):

@@ -39,7 +39,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>image/Icon/BackArrow.png</normaloff>image/Icon/BackArrow.png</iconset>
+      <normaloff>../image/Icon/BackArrow.png</normaloff>../image/Icon/BackArrow.png</iconset>
     </property>
     <property name="flat">
      <bool>true</bool>
@@ -59,7 +59,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>image/04_TestInfo/TestInfo_OK_DK.png</normaloff>image/04_TestInfo/TestInfo_OK_DK.png</iconset>
+      <normaloff>../image/04_TestInfo/TestInfo_OK_DK.png</normaloff>../image/04_TestInfo/TestInfo_OK_DK.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -84,7 +84,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/Icon/Battery_Icon-050.png</pixmap>
+     <pixmap>../image/Icon/Battery_Icon-050.png</pixmap>
     </property>
    </widget>
    <widget class="QLabel" name="label_OP_BG">
@@ -103,7 +103,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/06_Result/Result_TitleBar.png</pixmap>
+     <pixmap>../image/06_Result/Result_TitleBar.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -125,7 +125,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/06_Result/Result_TitleBar.png</pixmap>
+     <pixmap>../image/06_Result/Result_TitleBar.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -147,7 +147,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/06_Result/Result_TitleBar.png</pixmap>
+     <pixmap>../image/06_Result/Result_TitleBar.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -169,7 +169,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/04_TestInfo/TestInfo_BKGData.png</pixmap>
+     <pixmap>../image/04_TestInfo/TestInfo_BKGData.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -191,7 +191,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/04_TestInfo/TestInfo_BKGData.png</pixmap>
+     <pixmap>../image/04_TestInfo/TestInfo_BKGData.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -213,7 +213,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>image/04_TestInfo/TestInfo_BKGData.png</pixmap>
+     <pixmap>../image/04_TestInfo/TestInfo_BKGData.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

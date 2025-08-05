@@ -15,6 +15,7 @@ class LoginView(QWidget):
     # 시그널 정의
     login_success = pyqtSignal()
     switch_to_home = pyqtSignal()
+    switch_to_qc = pyqtSignal()  # QC Test로 진입
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -22,6 +23,7 @@ class LoginView(QWidget):
         self.keyboard_animation = None  # 키보드 애니메이션
         self.form_animation = None  # 폼 애니메이션
         self.original_form_pos = None  # 원래 폼 위치
+        self.target_context = None  # QC 진입 컨텍스트 등
         self.setup_ui()
         self.setup_virtual_keyboard()
         self.connect_signals()
@@ -105,11 +107,40 @@ class LoginView(QWidget):
         self.login_button.setText("Login")
         self.login_button.setEnabled(True)
     
+    def set_context(self, context: str):
+        """로그인 컨텍스트 설정 (예: 'qc' - QC Test 진입용)"""
+        self.target_context = context
+    
     def on_login_success(self, user_id: str):
         """로그인 성공 처리"""
-        print(f"로그인 성공: {user_id}")
+        print(f"로그인 성공: {user_id}, 컨텍스트: {self.target_context}")
         self.clear_form()
-        self.login_success.emit()
+        
+        # QC 컨텍스트인 경우 권한 확인 후 QC로 진입
+        if self.target_context == "qc":
+            try:
+                from controllers import app_controller
+                from models.user_model import UserRole
+                
+                # Admin 또는 Operator 권한이 있는지 확인
+                if (app_controller.user_service.has_permission(UserRole.OPERATOR) or 
+                    app_controller.user_service.has_permission(UserRole.ADMIN)):
+                    # QC로 진입하도록 시그널 발생
+                    print("QC 권한 확인됨 - QC Test로 진입")
+                    self.switch_to_qc.emit()
+                else:
+                    # 권한이 없으면 홈으로 이동
+                    QMessageBox.warning(self, "권한 부족", "QC Test는 Admin 또는 Operator 권한이 필요합니다.")
+                    self.login_success.emit()
+            except Exception as e:
+                print(f"QC 진입 처리 오류: {e}")
+                self.login_success.emit()
+        else:
+            # 일반 로그인 성공
+            self.login_success.emit()
+        
+        # 컨텍스트 초기화
+        self.target_context = None
     
     def on_login_failed(self, error_message: str):
         """로그인 실패 처리"""

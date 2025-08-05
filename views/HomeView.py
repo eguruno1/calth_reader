@@ -15,8 +15,9 @@ class HomeView(QMainWindow):
     switch_to_resultList = pyqtSignal()
     switch_to_operator   = pyqtSignal()
     switch_to_settings   = pyqtSignal()
-    switch_to_login      = pyqtSignal()  # 로그인 화면으로 전환
+    switch_to_login      = pyqtSignal(str)  # 로그인 화면으로 전환 (컨텍스트 포함)
     switch_to_admin_login = pyqtSignal(str)  # Admin 전용 로그인 (target 포함)
+    switch_to_qc         = pyqtSignal()  # QC Test로 전환
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,6 +48,12 @@ class HomeView(QMainWindow):
 
         # 날짜와 시간 표시
         self.update_date_time()
+        
+        # 사용자 시그널 연결
+        self.connect_user_signals()
+        
+        # 초기 로그인 상태 설정
+        self.init_login_status()
 
         # JSON 파일 경로 설정
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
@@ -111,8 +118,29 @@ class HomeView(QMainWindow):
 
     def on_qc_test_button_clicked(self):
         print("QC Test 버튼이 클릭되었습니다.")
-        # QC Test 관련 로직 추가 예정
-        pass
+        try:
+            from controllers import app_controller
+            from models.user_model import UserRole
+            
+            if app_controller.user_service.is_logged_in():
+                # 현재 사용자의 권한 확인
+                if (app_controller.user_service.has_permission(UserRole.OPERATOR) or 
+                    app_controller.user_service.has_permission(UserRole.ADMIN)):
+                    # Admin 또는 Operator로 로그인된 상태: 바로 QC로 진입
+                    print("Admin/Operator로 로그인됨 - QC Test로 바로 진입")
+                    self.switch_to_qc.emit()
+                else:
+                    # Viewer로 로그인된 상태: 일반 로그인 페이지로 안내
+                    print("Viewer 계정으로 로그인됨 - 일반 로그인 페이지로 안내")
+                    self.switch_to_login.emit("qc")
+            else:
+                # 로그인되지 않은 상태: 일반 로그인 페이지로 안내
+                print("로그인 필요 - 일반 로그인 페이지로 이동")
+                self.switch_to_login.emit("qc")
+        except Exception as e:
+            print(f"QC Test 진입 오류: {e}")
+            # 오류 시 일반 로그인 페이지로 이동
+            self.switch_to_login.emit("qc")
 
     def on_calibration_button_clicked(self):
         print("Calibration 버튼이 클릭되었습니다.")
@@ -135,10 +163,10 @@ class HomeView(QMainWindow):
             if app_controller.user_service.is_logged_in():
                 # 로그아웃 후 로그인 화면으로 이동
                 app_controller.user_service.logout()
-                self.switch_to_login.emit()
+                self.switch_to_login.emit("")
             else:
                 # 로그인 화면으로 이동
-                self.switch_to_login.emit()
+                self.switch_to_login.emit("")
         except Exception as e:
             print(f"로그인/로그아웃 처리 오류: {e}")
             self.switch_to_info.emit()  # 오류 시 기존 동작
@@ -172,10 +200,26 @@ class HomeView(QMainWindow):
         """사용자 서비스 시그널 연결"""
         try:
             from controllers import app_controller
+            # 기존 연결이 있으면 해제
+            try:
+                app_controller.user_service.user_changed.disconnect(self.on_user_changed)
+                app_controller.user_service.logout_completed.disconnect(self.on_logout_completed)
+                app_controller.user_service.login_success.disconnect(self.on_login_success_update)
+            except:
+                pass
+            
+            # 새로운 연결 설정
             app_controller.user_service.user_changed.connect(self.on_user_changed)
             app_controller.user_service.logout_completed.connect(self.on_logout_completed)
+            app_controller.user_service.login_success.connect(self.on_login_success_update)
+            print("HomeView: 사용자 시그널 연결 완료")
         except Exception as e:
             print(f"사용자 시그널 연결 오류: {e}")
+    
+    def on_login_success_update(self, user_id: str):
+        """로그인 성공 시 UI 업데이트"""
+        print(f"HomeView: 로그인 성공 시그널 수신 - {user_id}")
+        self.update_login_button()
     
     def on_user_changed(self, user_info: dict):
         """사용자 정보 변경 시 호출"""
@@ -188,15 +232,18 @@ class HomeView(QMainWindow):
         self.update_login_button()
     
     def update_login_button(self):
-        """Admin 로그인 상태에 따라 버튼 텍스트 업데이트"""
+        """로그인 상태에 따라 버튼 텍스트 업데이트"""
         try:
             from controllers import app_controller
             
             if app_controller.user_service.is_logged_in():
-                # Admin으로 로그인된 상태: admin과 Log Out 표시
-                button_text = "admin\nLog Out"
+                # 로그인된 상태: 사용자 ID와 Log Out 표시
+                user_id = app_controller.user_service.get_current_user_id()
+                if not user_id:
+                    user_id = "Unknown"
+                button_text = f"{user_id}\nLog Out"
                 self.pushButton_Statistics.setText(button_text)
-                print("Admin 로그인 상태")
+                print(f"{user_id} 로그인 상태")
             else:
                 # 로그아웃된 상태: Log In 표시
                 self.pushButton_Statistics.setText("Log In")

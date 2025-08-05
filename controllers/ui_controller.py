@@ -14,13 +14,13 @@ from views.HomeView       import HomeView
 from views.LoginView      import LoginView
 from views.AdminLoginView import AdminLoginView
 from views.OperatorView   import OperatorView
-from views.CalibrationIntroView import CalibrationIntroView
-from views.CalibrationCautionView import CalibrationCautionView
-from views.CalibrationInsertDeviceView import CalibrationInsertDeviceView
-from views.CalibrationDeviceCheckView import CalibrationDeviceCheckView
-from views.CalibrationEjectDeviceView import CalibrationEjectDeviceView
-from views.CalibrationResultView import CalibrationResultView
-from views.CalibrationCompleteView import CalibrationCompleteView
+from views.PreTestingIntroView import PreTestingIntroView
+from views.PreTestingCautionView import PreTestingCautionView
+from views.PreTestingInsertDeviceView import PreTestingInsertDeviceView
+from views.PreTestingDeviceCheckView import PreTestingDeviceCheckView
+from views.PreTestingEjectDeviceView import PreTestingEjectDeviceView
+from views.PreTestingResultView import PreTestingResultView
+from views.PreTestingCompleteView import PreTestingCompleteView
 from views.ResultListView import ResultListView
 from views.ResultCategoryView import ResultCategoryView
 from views.SettingsView   import SettingsView
@@ -29,6 +29,9 @@ from views.InfoView       import InfoView
 from views.SelectView     import SelectView
 from views.TestInfoView   import TestInfoView
 from views.MeasureView    import MeasureView
+from views.ResultView0    import ResultView0
+from views.ResultView1    import ResultView1
+from config.pretest_config import PretestConfig
 from views.ResultView0    import ResultView0
 
 from controllers import app_controller as backend_controller
@@ -57,13 +60,23 @@ class AppController(QMainWindow):
         self.login_view      = LoginView(self)
         self.admin_login_view = AdminLoginView(self)
         self.operator_view   = OperatorView(self)
-        self.calibration_view = CalibrationIntroView(self)
+        # Calibration 전용 views
+        self.calibration_view = PreTestingIntroView(self, PretestConfig.TYPE_CALIBRATION)
         self.calibration_caution_view = None  # Caution 단계 뷰는 필요 시 생성
         self.calibration_insert_device_view = None  # Insert Device 단계 뷰는 필요 시 생성
         self.calibration_device_check_view = None  # Device Check 단계 뷰는 필요 시 생성
         self.calibration_eject_device_view = None  # Eject Device 단계 뷰는 필요 시 생성
         self.calibration_result_view = None  # Result 단계 뷰는 필요 시 생성
         self.calibration_complete_view = None  # Complete 단계 뷰는 필요 시 생성
+        # QC 전용 views (필요 시 생성)
+        self.qc_view = None
+        self.qc_caution_view = None
+        self.qc_insert_device_view = None
+        self.qc_device_check_view = None
+        self.qc_eject_device_view = None
+        self.qc_result_view = None
+        self.qc_complete_view = None
+        # 기타 views
         self.settings_view   = SettingsView(self)
         self.datetime_settings_view = DateTimeSettingsView(self)
         self.resultList_view = ResultListView(self)
@@ -101,10 +114,12 @@ class AppController(QMainWindow):
         self.home_view.switch_to_resultList.connect(self.switch_to_result_category_view)
         self.home_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.home_view.switch_to_info.connect(self.switch_to_info_view)
-        self.home_view.switch_to_login.connect(self.switch_to_login_view)
+        self.home_view.switch_to_login.connect(self.switch_to_login_view_with_context)
         self.home_view.switch_to_admin_login.connect(self.switch_to_admin_login_view)
+        self.home_view.switch_to_qc.connect(self.switch_to_qc_view)  # QC 직접 진입 연결 추가
         self.login_view.switch_to_home.connect(self.switch_to_home_view)
         self.login_view.login_success.connect(self.switch_to_home_view)
+        self.login_view.switch_to_qc.connect(self.switch_to_qc_view)  # QC 진입 연결 추가
         self.admin_login_view.switch_to_home.connect(self.switch_to_home_view)
         self.admin_login_view.login_success.connect(self.on_admin_login_success)
         self.result_category_view.switch_to_home.connect(self.switch_to_home_view)
@@ -234,22 +249,41 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.result_view0)
     def switch_to_login_view(self):
         self.stacked_widget.setCurrentWidget(self.login_view)
+    def switch_to_login_view_with_context(self, context: str):
+        """컨텍스트와 함께 로그인 뷰로 전환"""
+        if hasattr(self.login_view, 'set_context'):
+            self.login_view.set_context(context)
+        self.stacked_widget.setCurrentWidget(self.login_view)
+        
+    def switch_to_login_view_with_context(self, context: str):
+        """컨텍스트와 함께 로그인 화면으로 전환"""
+        self.login_view.set_context(context)
+        self.stacked_widget.setCurrentWidget(self.login_view)
     def switch_to_admin_login_view(self, target: str):
         self.admin_login_view.set_target(target)
         self.stacked_widget.setCurrentWidget(self.admin_login_view)
     def on_admin_login_success(self, target: str):
         if target == "calibration":
             print("Admin 로그인 성공: Calibration 기능으로 이동")
-            # QMessageBox.information(self, "Calibration", "Calibration 기능에 접근했습니다.\n(기능 구현 예정)")
-            # self.switch_to_home_view()
-            # TODO: Calibration 화면 구현 후 실제 이동
             self.switch_to_calibration_view()
+        elif target == "qc":
+            print("Admin 로그인 성공: QC Test 기능으로 이동")
+            self.switch_to_qc_view()
         elif target == "settings":
             print("Admin 로그인 성공: Settings 화면으로 이동")
             self.switch_to_settings_view()
         else:
             print("Admin 로그인 성공: 홈 화면으로 이동")
             self.switch_to_home_view()
+
+    def switch_to_qc_view(self):
+        """QC Test 화면으로 전환"""
+        if self.qc_view is None:
+            self.qc_view = PreTestingIntroView(self, PretestConfig.TYPE_QC)
+            self.qc_view.switch_to_home.connect(self.switch_to_home_view)
+            self.qc_view.switch_to_next_step.connect(self.on_qc_intro_next)
+            self.stacked_widget.addWidget(self.qc_view)
+        self.stacked_widget.setCurrentWidget(self.qc_view)
     def on_time_setting_changed(self, setting):
         print(f"시간 설정 변경됨: {setting}")
         views_to_update = [
@@ -275,17 +309,20 @@ class AppController(QMainWindow):
 
     def on_calibration_intro_next(self, data):
         """
-        CalibrationIntroView에서 '다음' 클릭 시 호출. CautionView로 데이터 전달 및 화면 전환
+        Pre-Testing IntroView에서 '다음' 클릭 시 호출. CautionView로 데이터 전달 및 화면 전환
         """
         # 캘리브레이션 키트 순서 초기화
         if data is None:
             data = {}
+        pretest_type = data.get('pretest_type', PretestConfig.TYPE_CALIBRATION)
+        config = PretestConfig.get_config(pretest_type)
+        
         data['current_kit'] = 1
-        data['total_kits'] = 4
-        data['kit_names'] = ['음성', '저농도', '중농도', '고농도']
+        data['total_kits'] = config['total_kits']
+        data['kit_names'] = config['kit_names']
         
         if self.calibration_caution_view is None:
-            self.calibration_caution_view = CalibrationCautionView(self)
+            self.calibration_caution_view = PreTestingCautionView(self)
             self.calibration_caution_view.switch_to_home.connect(self.switch_to_home_view)
             self.calibration_caution_view.switch_to_next_step.connect(self.on_calibration_caution_next)
             self.stacked_widget.addWidget(self.calibration_caution_view)
@@ -295,7 +332,7 @@ class AppController(QMainWindow):
     def on_calibration_caution_next(self, data):
         """Caution에서 다음 단계(Insert Device)로 이동"""
         if self.calibration_insert_device_view is None:
-            self.calibration_insert_device_view = CalibrationInsertDeviceView(self)
+            self.calibration_insert_device_view = PreTestingInsertDeviceView(self)
             self.calibration_insert_device_view.switch_to_home.connect(self.switch_to_home_view)
             self.calibration_insert_device_view.switch_to_next_step.connect(self.on_calibration_insert_device_next)
             self.stacked_widget.addWidget(self.calibration_insert_device_view)
@@ -314,7 +351,7 @@ class AppController(QMainWindow):
     def on_calibration_insert_device_next(self, data):
         """Insert Device에서 다음 단계(Device Check)로 이동"""
         if self.calibration_device_check_view is None:
-            self.calibration_device_check_view = CalibrationDeviceCheckView(self)
+            self.calibration_device_check_view = PreTestingDeviceCheckView(self)
             self.calibration_device_check_view.switch_to_home.connect(self.switch_to_home_view)
             self.calibration_device_check_view.switch_to_next_step.connect(self.on_calibration_device_check_next)
             self.stacked_widget.addWidget(self.calibration_device_check_view)
@@ -324,7 +361,7 @@ class AppController(QMainWindow):
     def on_calibration_device_check_next(self, data):
         """Device Check에서 다음 단계(Eject Device)로 이동"""
         if self.calibration_eject_device_view is None:
-            self.calibration_eject_device_view = CalibrationEjectDeviceView(self)
+            self.calibration_eject_device_view = PreTestingEjectDeviceView(self)
             self.calibration_eject_device_view.switch_to_home.connect(self.switch_to_home_view)
             self.calibration_eject_device_view.switch_to_next_step.connect(self.on_calibration_eject_device_next)
             self.stacked_widget.addWidget(self.calibration_eject_device_view)
@@ -350,7 +387,7 @@ class AppController(QMainWindow):
         else:
             # 모든 키트를 처리했으므로 Result로 이동
             if self.calibration_result_view is None:
-                self.calibration_result_view = CalibrationResultView(self)
+                self.calibration_result_view = PreTestingResultView(self)
                 self.calibration_result_view.switch_to_home.connect(self.switch_to_home_view)
                 self.calibration_result_view.switch_to_next_step.connect(self.on_calibration_result_next)
                 self.calibration_result_view.switch_to_retry.connect(self.on_calibration_retry)
@@ -367,7 +404,7 @@ class AppController(QMainWindow):
     def on_calibration_result_next(self, data):
         """Result에서 다음 단계(Complete)로 이동"""
         if self.calibration_complete_view is None:
-            self.calibration_complete_view = CalibrationCompleteView(self)
+            self.calibration_complete_view = PreTestingCompleteView(self)
             self.calibration_complete_view.switch_to_home.connect(self.switch_to_home_view)
             self.stacked_widget.addWidget(self.calibration_complete_view)
         self.calibration_complete_view.set_data(data)
@@ -378,9 +415,128 @@ class AppController(QMainWindow):
         # 키트 순서 초기화
         if data is None:
             data = {}
-        data['current_kit'] = 1
-        data['total_kits'] = 4
-        data['kit_names'] = ['음성', '저농도', '중농도', '고농도']
         
-        self.calibration_view.reset_view()
+        pretest_type = data.get('pretest_type', PretestConfig.TYPE_CALIBRATION)
+        config = PretestConfig.get_config(pretest_type)
+        
+        data['current_kit'] = 1
+        data['total_kits'] = config['total_kits']
+        data['kit_names'] = config['kit_names']
+        
+        if hasattr(self.calibration_view, 'reset_view'):
+            self.calibration_view.reset_view()
         self.stacked_widget.setCurrentWidget(self.calibration_view)
+
+    # QC Test 관련 메서드들
+    def on_qc_intro_next(self, data):
+        """QC IntroView에서 '다음' 클릭 시 호출"""
+        if data is None:
+            data = {}
+        pretest_type = data.get('pretest_type', PretestConfig.TYPE_QC)
+        config = PretestConfig.get_config(pretest_type)
+        
+        data['current_kit'] = 1
+        data['total_kits'] = config['total_kits']
+        data['kit_names'] = config['kit_names']
+        
+        if self.qc_caution_view is None:
+            self.qc_caution_view = PreTestingCautionView(self)
+            self.qc_caution_view.switch_to_home.connect(self.switch_to_home_view)
+            self.qc_caution_view.switch_to_next_step.connect(self.on_qc_caution_next)
+            self.stacked_widget.addWidget(self.qc_caution_view)
+        self.qc_caution_view.set_data(data)
+        self.stacked_widget.setCurrentWidget(self.qc_caution_view)
+
+    def on_qc_caution_next(self, data):
+        """QC Caution에서 다음 단계로 이동"""
+        if self.qc_insert_device_view is None:
+            self.qc_insert_device_view = PreTestingInsertDeviceView(self)
+            self.qc_insert_device_view.switch_to_home.connect(self.switch_to_home_view)
+            self.qc_insert_device_view.switch_to_next_step.connect(self.on_qc_insert_device_next)
+            self.stacked_widget.addWidget(self.qc_insert_device_view)
+        
+        if data is None:
+            data = {}
+        if 'current_kit' not in data:
+            config = PretestConfig.get_config(data.get('pretest_type', PretestConfig.TYPE_QC))
+            data['current_kit'] = 1
+            data['total_kits'] = config['total_kits']
+            data['kit_names'] = config['kit_names']
+        
+        self.qc_insert_device_view.set_data(data)
+        self.stacked_widget.setCurrentWidget(self.qc_insert_device_view)
+
+    def on_qc_insert_device_next(self, data):
+        """QC Insert Device에서 다음 단계로 이동"""
+        if self.qc_device_check_view is None:
+            self.qc_device_check_view = PreTestingDeviceCheckView(self)
+            self.qc_device_check_view.switch_to_home.connect(self.switch_to_home_view)
+            self.qc_device_check_view.switch_to_next_step.connect(self.on_qc_device_check_next)
+            self.stacked_widget.addWidget(self.qc_device_check_view)
+        self.qc_device_check_view.set_data(data)
+        self.stacked_widget.setCurrentWidget(self.qc_device_check_view)
+
+    def on_qc_device_check_next(self, data):
+        """QC Device Check에서 다음 단계로 이동"""
+        if self.qc_eject_device_view is None:
+            self.qc_eject_device_view = PreTestingEjectDeviceView(self)
+            self.qc_eject_device_view.switch_to_home.connect(self.switch_to_home_view)
+            self.qc_eject_device_view.switch_to_next_step.connect(self.on_qc_eject_device_next)
+            self.stacked_widget.addWidget(self.qc_eject_device_view)
+        self.qc_eject_device_view.set_data(data)
+        self.stacked_widget.setCurrentWidget(self.qc_eject_device_view)
+
+    def on_qc_eject_device_next(self, data):
+        """QC Eject Device에서 다음 단계로 이동"""
+        if data is None:
+            data = {}
+        
+        current_kit = data.get('current_kit', 1)
+        total_kits = data.get('total_kits', 3)
+        
+        # 아직 더 처리할 키트가 있는 경우
+        if current_kit < total_kits:
+            data['current_kit'] = current_kit + 1
+            self.qc_insert_device_view.set_data(data)
+            self.stacked_widget.setCurrentWidget(self.qc_insert_device_view)
+        else:
+            # 모든 키트를 처리했으므로 Result로 이동
+            if self.qc_result_view is None:
+                self.qc_result_view = PreTestingResultView(self)
+                self.qc_result_view.switch_to_home.connect(self.switch_to_home_view)
+                self.qc_result_view.switch_to_next_step.connect(self.on_qc_result_next)
+                self.qc_result_view.switch_to_retry.connect(self.on_qc_retry)
+                self.stacked_widget.addWidget(self.qc_result_view)
+            
+            # 임시로 랜덤하게 PASSED/FAILED 결정
+            import random
+            result_status = "PASSED" if random.choice([True, False]) else "FAILED"
+            
+            self.qc_result_view.set_data(data)
+            self.qc_result_view.set_result_status(result_status)
+            self.stacked_widget.setCurrentWidget(self.qc_result_view)
+
+    def on_qc_result_next(self, data):
+        """QC Result에서 다음 단계로 이동"""
+        if self.qc_complete_view is None:
+            self.qc_complete_view = PreTestingCompleteView(self)
+            self.qc_complete_view.switch_to_home.connect(self.switch_to_home_view)
+            self.stacked_widget.addWidget(self.qc_complete_view)
+        self.qc_complete_view.set_data(data)
+        self.stacked_widget.setCurrentWidget(self.qc_complete_view)
+
+    def on_qc_retry(self, data):
+        """QC 재시도 - Intro로 돌아가기"""
+        if data is None:
+            data = {}
+        
+        pretest_type = data.get('pretest_type', PretestConfig.TYPE_QC)
+        config = PretestConfig.get_config(pretest_type)
+        
+        data['current_kit'] = 1
+        data['total_kits'] = config['total_kits']
+        data['kit_names'] = config['kit_names']
+        
+        if hasattr(self.qc_view, 'reset_view'):
+            self.qc_view.reset_view()
+        self.stacked_widget.setCurrentWidget(self.qc_view)

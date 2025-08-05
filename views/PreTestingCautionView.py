@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CalibrationCautionView - Calibration Caution 단계 화면
+Pre-Testing Caution View - Calibration 및 QC 공통 주의사항 화면
 """
 import os
 from PyQt5.QtWidgets import QMainWindow
@@ -8,8 +8,9 @@ from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5 import uic
 from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
                         update_battery_status, start_battery_update, stop_battery_update)
+from config.pretest_config import PretestConfig
 
-class CalibrationCautionView(QMainWindow):
+class PreTestingCautionView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_next_step = pyqtSignal(dict)
 
@@ -18,7 +19,7 @@ class CalibrationCautionView(QMainWindow):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         ui_filename = 'Caution.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Calibration', ui_filename)
+        ui_file = os.path.join(project_root, 'ui', 'PreTesting', ui_filename)
         if os.path.exists(ui_file):
             uic.loadUi(ui_file, self)
         else:
@@ -30,6 +31,8 @@ class CalibrationCautionView(QMainWindow):
         update_battery_status(self)
         
         self.data = None
+        self.pretest_type = PretestConfig.TYPE_CALIBRATION
+        self.config = {}
 
     def setup_connections(self):
         if hasattr(self, 'pushButton_next'):
@@ -39,6 +42,25 @@ class CalibrationCautionView(QMainWindow):
 
     def set_data(self, data: dict):
         self.data = data
+        
+        # Pre-Testing 타입 설정 및 UI 업데이트
+        if data and 'pretest_type' in data:
+            self.pretest_type = data['pretest_type']
+        self.config = PretestConfig.get_config(self.pretest_type)
+        self.update_ui_texts()
+
+    def update_ui_texts(self):
+        """Pre-Testing 타입에 따라 UI 텍스트 업데이트"""
+        # 메인 타이틀 업데이트
+        if hasattr(self, 'label_title'):
+            self.label_title.setText(self.config.get('title', 'PRE-TESTING'))
+        
+        # Caution 제목 업데이트
+        if hasattr(self, 'label_caution_title'):
+            self.label_caution_title.setText(self.config.get('caution_title', '⚠️ Precautions'))
+        
+        # 윈도우 타이틀 업데이트
+        self.setWindowTitle(f"{self.config.get('window_title_suffix', 'Pre-Testing')} - Caution")
         # 필요시 폼에 데이터 표시 가능
 
     def on_next_clicked(self):

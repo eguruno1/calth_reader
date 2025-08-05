@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CalibrationEjectDeviceView - Calibration Eject Device 단계 화면
+PreTestingEjectDeviceView - Pre-Testing Eject Device 단계 화면 (Calibration/QC 공통)
 """
 import sys
 import os
@@ -9,9 +9,10 @@ from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QDateTime, pyqtSignal
 from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
                         update_battery_status, start_battery_update, stop_battery_update)
+from config.pretest_config import PretestConfig
 
 
-class CalibrationEjectDeviceView(QMainWindow):
+class PreTestingEjectDeviceView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_next_step = pyqtSignal(dict)
 
@@ -22,7 +23,7 @@ class CalibrationEjectDeviceView(QMainWindow):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         ui_filename = 'EjectDevice.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Calibration', ui_filename)
+        ui_file = os.path.join(project_root, 'ui', 'PreTesting', ui_filename)
         if os.path.exists(ui_file):
             uic.loadUi(ui_file, self)
         else:
@@ -30,6 +31,8 @@ class CalibrationEjectDeviceView(QMainWindow):
         
         # 데이터 저장
         self.data = None
+        self.pretest_type = PretestConfig.TYPE_CALIBRATION
+        self.config = {}
         
         # Eject 프로세스 관련 변수
         self.eject_step = 0
@@ -53,7 +56,30 @@ class CalibrationEjectDeviceView(QMainWindow):
     def set_data(self, data: dict):
         """이전 단계에서 전달받은 데이터 설정"""
         self.data = data
+        
+        # Pre-Testing 타입 설정 및 UI 업데이트
+        if data and 'pretest_type' in data:
+            self.pretest_type = data['pretest_type']
+        self.config = PretestConfig.get_config(self.pretest_type)
+        self.update_ui_texts()
         self.update_kit_info()
+
+    def update_ui_texts(self):
+        """Pre-Testing 타입에 따라 UI 텍스트 업데이트"""
+        # 메인 타이틀 업데이트
+        if hasattr(self, 'label_title'):
+            self.label_title.setText(self.config.get('title', 'PRE-TESTING'))
+        
+        # Eject 제목 업데이트
+        if hasattr(self, 'label_eject_title'):
+            self.label_eject_title.setText(self.config.get('eject_title', '📤 Remove Device'))
+        
+        # Eject 지시사항 업데이트
+        if hasattr(self, 'label_eject_instruction'):
+            self.label_eject_instruction.setText(self.config.get('eject_instruction', 'Please remove the device.'))
+        
+        # 윈도우 타이틀 업데이트
+        self.setWindowTitle(f"{self.config.get('window_title_suffix', 'Pre-Testing')} - Eject Device")
         
     def update_kit_info(self):
         """현재 키트 정보를 UI에 표시"""
@@ -71,8 +97,15 @@ class CalibrationEjectDeviceView(QMainWindow):
                 
                 # 지시사항 업데이트  
                 if hasattr(self, 'label_eject_instruction'):
-                    next_action = "Insert next calibration kit" if current_kit < total_kits else "View calibration results"
-                    instruction_text = f"""Please remove the {kit_name} calibration kit from the device.
+                    # Pre-Testing 타입에 따라 다음 동작 결정
+                    if self.pretest_type == PretestConfig.TYPE_QC:
+                        next_action = "Insert next QC kit" if current_kit < total_kits else "View QC results"
+                        kit_type = "QC"
+                    else:
+                        next_action = "Insert next calibration kit" if current_kit < total_kits else "View calibration results"
+                        kit_type = "calibration"
+                    
+                    instruction_text = f"""Please remove the {kit_name} {kit_type} kit from the device.
 
 Current Kit: {current_kit}/{total_kits} - {kit_name} completed
 
@@ -186,6 +219,6 @@ Next step: {next_action}"""
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = CalibrationEjectDeviceView()
+    window = PreTestingEjectDeviceView()
     window.show()
     sys.exit(app.exec_())

@@ -6,7 +6,7 @@ from PyQt5           import uic
 
 from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update
 
-class ResultView0(QMainWindow):
+class ResultView1(QMainWindow):
     switch_to_home = pyqtSignal()
 
     def __init__(self, parent=None):

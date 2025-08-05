@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CalibrationResultView - Calibration Result 단계 화면
+PreTestingResultView - Pre-Testing Result 단계 화면 (Calibration/QC 공통)
 """
 import sys
 import os
@@ -9,9 +9,10 @@ from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QDateTime, pyqtSignal
 from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
                         update_battery_status, start_battery_update, stop_battery_update)
+from config.pretest_config import PretestConfig
 
 
-class CalibrationResultView(QMainWindow):
+class PreTestingResultView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_next_step = pyqtSignal(dict)
     switch_to_retry = pyqtSignal(dict)
@@ -23,7 +24,7 @@ class CalibrationResultView(QMainWindow):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         ui_filename = 'Result.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Calibration', ui_filename)
+        ui_file = os.path.join(project_root, 'ui', 'PreTesting', ui_filename)
         if os.path.exists(ui_file):
             uic.loadUi(ui_file, self)
         else:
@@ -32,6 +33,8 @@ class CalibrationResultView(QMainWindow):
         # 결과 상태 저장
         self.result_status = "PASSED"
         self.data = None
+        self.pretest_type = PretestConfig.TYPE_CALIBRATION
+        self.config = {}
         
         # 연결 설정
         self.setup_connections()
@@ -52,6 +55,21 @@ class CalibrationResultView(QMainWindow):
     def set_data(self, data: dict):
         """이전 단계에서 전달받은 데이터 설정"""
         self.data = data
+        
+        # Pre-Testing 타입 설정 및 UI 업데이트
+        if data and 'pretest_type' in data:
+            self.pretest_type = data['pretest_type']
+        self.config = PretestConfig.get_config(self.pretest_type)
+        self.update_ui_texts()
+
+    def update_ui_texts(self):
+        """Pre-Testing 타입에 따라 UI 텍스트 업데이트"""
+        # 메인 타이틀 업데이트
+        if hasattr(self, 'label_title'):
+            self.label_title.setText(self.config.get('title', 'PRE-TESTING'))
+        
+        # 윈도우 타이틀 업데이트
+        self.setWindowTitle(f"{self.config.get('window_title_suffix', 'Pre-Testing')} - Results")
 
     def set_result_status(self, status: str):
         """결과 상태 설정 및 UI 업데이트"""
@@ -60,9 +78,19 @@ class CalibrationResultView(QMainWindow):
         
     def setup_result_display(self):
         """결과 상태에 따른 UI 설정"""
+        # Pre-Testing 타입에 따른 텍스트 결정
+        if self.pretest_type == PretestConfig.TYPE_QC:
+            process_name = "QC"
+            passed_message = "QC test completed successfully. The device quality has been verified."
+            failed_message = "QC test failed. Please retry the QC process."
+        else:
+            process_name = "CALIBRATION"
+            passed_message = "Calibration completed successfully. The device is now ready for use."
+            failed_message = "Calibration failed. Please retry the calibration process."
+        
         if self.result_status == "PASSED":
             if hasattr(self, 'label_result_status'):
-                self.label_result_status.setText("✓ CALIBRATION PASSED")
+                self.label_result_status.setText(f"✓ {process_name} PASSED")
                 self.label_result_status.setStyleSheet("""
                     QLabel {
                         font-size: 32px;
@@ -72,7 +100,7 @@ class CalibrationResultView(QMainWindow):
                     }
                 """)
             if hasattr(self, 'label_result_message'):
-                self.label_result_message.setText("Calibration completed successfully. The device is now ready for use.")
+                self.label_result_message.setText(passed_message)
                 self.label_result_message.setStyleSheet("""
                     QLabel {
                         font-size: 14px;
@@ -96,7 +124,7 @@ class CalibrationResultView(QMainWindow):
                 
         else:
             if hasattr(self, 'label_result_status'):
-                self.label_result_status.setText("✗ CALIBRATION FAILED")
+                self.label_result_status.setText(f"✗ {process_name} FAILED")
                 self.label_result_status.setStyleSheet("""
                     QLabel {
                         font-size: 32px;
@@ -106,7 +134,7 @@ class CalibrationResultView(QMainWindow):
                     }
                 """)
             if hasattr(self, 'label_result_message'):
-                self.label_result_message.setText("Calibration failed. Please retry the calibration process.")
+                self.label_result_message.setText(failed_message)
                 self.label_result_message.setStyleSheet("""
                     QLabel {
                         font-size: 14px;
@@ -207,7 +235,7 @@ if __name__ == "__main__":
     import random
     result = "PASSED" if random.choice([True, False]) else "FAILED"
     
-    window = CalibrationResultView()
+    window = PreTestingResultView()
     window.set_result_status(result)
     window.show()
     sys.exit(app.exec_())

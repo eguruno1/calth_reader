@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Result Category View - 결과 카테고리 선택 화면
+Pre-Testing Intro View - Calibration 및 QC 공통 Intro 화면
 """
 
 import os
@@ -10,27 +10,35 @@ from PyQt5 import uic
 
 from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
                         update_battery_status, start_battery_update, stop_battery_update)
+from config.pretest_config import PretestConfig
 
-class CalibrationIntroView(QMainWindow):
-    """Calibration Intro 뷰"""
+class PreTestingIntroView(QMainWindow):
+    """Pre-Testing Intro 뷰 (Calibration/QC 공통)"""
 
     # 시그널 정의
     switch_to_home = pyqtSignal()
     switch_to_next_step = pyqtSignal(dict)  # form 데이터 전달
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, pretest_type=PretestConfig.TYPE_CALIBRATION):
         super().__init__(parent)
+        
+        # Pre-Testing 타입 설정
+        self.pretest_type = pretest_type
+        self.config = PretestConfig.get_config(pretest_type)
+        
         # 프로젝트 루트 디렉토리
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         # UI 파일 경로 설정
         ui_filename = 'Intro.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Calibration', ui_filename)
+        ui_file = os.path.join(project_root, 'ui', 'PreTesting', ui_filename)
         if os.path.exists(ui_file):
             uic.loadUi(ui_file, self)
         else:
             raise FileNotFoundError(f"UI file not found: {ui_file}")
+        
         self.setup_connections()
+        self.update_ui_texts()  # UI 텍스트 업데이트
         
         # 초기 시간 및 배터리 상태 업데이트
         update_date_time(self)
@@ -39,6 +47,25 @@ class CalibrationIntroView(QMainWindow):
         self.selected_type = None
         self._init_type_buttons()
         self._init_calendar()
+
+    def update_ui_texts(self):
+        """Pre-Testing 타입에 따라 UI 텍스트 업데이트"""
+        # 메인 타이틀 업데이트
+        if hasattr(self, 'label_title'):
+            self.label_title.setText(self.config['title'])
+        
+        # 폼 타이틀 업데이트
+        if hasattr(self, 'label_form_title'):
+            self.label_form_title.setText(self.config['form_title'])
+        
+        # Device ID 라벨 및 값 업데이트
+        if hasattr(self, 'label_device_id'):
+            self.label_device_id.setText(self.config['device_id_label'])
+        if hasattr(self, 'lineEdit_device_id'):
+            self.lineEdit_device_id.setText(self.config['device_id_value'])
+        
+        # 윈도우 타이틀 업데이트
+        self.setWindowTitle(f"{self.config['window_title_suffix']} - Intro")
 
     def setup_connections(self):
         self.pushButton_next.clicked.connect(self.on_next_clicked)
@@ -113,6 +140,7 @@ class CalibrationIntroView(QMainWindow):
             return
         # 데이터 전달
         data = {
+            'pretest_type': self.pretest_type,  # Pre-Testing 타입 추가
             'operator_id': self.lineEdit_operator_id.text(),
             'device_id': self.lineEdit_device_id.text(),
             'type': self.selected_type,

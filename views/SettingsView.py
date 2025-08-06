@@ -12,6 +12,7 @@ class SettingsView(QMainWindow):
     switch_to_datetime_settings = pyqtSignal()  # DateTimeSettings 화면으로 전환
     switch_to_manage_operator = pyqtSignal()  # ManageOperator 화면으로 전환
     switch_to_update_settings = pyqtSignal()  # UpdateSettings 화면으로 전환
+    switch_to_calibration_qc_settings = pyqtSignal()  # CalibrationQCSettings 화면으로 전환
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -66,7 +67,7 @@ class SettingsView(QMainWindow):
     def on_calibration_qc_clicked(self):
         """Calibration / QC days 버튼 클릭"""
         print("Calibration / QC days가 클릭되었습니다.")
-        # TODO: Calibration/QC 설정 화면으로 이동
+        self.switch_to_calibration_qc_settings.emit()
     
     def on_general_settings_clicked(self):
         """General Settings 버튼 클릭"""

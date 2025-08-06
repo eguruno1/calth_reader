@@ -135,3 +135,72 @@ class UserService(QObject):
                 {'id': 'operator1', 'name': 'Operator One', 'role': 'operator'},
                 {'id': 'viewer1', 'name': 'Viewer One', 'role': 'viewer'}
             ]
+    
+    def get_all_users(self):
+        """모든 사용자 목록 조회 (활성/비활성 포함)"""
+        try:
+            from models.database_models import get_db_manager, UserDB, UserRoleEnum
+            
+            db_manager = get_db_manager()
+            session = db_manager.get_session()
+            
+            db_users = session.query(UserDB).all()
+            
+            users = []
+            role_mapping = {
+                UserRoleEnum.ADMIN: 'admin',
+                UserRoleEnum.OPERATOR: 'operator',
+                UserRoleEnum.VIEWER: 'viewer'
+            }
+            
+            for db_user in db_users:
+                # User 객체처럼 속성을 가진 객체 생성
+                class UserInfo:
+                    def __init__(self, db_user):
+                        self.user_id = db_user.user_id
+                        self.username = db_user.name
+                        self.role = role_mapping.get(db_user.role, 'operator')
+                        self.created_at = db_user.created_at
+                        self.last_login = db_user.last_login_at
+                        self.is_active = db_user.is_active
+                
+                user_info = UserInfo(db_user)
+                users.append(user_info)
+            
+            session.close()
+            return users
+            
+        except Exception as e:
+            print(f"전체 사용자 목록 조회 오류: {e}")
+            # 오류 시 더미 데이터 반환
+            class DummyUser:
+                def __init__(self, user_id, username, role, is_active=True):
+                    self.user_id = user_id
+                    self.username = username
+                    self.role = role
+                    self.created_at = None
+                    self.last_login = None
+                    self.is_active = is_active
+            
+            return [
+                DummyUser('admin', 'Administrator', 'admin'),
+                DummyUser('operator1', 'Operator One', 'operator'),
+                DummyUser('viewer1', 'Viewer One', 'viewer'),
+                DummyUser('test_user', 'Test User', 'operator', False)
+            ]
+        
+# UserService 인스턴스 생성
+_user_service_instance = None
+
+def get_user_service():
+    """UserService 싱글톤 인스턴스 반환"""
+    global _user_service_instance
+    if _user_service_instance is None:
+        from models.user_model import UserModel
+        user_model = UserModel()
+        _user_service_instance = UserService(user_model)
+        _user_service_instance.initialize()
+    return _user_service_instance
+
+# 직접 import 가능한 인스턴스
+user_service = get_user_service()

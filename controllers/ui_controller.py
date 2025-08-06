@@ -25,6 +25,7 @@ from views.ResultListView import ResultListView
 from views.ResultCategoryView import ResultCategoryView
 from views.SettingsView   import SettingsView
 from views.DateTimeSettingsView import DateTimeSettingsView
+from views.ManageOperatorView import ManageOperatorView
 from views.InfoView       import InfoView
 from views.SelectView     import SelectView
 from views.TestInfoView   import TestInfoView
@@ -79,6 +80,7 @@ class AppController(QMainWindow):
         # 기타 views
         self.settings_view   = SettingsView(self)
         self.datetime_settings_view = DateTimeSettingsView(self)
+        self.manage_operator_view = ManageOperatorView(self)
         self.resultList_view = ResultListView(self)
         self.result_category_view = ResultCategoryView(self)
         self.info_view       = InfoView(self)
@@ -98,6 +100,7 @@ class AppController(QMainWindow):
         # Caution 단계 뷰는 동적 추가
         self.stacked_widget.addWidget(self.settings_view)
         self.stacked_widget.addWidget(self.datetime_settings_view)
+        self.stacked_widget.addWidget(self.manage_operator_view)
         self.stacked_widget.addWidget(self.resultList_view)
         self.stacked_widget.addWidget(self.result_category_view)
         self.stacked_widget.addWidget(self.info_view)
@@ -130,7 +133,9 @@ class AppController(QMainWindow):
         self.operator_view.switch_to_home.connect(self.switch_to_home_view)
         self.settings_view.switch_to_home.connect(self.switch_to_home_view)
         self.settings_view.switch_to_datetime_settings.connect(self.switch_to_datetime_settings_view)
+        self.settings_view.switch_to_manage_operator.connect(self.switch_to_manage_operator_view)
         self.datetime_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
+        self.manage_operator_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.resultList_view.switch_to_home.connect(self.switch_to_home_view)
         self.resultList_view.switch_to_result_category.connect(self.switch_to_result_category_view)
         self.select_view.switch_to_home.connect(self.switch_to_home_view)
@@ -221,6 +226,8 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.settings_view)
     def switch_to_datetime_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.datetime_settings_view)
+    def switch_to_manage_operator_view(self):
+        self.stacked_widget.setCurrentWidget(self.manage_operator_view)
     def switch_to_resultList_view(self):
         print("Patient Results로 전환")
         self.resultList_view.set_result_type("patient")

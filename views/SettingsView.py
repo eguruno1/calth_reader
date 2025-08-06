@@ -10,6 +10,7 @@ from views.Utils import update_date_time, start_date_time_update, stop_date_time
 class SettingsView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_datetime_settings = pyqtSignal()  # DateTimeSettings 화면으로 전환
+    switch_to_manage_operator = pyqtSignal()  # ManageOperator 화면으로 전환
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -54,7 +55,7 @@ class SettingsView(QMainWindow):
     def on_manage_operator_clicked(self):
         """Manage Operator 버튼 클릭"""
         print("Manage Operator가 클릭되었습니다.")
-        # TODO: Operator 관리 화면으로 이동
+        self.switch_to_manage_operator.emit()
     
     def on_update_clicked(self):
         """Update 버튼 클릭"""

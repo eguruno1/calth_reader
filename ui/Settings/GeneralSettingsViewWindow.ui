@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GeneralSettingsViewWindow</class>
+ <widget class="QMainWindow" name="GeneralSettingsViewWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">General Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #f0f0f0;
+    font-family: 'Pretendard';
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <!-- 뒤로가기 버튼 -->
+   <widget class="QPushButton" name="pushButton_BackArrow">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>100</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #606060;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #707070;
+}
+QPushButton:pressed {
+    background-color: #505050;
+}</string>
+    </property>
+    <property name="text">
+     <string>← Back</string>
+    </property>
+   </widget>
+   
+   <!-- 타이틀 -->
+   <widget class="QLabel" name="label_Title">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>20</y>
+      <width>424</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>22</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333333;
+}</string>
+    </property>
+    <property name="text">
+     <string>GENERAL SETTINGS</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   
+   <widget class="QLabel" name="label_DateNClock">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>20</y>
+      <width>300</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="palette">
+     <palette>
+      <active>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>79</red>
+          <green>79</green>
+          <blue>79</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>79</red>
+          <green>79</green>
+          <blue>79</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>120</red>
+          <green>120</green>
+          <blue>120</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>17</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>2000-00-00 00:00</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>   
+   
+   <!-- 일반 설정 섹션 -->
+   <widget class="QGroupBox" name="groupBox_GeneralSettings">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>100</y>
+      <width>864</width>
+      <height>380</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>18</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333333;
+    border: 2px solid #d0d0d0;
+    border-radius: 10px;
+    margin-top: 15px;
+    padding-top: 10px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 20px;
+    padding: 0 10px 0 10px;
+    background-color: #f0f0f0;
+}</string>
+    </property>
+    <property name="title">
+     <string>General Settings</string>
+    </property>
+    
+    <!-- Network 설정 -->
+    <widget class="QLabel" name="label_network_title">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>40</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Network:</string>
+     </property>
+    </widget>
+    
+    <widget class="QLabel" name="label_network_status">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>40</y>
+       <width>300</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>연결됨</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_network">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>35</y>
+       <width>100</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+     </property>
+     <property name="text">
+      <string>설정</string>
+     </property>
+    </widget>
+    
+    <!-- LIS Parameter 설정 -->
+    <widget class="QLabel" name="label_lis_title">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>85</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>LIS Parameter:</string>
+     </property>
+    </widget>
+    
+    <widget class="QLabel" name="label_lis_status">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>85</y>
+       <width>300</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>설정됨</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_lis_parameter">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>80</y>
+       <width>100</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+     </property>
+     <property name="text">
+      <string>설정</string>
+     </property>
+    </widget>
+    
+    <!-- Print 설정 -->
+    <widget class="QLabel" name="label_print_title">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>130</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Print:</string>
+     </property>
+    </widget>
+    
+    <widget class="QLabel" name="label_print_status">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>130</y>
+       <width>300</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>준비됨</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_print">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>125</y>
+       <width>100</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+     </property>
+     <property name="text">
+      <string>설정</string>
+     </property>
+    </widget>
+    
+    <!-- Language 설정 -->
+    <widget class="QLabel" name="label_language_title">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>175</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Language:</string>
+     </property>
+    </widget>
+    
+    <widget class="QLabel" name="label_language_current">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>175</y>
+       <width>300</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>English</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_language">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>170</y>
+       <width>100</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+     </property>
+     <property name="text">
+      <string>설정</string>
+     </property>
+    </widget>
+    
+    <!-- Unit 설정 -->
+    <widget class="QLabel" name="label_unit_title">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>220</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Unit:</string>
+     </property>
+    </widget>
+    
+    <widget class="QLabel" name="label_unit_current">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>220</y>
+       <width>300</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>mg/dL</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_unit">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>215</y>
+       <width>100</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+     </property>
+     <property name="text">
+      <string>설정</string>
+     </property>
+    </widget>
+    
+    <!-- Info -->
+    <widget class="QLabel" name="label_info_title">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>265</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Device Info:</string>
+     </property>
+    </widget>
+    
+    <widget class="QLabel" name="label_device_name">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>265</y>
+       <width>300</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>CalthReader v1.0</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_info">
+     <property name="geometry">
+      <rect>
+       <x>720</x>
+       <y>260</y>
+       <width>100</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #3366bb;
+}
+QPushButton:pressed {
+    background-color: #1f4788;
+}</string>
+     </property>
+     <property name="text">
+      <string>상세정보</string>
+     </property>
+    </widget>
+    
+    <!-- 하단 버튼들 -->
+    <widget class="QPushButton" name="btn_reset">
+     <property name="geometry">
+      <rect>
+       <x>500</x>
+       <y>320</y>
+       <width>150</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #888888;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #999999;
+}
+QPushButton:pressed {
+    background-color: #777777;
+}</string>
+     </property>
+     <property name="text">
+      <string>실행취소</string>
+     </property>
+    </widget>
+    
+    <widget class="QPushButton" name="btn_apply">
+     <property name="geometry">
+      <rect>
+       <x>670</x>
+       <y>320</y>
+       <width>150</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #34ce57;
+}
+QPushButton:pressed {
+    background-color: #1e7e34;
+}</string>
+     </property>
+     <property name="text">
+      <string>적용</string>
+     </property>
+    </widget>
+   </widget>
+   
+   <!-- 하단 상태바 -->
+   <widget class="QWidget" name="widget_statusbar">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>540</y>
+      <width>1024</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget {
+    background-color: #f0f0f0;
+    border-top: 2px solid #d0d0d0;
+}</string>
+    </property>
+    
+    <widget class="QLabel" name="label_status">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>15</y>
+       <width>400</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Pretendard</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 14px;
+    color: #666666;
+}</string>
+     </property>
+     <property name="text">
+      <string>Ready to configure general settings</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

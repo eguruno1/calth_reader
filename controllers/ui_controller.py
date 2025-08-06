@@ -27,6 +27,8 @@ from views.SettingsView   import SettingsView
 from views.DateTimeSettingsView import DateTimeSettingsView
 from views.UpdateSettingsView import UpdateSettingsView
 from views.CalibrationQCSettingsView import CalibrationQCSettingsView
+from views.GeneralSettingsView import GeneralSettingsView
+from views.PowerManagementView import PowerManagementView
 from views.ManageOperatorView import ManageOperatorView
 from views.InfoView       import InfoView
 from views.SelectView     import SelectView
@@ -84,6 +86,8 @@ class AppController(QMainWindow):
         self.datetime_settings_view = DateTimeSettingsView(self)
         self.update_settings_view = UpdateSettingsView(self)
         self.calibration_qc_settings_view = CalibrationQCSettingsView(self)
+        self.general_settings_view = GeneralSettingsView(self)
+        self.power_management_view = PowerManagementView(self)
         self.manage_operator_view = ManageOperatorView(self)
         self.resultList_view = ResultListView(self)
         self.result_category_view = ResultCategoryView(self)
@@ -106,6 +110,8 @@ class AppController(QMainWindow):
         self.stacked_widget.addWidget(self.datetime_settings_view)
         self.stacked_widget.addWidget(self.update_settings_view)
         self.stacked_widget.addWidget(self.calibration_qc_settings_view)
+        self.stacked_widget.addWidget(self.general_settings_view)
+        self.stacked_widget.addWidget(self.power_management_view)
         self.stacked_widget.addWidget(self.manage_operator_view)
         self.stacked_widget.addWidget(self.resultList_view)
         self.stacked_widget.addWidget(self.result_category_view)
@@ -141,10 +147,14 @@ class AppController(QMainWindow):
         self.settings_view.switch_to_datetime_settings.connect(self.switch_to_datetime_settings_view)
         self.settings_view.switch_to_update_settings.connect(self.switch_to_update_settings_view)
         self.settings_view.switch_to_calibration_qc_settings.connect(self.switch_to_calibration_qc_settings_view)
+        self.settings_view.switch_to_general_settings.connect(self.switch_to_general_settings_view)
+        self.settings_view.switch_to_power_management.connect(self.switch_to_power_management_view)
         self.settings_view.switch_to_manage_operator.connect(self.switch_to_manage_operator_view)
         self.datetime_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.update_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.calibration_qc_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
+        self.general_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
+        self.power_management_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.manage_operator_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.resultList_view.switch_to_home.connect(self.switch_to_home_view)
         self.resultList_view.switch_to_result_category.connect(self.switch_to_result_category_view)
@@ -240,6 +250,12 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.update_settings_view)
     def switch_to_calibration_qc_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.calibration_qc_settings_view)
+    def switch_to_general_settings_view(self):
+        self.stacked_widget.setCurrentWidget(self.general_settings_view)
+    
+    def switch_to_power_management_view(self):
+        self.stacked_widget.setCurrentWidget(self.power_management_view)
+    
     def switch_to_manage_operator_view(self):
         self.stacked_widget.setCurrentWidget(self.manage_operator_view)
     def switch_to_resultList_view(self):

@@ -11,6 +11,7 @@ class SettingsView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_datetime_settings = pyqtSignal()  # DateTimeSettings 화면으로 전환
     switch_to_manage_operator = pyqtSignal()  # ManageOperator 화면으로 전환
+    switch_to_update_settings = pyqtSignal()  # UpdateSettings 화면으로 전환
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -60,7 +61,7 @@ class SettingsView(QMainWindow):
     def on_update_clicked(self):
         """Update 버튼 클릭"""
         print("Update가 클릭되었습니다.")
-        # TODO: 업데이트 화면으로 이동
+        self.switch_to_update_settings.emit()
     
     def on_calibration_qc_clicked(self):
         """Calibration / QC days 버튼 클릭"""

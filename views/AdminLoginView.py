@@ -21,6 +21,7 @@ class AdminLoginView(QWidget):
         self.keyboard_animation = None  # 키보드 애니메이션
         self.form_animation = None  # 폼 애니메이션
         self.original_form_pos = None  # 원래 폼 위치
+        self.keyboard_auto_shown = False  # 키보드 자동 표시 여부 플래그
         self.setup_ui()
         self.setup_virtual_keyboard()
         self.connect_signals()
@@ -142,6 +143,8 @@ class AdminLoginView(QWidget):
     def clear_form(self):
         """폼 초기화"""
         self.password_input.clear()
+        # 키보드 자동 표시 플래그 초기화
+        self.keyboard_auto_shown = False
     
     def go_back(self):
         """뒤로가기"""
@@ -153,14 +156,21 @@ class AdminLoginView(QWidget):
         super().showEvent(event)
         # Admin 로그인 화면이 표시될 때만 시그널 연결
         self._connect_login_signals()
-        # 비밀번호 입력 필드에 포커스 및 키보드 표시
+        # 비밀번호 입력 필드에 포커스를 주고 키보드를 자동으로 표시
         QTimer.singleShot(100, self._focus_and_show_keyboard)
     
     def hideEvent(self, event):
-        """화면 숨김시 시그널 연결 해제"""
+        """화면 숨김시 시그널 연결 해제 및 상태 초기화"""
         super().hideEvent(event)
         # Admin 로그인 화면이 숨겨질 때 시그널 연결 해제
         self._disconnect_login_signals()
+        # 키보드 자동 표시 플래그 초기화
+        self.keyboard_auto_shown = False
+        # 키보드가 표시되어 있다면 숨기기
+        if not self.vkeyboard.isHidden():
+            self.vkeyboard.hide()
+            if self.original_form_pos:
+                self.login_frame.move(self.original_form_pos)
 
     def setup_virtual_keyboard(self):
         """가상 키보드 설정"""
@@ -191,7 +201,9 @@ class AdminLoginView(QWidget):
             return super().eventFilter(obj, event)
             
         if obj == self.password_input and event.type() == QEvent.MouseButtonPress:
-            self.show_virtual_keyboard()
+            # 키보드가 이미 표시되어 있지 않을 때만 표시
+            if self.vkeyboard.isHidden():
+                self.show_virtual_keyboard()
             return True
         elif event.type() == QEvent.MouseButtonPress:
             if not self.is_click_on_keyboard(event.globalPos()) and not self.is_click_on_password_field(event.globalPos()):
@@ -200,7 +212,11 @@ class AdminLoginView(QWidget):
 
     def show_virtual_keyboard(self):
         """가상 키보드 표시"""
-        if self.keyboard_animation:
+        # 이미 키보드가 표시되어 있으면 중복 실행 방지
+        if not self.vkeyboard.isHidden():
+            return
+            
+        if self.keyboard_animation and self.keyboard_animation.state() == QPropertyAnimation.Running:
             self.keyboard_animation.stop()
         
         # 로그인 폼을 위로 이동
@@ -219,20 +235,23 @@ class AdminLoginView(QWidget):
 
     def hide_keyboard(self):
         """가상 키보드 숨기기"""
-        if not self.vkeyboard.isHidden():
-            if self.keyboard_animation:
-                self.keyboard_animation.stop()
+        # 이미 키보드가 숨겨져 있으면 중복 실행 방지
+        if self.vkeyboard.isHidden():
+            return
             
-            start_y = self.vkeyboard.y()
-            end_y = self.height()
-            
-            self.keyboard_animation = QPropertyAnimation(self.vkeyboard, b"pos")
-            self.keyboard_animation.setDuration(300)
-            self.keyboard_animation.setStartValue(QPoint(self.vkeyboard.x(), start_y))
-            self.keyboard_animation.setEndValue(QPoint(self.vkeyboard.x(), end_y))
-            self.keyboard_animation.setEasingCurve(QEasingCurve.InCubic)
-            self.keyboard_animation.finished.connect(self.on_keyboard_hidden)
-            self.keyboard_animation.start()
+        if self.keyboard_animation and self.keyboard_animation.state() == QPropertyAnimation.Running:
+            self.keyboard_animation.stop()
+        
+        start_y = self.vkeyboard.y()
+        end_y = self.height()
+        
+        self.keyboard_animation = QPropertyAnimation(self.vkeyboard, b"pos")
+        self.keyboard_animation.setDuration(300)
+        self.keyboard_animation.setStartValue(QPoint(self.vkeyboard.x(), start_y))
+        self.keyboard_animation.setEndValue(QPoint(self.vkeyboard.x(), end_y))
+        self.keyboard_animation.setEasingCurve(QEasingCurve.InCubic)
+        self.keyboard_animation.finished.connect(self.on_keyboard_hidden)
+        self.keyboard_animation.start()
     
     def on_keyboard_hidden(self):
         """키보드가 완전히 숨겨진 후 호출"""
@@ -316,5 +335,12 @@ class AdminLoginView(QWidget):
     def _focus_and_show_keyboard(self):
         """비밀번호 필드에 포커스를 주고 키보드를 표시"""
         self.password_input.setFocus()
-        # 잠시 후 키보드 표시 (포커스가 완전히 설정된 후)
-        QTimer.singleShot(200, self.show_virtual_keyboard)
+        # 자동 표시 플래그가 설정되지 않았을 때만 키보드 표시
+        if not self.keyboard_auto_shown:
+            self.keyboard_auto_shown = True
+            # 잠시 후 키보드 표시 (포커스가 완전히 설정된 후)
+            QTimer.singleShot(200, self.show_virtual_keyboard)
+    
+    def _set_focus_only(self):
+        """비밀번호 필드에 포커스만 설정 (키보드는 표시하지 않음)"""
+        self.password_input.setFocus()

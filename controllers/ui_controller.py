@@ -140,6 +140,7 @@ class AppController(QMainWindow):
         self.measure_view.switch_to_result.connect(self.switch_to_result_view)
         self.result_view0.switch_to_home.connect(self.switch_to_home_view)
         self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
+        self.calibration_view.switch_to_home.connect(self.switch_to_home_view)
         self.calibration_view.switch_to_next_step.connect(self.on_calibration_intro_next)
 
     def _setup_shortcuts(self):

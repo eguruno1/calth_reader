@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore    import pyqtSignal, QTimer
 from PyQt5           import uic
 
-from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update
+from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update, update_battery_status, start_battery_update, stop_battery_update
 
 class SelectView(QMainWindow):
     switch_to_home = pyqtSignal()
@@ -47,13 +47,18 @@ class SelectView(QMainWindow):
 
         # 초기 날짜와 시간 설정
         self.update_date_time()
+        
+        # 초기 배터리 상태 설정
+        self.update_battery_status()
 
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
 
     def closeEvent(self, event):
         stop_date_time_update(self)
+        stop_battery_update(self)
         super().closeEvent(event)
 
     def on_back_button_clicked(self):
@@ -65,6 +70,9 @@ class SelectView(QMainWindow):
 
     def update_date_time(self):
         update_date_time(self)
+    
+    def update_battery_status(self):
+        update_battery_status(self)
 
     def update_json_file(self, test_type):
         try:

@@ -3,12 +3,13 @@ import json
 from datetime import datetime
 
 from PyQt5.QtWidgets import QMainWindow, QLineEdit, QWidget, QLabel, QMessageBox
-from PyQt5.QtCore    import pyqtSignal, QPoint, QRect, QEvent, QPropertyAnimation, QEasingCurve
+from PyQt5.QtCore    import pyqtSignal, QPoint, QRect, QEvent, QPropertyAnimation, QEasingCurve, QTimer
 from PyQt5.QtGui     import QResizeEvent
 from PyQt5           import uic
 
-from views.Utils     import set_current_date, update_date_time, stop_date_time_update
+from views.Utils     import set_current_date, update_date_time, start_date_time_update, stop_date_time_update, start_battery_update, stop_battery_update, update_battery_status
 from views.VKeyboard import VKeyboard
+from controllers import app_controller
 
 class TestInfoView(QMainWindow):
     switch_to_select  = pyqtSignal()  
@@ -64,6 +65,9 @@ class TestInfoView(QMainWindow):
             print("Warning: label_NOTE1 not found")
 
         self.update_date_time()
+        
+        # 배터리 상태 초기화
+        self.update_battery_status()
 
         # centralwidget 찾기
         self.central_widget = self.centralWidget()
@@ -240,12 +244,22 @@ class TestInfoView(QMainWindow):
         self.switch_to_measure.emit()
 
     def update_json_file(self, operator, patient_id, datentime):
+        """JSON 파일 업데이트 - 현재 로그인 사용자 정보 반영"""
         try:
+            # current.json 파일을 읽어서 기존 데이터 유지하되, 새로운 데이터로 업데이트
             with open(self.current_json_path, 'r+') as f:
                 data = json.load(f)
-                data['operator'] = operator
+                
+                # 현재 로그인한 사용자 정보가 있으면 사용, 없으면 전달받은 operator 사용
+                if app_controller.user_service.is_logged_in():
+                    current_user_id = app_controller.user_service.get_current_user_id()
+                    data['operator'] = current_user_id
+                else:
+                    data['operator'] = operator if operator else "GUEST"
+                
                 data['patient_id'] = patient_id
                 data['datentime'] = datentime
+                
                 f.seek(0)
                 json.dump(data, f, indent=4)
                 f.truncate()
@@ -255,6 +269,9 @@ class TestInfoView(QMainWindow):
 
     def update_date_time(self):
         update_date_time(self)
+    
+    def update_battery_status(self):
+        update_battery_status(self)
 
     def set_selected_test_type(self, test_type):
         self.selected_test_type = test_type
@@ -270,20 +287,35 @@ class TestInfoView(QMainWindow):
             self.reset_widget_positions()
 
     def load_operator_from_json(self):
+        """현재 로그인한 사용자 정보에서 Operator 설정"""
         try:
-            with open(self.current_json_path, 'r') as f:
-                data = json.load(f)
-                operator = data.get('operator', '')
+            # 현재 로그인한 사용자 정보 가져오기
+            if app_controller.user_service.is_logged_in():
+                current_user_id = app_controller.user_service.get_current_user_id()
                 if self.lineEdit_Operator:
-                    self.lineEdit_Operator.setText(operator)
+                    self.lineEdit_Operator.setText(current_user_id)
+                else:
+                    print("Warning: lineEdit_Operator not found")
+            else:
+                # 로그인되지 않은 경우 GUEST로 설정
+                if self.lineEdit_Operator:
+                    self.lineEdit_Operator.setText("GUEST")
                 else:
                     print("Warning: lineEdit_Operator not found")
         except Exception as e:
-            print(f"JSON 파일에서 operator 읽기 중 오류 발생: {e}")
+            print(f"현재 사용자 정보 읽기 중 오류 발생: {e}")
+            # 오류 발생 시 GUEST로 폴백
+            if self.lineEdit_Operator:
+                self.lineEdit_Operator.setText("GUEST")
 
     def showEvent(self, event):
         super().showEvent(event)
         self.load_operator_from_json()  # TestInfoView가 표시될 때마다 operator 정보를 새로 로드
+        
+        # 시간과 배터리 상태 업데이트 시작
+        from PyQt5.QtCore import QTimer
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
 
         # TestInfoView가 표시될 때 lineEdit_PatientID에 포커스 설정
         if self.lineEdit_PatientID:
@@ -294,4 +326,5 @@ class TestInfoView(QMainWindow):
 
     def closeEvent(self, event):
         stop_date_time_update(self)
+        stop_battery_update(self)
         super().closeEvent(event)

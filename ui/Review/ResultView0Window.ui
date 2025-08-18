@@ -17,6 +17,43 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="pushButton_ResultBackArrow">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>100</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #606060;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #707070;
+}
+QPushButton:pressed {
+    background-color: #505050;
+}</string>
+    </property>
+    <property name="text">
+     <string>← Back</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="pushButton_ResultHome">
     <property name="geometry">
      <rect>
@@ -124,10 +161,10 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>934</x>
-      <y>26</y>
-      <width>64</width>
-      <height>30</height>
+      <x>850</x>
+      <y>20</y>
+      <width>80</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="text">
@@ -135,6 +172,9 @@
     </property>
     <property name="pixmap">
      <pixmap>../image/Icon/Battery_Icon-050.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -766,7 +806,7 @@
      </font>
     </property>
     <property name="text">
-     <string>2024-00-00</string>
+     <string>2025-01-01</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_24">
@@ -814,10 +854,10 @@
    <widget class="QLabel" name="label_DateNClock">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>24</y>
-      <width>210</width>
-      <height>34</height>
+      <x>140</x>
+      <y>20</y>
+      <width>300</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="palette">
@@ -875,10 +915,10 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>407</x>
-      <y>24</y>
-      <width>210</width>
-      <height>34</height>
+      <x>420</x>
+      <y>20</y>
+      <width>180</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="palette">
@@ -936,10 +976,10 @@
    <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
-      <x>945</x>
-      <y>25</y>
-      <width>38</width>
-      <height>30</height>
+      <x>820</x>
+      <y>20</y>
+      <width>150</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="palette">
@@ -988,7 +1028,7 @@
      </font>
     </property>
     <property name="text">
-     <string>55</string>
+     <string>55%</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

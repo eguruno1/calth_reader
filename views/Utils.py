@@ -174,12 +174,22 @@ def set_battery_icon(view, icon_filename):
         
         # View에 따라 다른 아이콘 라벨 확인
         icon_label = None
-        if hasattr(view, 'label_4'):  # HomeView
+        view_class_name = view.__class__.__name__
+        
+        if view_class_name == 'HomeView' and hasattr(view, 'label_4'):
             icon_label = view.label_4
-        elif hasattr(view, 'label_9'):  # SettingsView
+        elif view_class_name == 'SelectView' and hasattr(view, 'label_4'):
+            icon_label = view.label_4
+        elif view_class_name == 'TestInfoView' and hasattr(view, 'label_2'):
+            icon_label = view.label_2
+        elif view_class_name == 'SettingsView' and hasattr(view, 'label_9'):
             icon_label = view.label_9
-        elif hasattr(view, 'label_battery_icon'):  # 다른 View들
+        elif view_class_name.startswith('Result') and hasattr(view, 'label_2'):
+            icon_label = view.label_2
+        elif hasattr(view, 'label_battery_icon'):  # 다른 View들 (MeasureView 등)
             icon_label = view.label_battery_icon
+        elif hasattr(view, 'label_2'):  # 기본적으로 label_2 사용
+            icon_label = view.label_2
             
         if icon_label and os.path.exists(icon_path):
             pixmap = QPixmap(icon_path)

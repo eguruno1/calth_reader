@@ -1,9 +1,9 @@
 {
-    "test_type0": "StandardTest",
+    "test_type0": "ReadOnly",
     "test_type1": "Covid-19",
-    "operator": "qwer1234",
-    "patient_id": "123",
-    "datentime": "2025-08-05 16:45:37",
+    "operator": "GUEST",
+    "patient_id": "\u3139",
+    "datentime": "2025-08-06 17:48:27",
     "control": "Positive",
     "resultb": "POS",
     "resulta": "POS"

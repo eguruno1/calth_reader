@@ -435,16 +435,24 @@ class ResultListView(QMainWindow):
         
         return selected_data
 
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        # 페이지 벗어날 때 선택 상태 즉시 초기화
-        self.clear_table_selection()
+    def showEvent(self, event):
+        """화면이 표시될 때 호출"""
+        super().showEvent(event)
+        # 날짜/시간 및 배터리 업데이트 시작
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         QTimer.singleShot(100, lambda: start_battery_update(self))
-        # 화면이 표시될 때 데이터 새로고침
-        QTimer.singleShot(200, self.load_data)
-
+        print("ResultListView가 표시되었습니다.")
+    
+    def hideEvent(self, event):
+        """화면이 숨김될 때 호출"""
+        super().hideEvent(event)
+        # 날짜/시간 및 배터리 업데이트 중지
+        stop_date_time_update(self)
+        stop_battery_update(self)
+        print("ResultListView가 숨겨졌습니다.")
+    
     def closeEvent(self, event):
+        """화면이 닫힐 때 호출"""
         stop_date_time_update(self)
         stop_battery_update(self)
         super().closeEvent(event)

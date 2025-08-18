@@ -4,7 +4,7 @@ from PyQt5.QtWidgets    import QMainWindow
 from PyQt5.QtCore       import QTimer, pyqtSignal, Qt
 from PyQt5              import uic
 
-from views.Utils        import update_date_time, start_date_time_update, stop_date_time_update
+from views.Utils        import update_date_time, start_date_time_update, stop_date_time_update, start_battery_update, stop_battery_update
 from controllers import measurement_controller
 
 
@@ -82,6 +82,7 @@ class MeasureView(QMainWindow):
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
         QTimer.singleShot(500, self.start_measurement)  # 측정 시작
 
     def start_measurement(self):
@@ -117,6 +118,7 @@ class MeasureView(QMainWindow):
     def closeEvent(self, event):
         """뷰 종료시 정리"""
         stop_date_time_update(self)
+        stop_battery_update(self)
         
         # 측정 중이라면 중지
         if hasattr(self, 'measurement_controller'):

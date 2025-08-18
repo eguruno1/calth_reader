@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore    import pyqtSignal, QTimer
 from PyQt5           import uic
 
-from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update
+from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update, start_battery_update, stop_battery_update
 
 class ResultView0(QMainWindow):
     switch_to_home = pyqtSignal()
@@ -42,9 +42,11 @@ class ResultView0(QMainWindow):
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
 
     def closeEvent(self, event):
         stop_date_time_update(self)
+        stop_battery_update(self)
         super().closeEvent(event)
 
     def on_resultHome_button_clicked(self):

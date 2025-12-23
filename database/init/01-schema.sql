@@ -27,7 +27,8 @@ CREATE TABLE test_types (
     description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     measurement_time_seconds INTEGER DEFAULT 300, -- 예상 측정 시간
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. 사용자 관리 테이블 (개선된 버전)
@@ -63,7 +64,9 @@ CREATE TABLE test_sessions (
     status VARCHAR(20) DEFAULT 'in_progress' 
         CHECK (status IN ('in_progress', 'completed', 'failed', 'cancelled', 'error')),
     error_message TEXT,
-    metadata JSONB -- 추가 메타데이터
+    metadata JSONB, -- 추가 메타데이터
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5. 측정 결과 테이블 (개선된 버전)
@@ -79,7 +82,9 @@ CREATE TABLE measurement_results (
     validation_notes TEXT,
     measured_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     processed_at TIMESTAMPTZ,
-    raw_data BYTEA -- 원시 데이터 저장 (선택적)
+    raw_data BYTEA, -- 원시 데이터 저장 (선택적)
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 6. 시스템 로그 테이블 (개선된 버전)
@@ -95,7 +100,8 @@ CREATE TABLE system_logs (
     session_id BIGINT REFERENCES test_sessions(id),
     ip_address INET,
     user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 7. 기기 상태 테이블 (개선된 버전)
@@ -109,7 +115,9 @@ CREATE TABLE device_status (
     threshold_min DECIMAL(10,3), -- 최소 임계값
     threshold_max DECIMAL(10,3), -- 최대 임계값
     is_critical BOOLEAN DEFAULT FALSE,
-    recorded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    recorded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 8. 설정 테이블 (개선된 버전)
@@ -124,6 +132,7 @@ CREATE TABLE system_settings (
     is_editable BOOLEAN DEFAULT TRUE,
     requires_restart BOOLEAN DEFAULT FALSE,
     updated_by BIGINT REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(category, key)
 );
@@ -140,6 +149,8 @@ CREATE TABLE backup_history (
     status VARCHAR(20) DEFAULT 'in_progress' 
         CHECK (status IN ('in_progress', 'completed', 'failed')),
     error_message TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT REFERENCES users(id)
 );
 
@@ -155,7 +166,8 @@ CREATE TABLE audit_logs (
     session_id UUID,
     ip_address INET,
     user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 11. 알림 테이블
@@ -170,6 +182,7 @@ CREATE TABLE notifications (
     is_read BOOLEAN DEFAULT FALSE,
     expires_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT REFERENCES users(id)
 );
 

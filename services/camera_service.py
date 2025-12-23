@@ -214,3 +214,37 @@ class CameraService(QObject):
             self.cap.release()
         self.model.set_initialized(False)
         print("카메라 서비스 종료")
+
+    """
+        ----------------------------------------------------
+        line intensity를 판단하는 함수 코드를 전달드립니다.
+        키트의 window가 잘 crop되었다는 가정하에 돌리는 함수입니다.
+        진단기의 경우 키트의 위치가 어느정도 고정되어 있었기에, 별도의 yolo를 사용하지는 않았습니다.
+        ----------------------------------------------------
+    """
+    def colorimetric_analyze(cropped_img):
+        def smooth(y, box_pts):
+            box = np.ones(box_pts) / box_pts
+            y_smooth = np.convolve(y, box, mode="same")
+            return y_smooth
+
+        r, g, b = cv2.split(cropped_img)
+        h, w = g.shape
+
+        inside_cut = g[int(h * 0.2):int(h * 0.8), int(w * 0.30):int(w * 0.70)]
+        signal = np.array(inside_cut).mean(axis=1)
+        x = np.linspace(0, 1, len(signal))
+    
+        if h <= 50:
+            ws = int(h*0.05)
+            margin = int(h*0.05)
+        else:
+            ws = 15
+            margin = 10
+        smooth_signal = smooth(signal, ws)
+        left = np.mean(smooth_signal[ws:-ws][:margin])
+        line = np.min(smooth_signal[ws:-ws])
+        right = np.mean(smooth_signal[ws:-ws][-margin:])
+        residual = min(left, right) - line
+        # bigger than 1.5 -> positive
+        return residual

@@ -21,7 +21,7 @@ def test_database_service():
     print("=" * 50)
     
     try:
-        from services.database_service import get_database_service, is_orm_available
+        from services.database_service_old import get_database_service, is_orm_available
         
         db_service = get_database_service()
         

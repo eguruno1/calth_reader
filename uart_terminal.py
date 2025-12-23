@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 간단한 UART 터미널 프로그램
 MCU와 직접 통신하여 명령/응답을 확인할 수 있습니다.
@@ -26,10 +27,10 @@ class UARTTerminal:
                 baudrate=self.baudrate,
                 timeout=0.1  # Non-blocking read
             )
-            print(f"✓ UART 연결 성공: {self.port} @ {self.baudrate}bps")
+            print(f" UART 연결 성공: {self.port} @ {self.baudrate}bps")
             return True
         except Exception as e:
-            print(f"✗ UART 연결 실패: {e}")
+            print(f" UART 연결 실패: {e}")
             return False
     
     def disconnect(self):
@@ -59,7 +60,7 @@ class UARTTerminal:
                     data = self.ser.read(self.ser.in_waiting)
                     if data:
                         timestamp = self.get_timestamp()
-                        print(f"\n📨 [{timestamp}] 수신 데이터:")
+                        print(f"\n [{timestamp}] 수신 데이터:")
                         print(f"   Raw bytes: {data}")
                         print(f"   Hex:       {self.format_hex(data)}")
                         print(f"   Length:    {len(data)} bytes")
@@ -81,7 +82,7 @@ class UARTTerminal:
                 
             except Exception as e:
                 if self.running:  # 정상 종료가 아닌 경우만 에러 출력
-                    print(f"\n❌ [{self.get_timestamp()}] 읽기 오류: {e}")
+                    print(f"\n [{self.get_timestamp()}] 읽기 오류: {e}")
                 break
     
     def send_command(self, command):
@@ -92,28 +93,29 @@ class UARTTerminal:
         
         try:
             # 문자열을 바이트로 변환하여 전송
+            msg = command + "\r\n"
             data = command.encode('utf-8')
             self.ser.write(data)
             self.ser.flush()
             timestamp = self.get_timestamp()
-            print(f"\n📤 [{timestamp}] 전송:")
+            print(f"\n [{timestamp}] 전송:")
             print(f"   Command: '{command}'")
             print(f"   Bytes:   {data}")
             print(f"   Hex:     {self.format_hex(data)}")
             print("-" * 60)
         except Exception as e:
-            print(f"❌ 전송 오류: {e}")
+            print(f" 전송 오류: {e}")
     
     def toggle_monitor_mode(self):
         """모니터 모드 토글"""
         self.monitor_mode = not self.monitor_mode
         status = "활성화" if self.monitor_mode else "비활성화"
-        print(f"\n🔄 연속 모니터링 모드 {status}")
+        print(f"\n 연속 모니터링 모드 {status}")
     
     def run(self):
         """터미널 실행"""
         print("=" * 60)
-        print("🔧 UART 터미널 프로그램 (주기적 데이터 모니터링)")
+        print(" UART 터미널 프로그램 (주기적 데이터 모니터링)")
         print("=" * 60)
         print("명령어:")
         print("  quit, exit, q : 종료")
@@ -132,8 +134,8 @@ class UARTTerminal:
         read_thread.daemon = True
         read_thread.start()
         
-        print("🚀 터미널 시작! MCU에서 오는 주기적 데이터를 모니터링합니다.")
-        print("   명령을 입력하거나 그냥 수신 데이터를 관찰하세요.")
+        print(" 터미널 시작! MCU에서 오는 주기적 데이터를 모니터링합니다.")
+        print(" 명령을 입력하거나 그냥 수신 데이터를 관찰하세요.")
         
         try:
             while self.running:
@@ -151,7 +153,7 @@ class UARTTerminal:
                     if command.lower() in ['quit', 'exit', 'q']:
                         break
                     elif command.lower() in ['help', 'h']:
-                        print("\n📖 도움말:")
+                        print("\n 도움말:")
                         print("  L00~L45     : LED 밝기 제어")
                         print("  monitor, m  : 연속 모니터링 모드 토글")
                         print("  clear, c    : 화면 클리어")
@@ -172,7 +174,7 @@ class UARTTerminal:
                     self.send_command(command)
                     
                 except KeyboardInterrupt:
-                    print("\n🛑 종료 중...")
+                    print("\n 종료 중...")
                     break
                 except EOFError:
                     break
@@ -191,11 +193,11 @@ def main():
         try:
             baudrate = int(sys.argv[2])
         except ValueError:
-            print("❌ 보드레이트는 숫자여야 합니다.")
+            print(" 보드레이트는 숫자여야 합니다.")
             return
     
-    print(f"🔌 사용할 포트: {port}")
-    print(f"⚡ 보드레이트: {baudrate}")
+    print(f" 사용할 포트: {port}")
+    print(f" 보드레이트: {baudrate}")
     
     # 터미널 실행
     terminal = UARTTerminal(port, baudrate)

@@ -46,8 +46,9 @@ class AppController(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PyCalthReader")
-        self.setFixedSize(1024, 600)
-        # self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        # self.setFixedSize(1024, 600)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.setWindowState(Qt.WindowFullScreen)
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)

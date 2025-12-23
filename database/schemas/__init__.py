@@ -52,9 +52,8 @@ class LogLevelEnum(str, Enum):
 class BaseSchema(BaseModel):
     """기본 스키마"""
     
-    model_config = {
-        "from_attributes": True  # Pydantic v2
-    }
+    class Config:
+        orm_mode = True  # Pydantic v1 (Python 3.6 호환)
 
 # Patient 스키마들
 class PatientBase(BaseSchema):

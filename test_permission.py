@@ -16,7 +16,8 @@ def test_permission_system():
     print("=== 권한 기반 UI 시스템 테스트 ===")
     
     try:
-        from controllers.application_controller import app_controller
+        # from controllers.application_controller import app_controller
+        from controllers import app_controller
         from models.user_model import UserRole
         
         # 애플리케이션 초기화

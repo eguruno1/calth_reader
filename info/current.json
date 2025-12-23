@@ -1,9 +1,9 @@
 {
     "test_type0": "ReadOnly",
-    "test_type1": "Covid-19",
-    "operator": "GUEST",
-    "patient_id": "\u3139",
-    "datentime": "2025-08-06 17:48:27",
+    "test_type1": "Influenza A & B",
+    "operator": "admin",
+    "patient_id": "12",
+    "datentime": "2025-12-19 13:23:50",
     "control": "Positive",
     "resultb": "POS",
     "resulta": "POS"

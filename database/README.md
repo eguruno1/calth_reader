@@ -145,3 +145,40 @@ docker ps --filter "name=calth_reader"
 - PostgreSQL 15 공식 문서: https://www.postgresql.org/docs/15/
 - Docker Compose 문서: https://docs.docker.com/compose/
 - Adminer 사용법: https://www.adminer.org/
+
+
+## docker-compose.yml 파일
+- 기존 Compose v2 3.8버전은 현 우분투(Ubuntu 18.04 + ARM64) 환경에서 사용불가로 3.3 버전(Compose v1)으로 다운그레이함.
+- docker-compose 설치여부 확인 미설치시 설치.
+- sudo apt install docker-compose
+- sudo systemctl status docker
+- sudo usermod -aG docker calth  : ssh 접속 계정에 도커 연결.
+
+- calth@calth-00003:~/calth_reader/database$ docker-compose version
+docker-compose version 1.17.1, build unknown
+docker-py version: 2.5.1
+CPython version: 2.7.17
+OpenSSL version: OpenSSL 1.1.1  11 Sep 2018
+
+- calth@calth-00003:~/calth_reader/database$ ./scripts/start-db.sh
+Warning: .env file not found. Using default values.
+🚀 Starting Calth Reader Database...
+==============================================
+🆕 Creating new container...
+📁 Working directory: /home/calth/calth_reader/database
+Creating network "database_calth_network" with the default driver
+Creating volume "database_postgres_data" with default driver
+Pulling postgres (postgres:15-alpine)...
+15-alpine: Pulling from library/postgres
+f6b4fb944634: Pull complete
+.
+.
+Status: Downloaded newer image for adminer:latest
+Creating calth_reader_db ...
+Creating calth_reader_db ... done
+Creating calth_reader_adminer ...
+Creating calth_reader_adminer ... done
+⏳ Waiting for database to be ready...
+
+- Adminer 접속 확인 : http://[calth IP]:8080
+- http://192.168.0.62:8080 

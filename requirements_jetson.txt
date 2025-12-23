@@ -1,0 +1,15 @@
+alembic
+dataclasses
+greenlet
+importlib-metadata
+importlib-resources
+Mako
+MarkupSafe
+numpy
+psycopg2-binary
+pydantic
+pyserial
+python-dotenv
+SQLAlchemy
+typing_extensions
+zipp

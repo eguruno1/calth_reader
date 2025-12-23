@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Jetson Nano UART LED 제어 테스트 스크립트
 사용법: python3 uart_test.py

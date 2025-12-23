@@ -25,12 +25,19 @@ class DatabaseManager:
         
     def get_database_url(self) -> str:
         """데이터베이스 URL 생성"""
-        # 환경변수에서 읽기 (docker-compose 환경)
+        # 환경변수에서 읽기 (docker-compose 환경) / SQLite
         db_host = os.getenv('DB_HOST', 'localhost')
         db_port = os.getenv('DB_PORT', '5432')
         db_name = os.getenv('DB_NAME', 'calth_reader')
         db_user = os.getenv('DB_USER', 'calth_user')
         db_password = os.getenv('DB_PASSWORD', 'calth_pass123')
+
+        # PostgreSQL 20251222
+        # db_host = os.getenv('DB_HOST', '192.168.0.62')
+        # db_port = os.getenv('DB_PORT', '5433')
+        # db_name = os.getenv('DB_NAME', 'calth_reader')
+        # db_user = os.getenv('DB_USER', 'admin')
+        # db_password = os.getenv('DB_PASSWORD', 'CalthReader2024!')
         
         return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     
@@ -86,7 +93,9 @@ class DatabaseManager:
         try:
             engine = self.create_engine()
             with engine.connect() as connection:
-                result = connection.execute("SELECT 1")
+                # SQLAlchemy 1.4 호환: text() 래핑 필요
+                from sqlalchemy import text
+                result = connection.execute(text("SELECT 1"))
                 return result.fetchone()[0] == 1
         except Exception as e:
             logger.error(f"Database connection test failed: {e}")

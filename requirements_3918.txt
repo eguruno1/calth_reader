@@ -1,0 +1,23 @@
+# GUI
+PyQt5==5.15.10
+opencv-python
+
+# Core
+numpy
+pyserial
+python-dotenv
+pydantic
+
+# DB / ORM
+SQLAlchemy
+alembic
+psycopg2-binary
+greenlet
+Mako
+MarkupSafe
+
+# Python 3.9 compatibility
+typing_extensions
+importlib-metadata
+importlib-resources
+zipp

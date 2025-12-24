@@ -93,7 +93,7 @@ calth_reader/
 
 ## 시스템 요구사항
 
-- Python 3.6 이상
+- Python 3.6 이상 -> 3.9.18 업그레이드
 - PyQt5
 - OpenCV (카메라 제어용)
 - pyserial (UART 통신용, 선택사항)

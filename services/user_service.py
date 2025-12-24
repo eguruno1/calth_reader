@@ -31,7 +31,7 @@ class UserService(QObject):
             initialize_database()
             
             self._initialized = True
-            print("사용자 서비스 초기화 완료")
+            print("사용자 서비스 초기화 완료|user_service")
             return True
             
         except Exception as e:

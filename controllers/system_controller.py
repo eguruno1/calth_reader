@@ -72,7 +72,7 @@ class ApplicationController(QObject):
             # 사용자 서비스 초기화 (먼저 초기화)
             user_success = self.user_service.initialize()
             if user_success:
-                self.status_changed.emit("사용자 서비스 초기화 완료")
+                self.status_changed.emit("사용자 서비스 초기화 완료:system_controller")
             else:
                 self.app_model.add_warning("사용자 서비스 초기화 실패")
             

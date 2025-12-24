@@ -12,11 +12,11 @@ INSERT INTO test_types (code, name, description, measurement_time_seconds) VALUE
 ('READONLY', 'Read Only Mode', 'Read-only diagnostic mode', 60),
 ('CALIBRATION', 'Calibration Test', 'System calibration test', 180);
 
--- 기본 관리자 계정 생성 (비밀번호: admin123! - 운영시 반드시 변경 필요)
+-- 기본 관리자 계정 생성 (비밀번호: admin123 - 운영시 반드시 변경 필요)
 INSERT INTO users (user_id, password_hash, name, role, email, is_active) VALUES
-('admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LdMwehgMOLLqw6iCq', 'System Administrator', 'admin', 'admin@calth.local', TRUE),
-('operator1', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LdMwehgMOLLqw6iCq', 'Default Operator', 'operator', 'operator@calth.local', TRUE),
-('viewer1', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LdMwehgMOLLqw6iCq', 'Default Viewer', 'viewer', 'viewer@calth.local', TRUE);
+('admin', 'admin123', 'System Administrator', 'admin', 'admin@calth.local', TRUE),
+('operator1', 'admin123', 'Default Operator', 'operator', 'operator@calth.local', TRUE),
+('viewer1', 'admin123', 'Default Viewer', 'viewer', 'viewer@calth.local', TRUE);
 
 -- 시스템 설정 기본값
 INSERT INTO system_settings (category, key, value, data_type, description, is_editable, requires_restart) VALUES

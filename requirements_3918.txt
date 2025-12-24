@@ -16,6 +16,9 @@ greenlet
 Mako
 MarkupSafe
 
+# Security
+bcrypt
+
 # Python 3.9 compatibility
 typing_extensions
 importlib-metadata

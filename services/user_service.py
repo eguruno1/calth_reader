@@ -1,206 +1,280 @@
 # -*- coding: utf-8 -*-
 """
-User Service - 사용자 관리 서비스
+User Service - 사용자 관리 서비스 (PostgreSQL 단일화)
 """
 from PyQt5.QtCore import QObject, pyqtSignal
-from models.user_model import UserModel, User, UserRole
-from typing import Optional
+from typing import Optional, List
+import bcrypt
+import hashlib
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from database.connection import get_db_session
+from database.models import User
+
 
 class UserService(QObject):
     """사용자 관리 서비스"""
-    
-    # 시그널 정의
-    login_success = pyqtSignal(str)  # 사용자 ID
-    login_failed = pyqtSignal(str)   # 오류 메시지
+
+    # =========================
+    # Signals
+    # =========================
+    login_success = pyqtSignal(str)    # user_id
+    login_failed = pyqtSignal(str)     # error message
     logout_completed = pyqtSignal()
-    user_changed = pyqtSignal(dict)  # 사용자 정보
-    
-    def __init__(self, user_model: UserModel):
+    user_changed = pyqtSignal(dict)    # user info
+
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.model = user_model
         self._initialized = False
-    
+        self._current_user = None
+
+    # =========================
+    # Initialization
+    # =========================
     def initialize(self) -> bool:
-        """사용자 서비스 초기화"""
-        try:
-            if self._initialized:
-                return True
-                
-            # 데이터베이스 연결 및 초기 데이터 확인
-            from models.database_models import initialize_database
-            initialize_database()
-            
-            self._initialized = True
-            print("사용자 서비스 초기화 완료|user_service")
+        """서비스 초기화 (DB 연결 확인)"""
+        if self._initialized:
             return True
-            
-        except Exception as e:
-            print(f"사용자 서비스 초기화 실패: {str(e)}")
-            return False
-    
-    def login(self, user_id: str, password: str) -> bool:
-        """로그인 시도"""
+
         try:
-            if not user_id or not password:
-                self.login_failed.emit("사용자 ID와 비밀번호를 입력해주세요.")
-                return False
-            
-            if self.model.authenticate(user_id, password):
-                user_info = self.model.get_user_info()
-                self.login_success.emit(user_id)
-                self.user_changed.emit(user_info)
-                print(f"로그인 성공: {user_info['name']} ({user_info['role']})")
-                return True
-            else:
-                self.login_failed.emit("잘못된 사용자 ID 또는 비밀번호입니다.")
-                return False
-                
+            session = get_db_session()
+            session.execute(text("SELECT 1")) # SQLAlchemy 2.x 대응
+            session.close()
+
+            self._initialized = True
+            print("UserService 초기화 완료 (PostgreSQL)")
+            return True
+
         except Exception as e:
-            error_msg = f"로그인 중 오류 발생: {str(e)}"
-            self.login_failed.emit(error_msg)
+            print(f"UserService 초기화 failed: {e}")
             return False
-    
+
+    # =========================
+    # 로그인
+    # =========================
+    def login(self, user_id: str, password: str) -> bool:
+        """
+        로그인 (PostgreSQL)
+        로그인 (평문 → bcrypt 자동 마이그레이션 지원)
+        """
+        if not user_id or not password:
+            self.login_failed.emit("사용자 ID와 비밀번호를 입력해주세요.")
+            return False
+
+        session: Session = get_db_session()
+
+        try:
+            user = (
+                session.query(User)
+                .filter(
+                    User.user_id == user_id,
+                    User.is_active.is_(True)
+                )
+                .first()
+            )
+
+            if not user:
+                self.login_failed.emit("존재하지 않는 사용자입니다.")
+                return False
+
+            stored_hash = user.password_hash or ""
+            input_pw    = password.encode("utf-8")
+
+            # ==================================================
+            # 1️⃣ bcrypt 비밀번호 (두 번째 로그인부터)
+            # ==================================================
+            if self._is_bcrypt_hash(stored_hash):
+                if not bcrypt.checkpw(input_pw, stored_hash.encode("utf-8")):
+                    self.login_failed.emit("비밀번호가 올바르지 않습니다.")
+                    return False
+
+            # ==================================================
+            # 2️⃣ SHA-256 비밀번호 (기존 시스템)
+            # ==================================================
+            elif len(stored_hash) == 64 and all(c in "0123456789abcdef" for c in stored_hash.lower()):
+                sha256 = hashlib.sha256(input_pw).hexdigest()
+                if sha256 != stored_hash:
+                    self.login_failed.emit("비밀번호가 올바르지 않습니다.")
+                    return False
+
+                # 🔁 bcrypt로 업그레이드
+                user.password_hash = bcrypt.hashpw(
+                    input_pw, bcrypt.gensalt()
+                ).decode("utf-8")
+
+                print(f"[SECURITY] SHA256 → bcrypt migrated: {user.user_id}")
+
+            # ==================================================
+            # 3️⃣ 평문 비밀번호 (최초 로그인)
+            # ==================================================
+            else:
+                if password != stored_hash:
+                    self.login_failed.emit("비밀번호가 올바르지 않습니다.")
+                    return False
+
+                # 🔁 bcrypt로 업그레이드
+                user.password_hash = bcrypt.hashpw(
+                    input_pw, bcrypt.gensalt()
+                ).decode("utf-8")
+
+                print(f"[SECURITY] Plain → bcrypt migrated: {user.user_id}")
+
+            # ==================================================
+            # 공통 로그인 성공 처리
+            # ==================================================
+            role_value = (
+                user.role.value if hasattr(user.role, "value") else str(user.role)
+            ).lower()
+
+            if role_value != "admin":
+                self.login_failed.emit("관리자 계정만 접근 가능합니다.")
+                return False
+
+            user.last_login_at = session.execute(text("SELECT now()")).scalar()
+            session.commit()
+
+            self._current_user = user
+            self.login_success.emit(user.user_id)
+            self.user_changed.emit(self._build_user_info(user))
+
+            print(f"Admin Login success: {user.user_id}")
+            return True
+
+        except Exception as e:
+            session.rollback()
+            self.login_failed.emit(f"로그인 오류: {str(e)}")
+            return False
+
+        finally:
+            session.close()
+
+    # =============================
+    # 로그아웃
+    # =============================
     def logout(self):
         """로그아웃"""
-        try:
-            if self.model.is_logged_in():
-                user_name = self.model.get_current_user_display_name()
-                self.model.logout()
-                self.logout_completed.emit()
-                self.user_changed.emit({})
-                print(f"로그아웃 완료: {user_name}")
-            
-        except Exception as e:
-            print(f"로그아웃 중 오류: {str(e)}")
-    
+        self._current_user = None
+        self.logout_completed.emit()
+        self.user_changed.emit({})
+
+    # =========================
+    # User 상태 / 정보
+    # =========================
     def is_logged_in(self) -> bool:
         """로그인 상태 확인"""
-        return self.model.is_logged_in()
-    
+        return self._current_user is not None
+
     def get_current_user(self) -> Optional[User]:
         """현재 사용자 반환"""
-        return self.model.get_current_user()
-    
-    def get_current_user_display_name(self) -> str:
-        """현재 사용자 표시 이름"""
-        return self.model.get_current_user_display_name()
-    
+        return self._current_user
+
     def get_current_user_id(self) -> str:
         """현재 사용자 ID"""
-        return self.model.get_current_user_id()
-    
-    def has_permission(self, required_role: UserRole) -> bool:
+        return self._current_user.user_id if self._current_user else ""
+
+    def get_current_user_display_name(self) -> str:
+        """현재 사용자 표시 이름"""
+        return self._current_user.name if self._current_user else ""
+
+    def has_permission(self, required_role: str) -> bool:
         """권한 확인"""
-        return self.model.has_permission(required_role)
-    
+        if not self._current_user:
+            return False
+        return self._current_user.role == required_role
+
     def get_user_info(self) -> dict:
         """사용자 정보 반환"""
-        return self.model.get_user_info()
-    
-    def get_available_users(self) -> list:
-        """사용 가능한 사용자 목록 (데이터베이스 기반)"""
-        try:
-            from models.database_models import get_db_manager, UserDB, UserRoleEnum
-            
-            db_manager = get_db_manager()
-            session = db_manager.get_session()
-            
-            db_users = session.query(UserDB).filter(
-                UserDB.is_active == True
-            ).all()
-            
-            users = []
-            role_mapping = {
-                UserRoleEnum.ADMIN: 'admin',
-                UserRoleEnum.OPERATOR: 'operator',
-                UserRoleEnum.VIEWER: 'viewer'
-            }
-            
-            for db_user in db_users:
-                user_info = {
-                    'id': db_user.user_id,
-                    'name': db_user.name,
-                    'role': role_mapping[db_user.role]
-                }
-                users.append(user_info)
-            
-            session.close()
-            return users
-            
-        except Exception as e:
-            print(f"사용자 목록 조회 오류: {e}")
-            # 오류 시 기본값 반환
-            return [
-                {'id': 'admin', 'name': 'Administrator', 'role': 'admin'},
-                {'id': 'operator1', 'name': 'Operator One', 'role': 'operator'},
-                {'id': 'viewer1', 'name': 'Viewer One', 'role': 'viewer'}
-            ]
-    
-    def get_all_users(self):
-        """모든 사용자 목록 조회 (활성/비활성 포함)"""
-        try:
-            from models.database_models import get_db_manager, UserDB, UserRoleEnum
-            
-            db_manager = get_db_manager()
-            session = db_manager.get_session()
-            
-            db_users = session.query(UserDB).all()
-            
-            users = []
-            role_mapping = {
-                UserRoleEnum.ADMIN: 'admin',
-                UserRoleEnum.OPERATOR: 'operator',
-                UserRoleEnum.VIEWER: 'viewer'
-            }
-            
-            for db_user in db_users:
-                # User 객체처럼 속성을 가진 객체 생성
-                class UserInfo:
-                    def __init__(self, db_user):
-                        self.user_id = db_user.user_id
-                        self.username = db_user.name
-                        self.role = role_mapping.get(db_user.role, 'operator')
-                        self.created_at = db_user.created_at
-                        self.last_login = db_user.last_login_at
-                        self.is_active = db_user.is_active
-                
-                user_info = UserInfo(db_user)
-                users.append(user_info)
-            
-            session.close()
-            return users
-            
-        except Exception as e:
-            print(f"전체 사용자 목록 조회 오류: {e}")
-            # 오류 시 더미 데이터 반환
-            class DummyUser:
-                def __init__(self, user_id, username, role, is_active=True):
-                    self.user_id = user_id
-                    self.username = username
-                    self.role = role
-                    self.created_at = None
-                    self.last_login = None
-                    self.is_active = is_active
-            
-            return [
-                DummyUser('admin', 'Administrator', 'admin'),
-                DummyUser('operator1', 'Operator One', 'operator'),
-                DummyUser('viewer1', 'Viewer One', 'viewer'),
-                DummyUser('test_user', 'Test User', 'operator', False)
-            ]
-        
-# UserService 인스턴스 생성
-_user_service_instance = None
+        if not self._current_user:
+            return {}
+        return self._build_user_info(self._current_user)
 
-def get_user_service():
-    """UserService 싱글톤 인스턴스 반환"""
+    # =========================
+    # Users 조회
+    # =========================
+    def get_available_users(self) -> List[dict]:
+        """
+        활성 사용자 목록 조회 (PostgreSQL)
+        Admin / Operator / Viewer
+        """
+        session: Session = get_db_session()
+        try:
+            users = (
+                session.query(User)
+                .filter(User.is_active.is_(True))
+                .order_by(User.user_id)
+                .all()
+            )
+
+            result = []
+            for user in users:
+                result.append({
+                    "id": user.user_id,
+                    "name": user.name,
+                    "role": (
+                        user.role.value
+                        if hasattr(user.role, "value")
+                        else str(user.role)
+                    ),
+                    "created_at": user.created_at,
+                    "last_login": user.last_login_at,
+                })
+
+            return result
+
+        except Exception as e:
+            print(f"get_available_users error: {e}")
+            return []
+
+        finally:
+            session.close()
+
+    # =========================
+    # Helpers
+    # =========================
+    def _build_user_info(self, user: User) -> dict:
+        return {
+            "id": user.user_id,
+            "name": user.name,
+            "role": (
+                user.role.value
+                if hasattr(user.role, "value")
+                else str(user.role)
+            ),
+            "created_at": user.created_at,
+            "last_login": user.last_login_at,
+            "is_active": user.is_active,
+        }
+    
+    # bcrypt 해시 여부 확인.
+    def _is_bcrypt_hash(self, hashed: str) -> bool:
+        return hashed.startswith("$2a$") or hashed.startswith("$2b$") or hashed.startswith("$2y$")
+    
+    """
+    계정 생성시 비밀번호 암호화.
+    """
+    def create_user_password(password: str) -> str:
+        return bcrypt.hashpw(
+            password.encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+
+
+
+# =========================
+# Singleton
+# =========================
+_user_service_instance: Optional[UserService] = None
+
+"""UserService 싱글톤 인스턴스 반환"""
+def get_user_service() -> UserService:
     global _user_service_instance
     if _user_service_instance is None:
-        from models.user_model import UserModel
-        user_model = UserModel()
-        _user_service_instance = UserService(user_model)
+        _user_service_instance = UserService()
         _user_service_instance.initialize()
     return _user_service_instance
 
 # 직접 import 가능한 인스턴스
+# Direct import
 user_service = get_user_service()

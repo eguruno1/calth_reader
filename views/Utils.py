@@ -28,7 +28,7 @@ def update_date_time(view):
         time_service = get_time_service()
         current_datetime = time_service.get_current_display_time()
         formatted_datetime = current_datetime.strftime("%Y-%m-%d  %H:%M")
-        print(f"시간 업데이트 View: {view}")
+        # print(f"시간 업데이트 View: {view}")
         if hasattr(view, 'label_DateNClock'):
             view.label_DateNClock.setText(formatted_datetime)
     except Exception as e:
@@ -133,8 +133,9 @@ def update_battery_status(view):
             if hasattr(view, 'label_4') or hasattr(view, 'label_9') or hasattr(view, 'label_battery_icon'):
                 icon_name = get_battery_icon_name(level, is_charging)
                 set_battery_icon(view, icon_name)
-                
-            print(f"배터리 상태 업데이트: {level}% (충전중: {is_charging})")
+            
+            """ 배터리 충전 상태 확인시 주석해제 """
+            # print(f"배터리 상태 업데이트: {level}% (충전중: {is_charging})")
         else:
             print("배터리 상태를 읽을 수 없습니다.")
             # 기본값으로 설정

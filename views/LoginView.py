@@ -51,7 +51,10 @@ class LoginView(QWidget):
         self.user_id_input = self.lineEdit_user_id
         self.login_button = self.pushButton_login
         self.back_button = self.pushButton_back
-        
+
+    # =========================
+    # Signals
+    # =========================    
     def connect_signals(self):
         """시그널 연결"""
         # UI 요소 시그널 연결
@@ -84,6 +87,9 @@ class LoginView(QWidget):
         except Exception as e:
             print(f"로그인 시그널 연결 해제 오류: {e}")
     
+    # =========================
+    # Login Logic
+    # =========================
     def attempt_login(self):
         """로그인 시도"""
         user_id = self.user_id_input.text().strip()
@@ -99,6 +105,7 @@ class LoginView(QWidget):
         
         # 로그인 시도
         try:
+            # 실제 검증은 UserService에서 수행
             success = app_controller.user_service.login(user_id, password)
             # 버튼 상태 복원
             QTimer.singleShot(1000, self.reset_login_button)
@@ -119,23 +126,28 @@ class LoginView(QWidget):
     def on_login_success(self, user_id: str):
         """로그인 성공 처리"""
         print(f"로그인 성공: {user_id}, 컨텍스트: {self.target_context}")
+
+        """
+        로그인 성공
+        role 판단은 반드시 UserService 결과 기준
+        """
+        user_info = app_controller.user_service.get_user_info()
+
+        role = user_info.get("role", "").lower()
+        print(f"Login success: {user_id}, role={role}")
         self.clear_form()
         
         # QC 컨텍스트인 경우 권한 확인 후 QC로 진입
         if self.target_context == "qc":
             try:
-                from controllers import app_controller
-                from models.user_model import UserRole
-                
-                # Admin 또는 Operator 권한이 있는지 확인
-                if (app_controller.user_service.has_permission(UserRole.OPERATOR) or 
-                    app_controller.user_service.has_permission(UserRole.ADMIN)):
+                # Operator 만 권한이 있는지 확인
+                if (role == "operator"):
                     # QC로 진입하도록 시그널 발생
                     print("QC 권한 확인됨 - QC Test로 진입")
                     self.switch_to_qc.emit()
                 else:
                     # 권한이 없으면 홈으로 이동
-                    QMessageBox.warning(self, "권한 부족", "QC Test는 Admin 또는 Operator 권한이 필요합니다.")
+                    QMessageBox.warning(self, "권한 부족", "QC Test는 Operator 권한이 필요합니다.")
                     self.login_success.emit()
             except Exception as e:
                 print(f"QC 진입 처리 오류: {e}")
@@ -143,7 +155,7 @@ class LoginView(QWidget):
         else:
             # 일반 로그인 성공
             self.login_success.emit()
-        
+
         # 컨텍스트 초기화
         self.target_context = None
     
@@ -153,6 +165,9 @@ class LoginView(QWidget):
         self.password_input.clear()
         self.password_input.setFocus()
     
+    # =========================
+    # Utils
+    # =========================
     def clear_form(self):
         """폼 초기화"""
         self.user_id_input.clear()
@@ -165,6 +180,9 @@ class LoginView(QWidget):
         self.clear_form()
         self.switch_to_home.emit()
     
+    # =========================
+    # Qt Events
+    # =========================
     def showEvent(self, event):
         """화면 표시시 포커스 설정 및 시그널 연결"""
         super().showEvent(event)
@@ -186,6 +204,9 @@ class LoginView(QWidget):
             if self.original_form_pos:
                 self.login_frame.move(self.original_form_pos)
 
+    # =========================
+    # Virtual Keyboard
+    # =========================
     def setup_virtual_keyboard(self):
         """가상 키보드 설정"""
         self.vkeyboard = VKeyboard(self)

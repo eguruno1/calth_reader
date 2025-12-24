@@ -127,10 +127,11 @@ class UserService(QObject):
                 user.role.value if hasattr(user.role, "value") else str(user.role)
             ).lower()
 
+            """
             if role_value != "admin":
                 self.login_failed.emit("관리자 계정만 접근 가능합니다.")
                 return False
-
+            """
             user.last_login = session.execute(text("SELECT now()")).scalar()
             session.commit()
 

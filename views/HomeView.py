@@ -91,6 +91,11 @@ class HomeView(QMainWindow):
         self.date_time_timer.timeout.connect(self.update_date_time)
         self.date_time_timer.start(1000)  # 1초마다 업데이트
 
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        stop_date_time_update(self)
+        stop_battery_update(self)
+
     def closeEvent(self, event):
         stop_date_time_update(self)
         super().closeEvent(event)

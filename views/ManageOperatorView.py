@@ -51,18 +51,39 @@ class ManageOperatorView(QMainWindow):
         # 다중 선택을 위한 선택된 행 집합 초기화
         self.selected_rows = set()
 
-        # 초기 날짜와 시간 설정
-        self.update_date_time()
-        self.update_battery_status()
-        
-        # 초기 데이터 로드
-        # self.load_user_data()
-
     def showEvent(self, event):
         super().showEvent(event)
         print("🟢 showEvent 진입")
+        
+        # 초기 날짜와 시간 설정
+        self.update_date_time()
+        self.update_battery_status()
+
+        # 초기 데이터 로드
         self.load_user_data()
 
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
+        
+    def hideEvent(self, event):
+        super().hideEvent(event)
+
+        stop_date_time_update(self)
+        stop_battery_update(self)
+
+        # 페이지 벗어날 때 선택 상태 즉시 초기화
+        self.clear_table_selection()
+        """
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+        QTimer.singleShot(100, lambda: start_battery_update(self))
+        # 화면이 표시될 때 데이터 새로고침
+        QTimer.singleShot(200, self.load_user_data)
+        """
+        
+    def closeEvent(self, event):
+        stop_date_time_update(self)
+        stop_battery_update(self)
+        super().closeEvent(event)    
 
     def setup_table(self):
         """사용자 목록 테이블 생성"""
@@ -291,19 +312,7 @@ class ManageOperatorView(QMainWindow):
         
         return selected_data
 
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        # 페이지 벗어날 때 선택 상태 즉시 초기화
-        self.clear_table_selection()
-        QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
-        # 화면이 표시될 때 데이터 새로고침
-        QTimer.singleShot(200, self.load_user_data)
-
-    def closeEvent(self, event):
-        stop_date_time_update(self)
-        stop_battery_update(self)
-        super().closeEvent(event)
+    
 
     def on_create_id_button_clicked(self):
         """CREATE ID 버튼 - 새 사용자 생성"""

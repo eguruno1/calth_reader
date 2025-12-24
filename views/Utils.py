@@ -28,6 +28,7 @@ def update_date_time(view):
         time_service = get_time_service()
         current_datetime = time_service.get_current_display_time()
         formatted_datetime = current_datetime.strftime("%Y-%m-%d  %H:%M")
+        print(f"시간 업데이트 View: {view}")
         if hasattr(view, 'label_DateNClock'):
             view.label_DateNClock.setText(formatted_datetime)
     except Exception as e:

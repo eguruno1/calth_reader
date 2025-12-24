@@ -56,72 +56,77 @@ class ManageOperatorView(QMainWindow):
         self.update_battery_status()
         
         # 초기 데이터 로드
+        # self.load_user_data()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        print("🟢 showEvent 진입")
         self.load_user_data()
 
+
     def setup_table(self):
-        """기존 textBrowser를 QTableWidget으로 교체"""
+        """사용자 목록 테이블 생성"""
+        print("🔍 setup_table() 호출됨")
+
+        # textBrowser가 있으면 숨기기 (있을 때만)
         if hasattr(self, 'textBrowser'):
-            # textBrowser 숨기기
             self.textBrowser.hide()
-            
-            # 새 테이블 위젯 생성 (textBrowser와 같은 위치에)
-            self.table_widget = QTableWidget(self)
-            self.table_widget.setGeometry(42, 93, 793, 483)  # textBrowser와 같은 크기
-            # 테이블 설정
-            self.table_widget.setAlternatingRowColors(True)  # 교대 색상 활성화
-            self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-            self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)  # Qt 기본 선택 완전히 비활성화
-            self.table_widget.verticalHeader().setVisible(False)
-            
-            # 헤더 초기 설정 - 깜빡임 방지
-            header = self.table_widget.horizontalHeader()
-            header.setStretchLastSection(False)  # 초기에는 false로 설정
-            
-            # 행 클릭 이벤트 연결 (itemSelectionChanged 대신 itemClicked 사용)
-            self.table_widget.itemClicked.connect(self.on_table_item_clicked)
-            
-            # 헤더 스타일 설정
-            self.table_widget.setStyleSheet("""
-                QTableWidget {
-                    background-color: white;
-                    gridline-color: #d0d0d0;
-                    font-family: Pretendard;
-                    font-size: 12px;
-                    selection-background-color: #1976d2;
-                }
-                QTableWidget::item {
-                    padding: 8px;
-                    border-bottom: 1px solid #e0e0e0;
-                }
-                QTableWidget::item:selected {
-                    background-color: #1976d2;
-                }
-                QHeaderView::section {
-                    background-color: #f5f5f5;
-                    padding: 8px;
-                    border: 1px solid #d0d0d0;
-                    font-weight: bold;
-                    font-family: Pretendard;
-                    font-size: 14px;
-                }
-            """)
-            
-            self.table_widget.show()
+
+        # ✅ 무조건 테이블 생성
+        self.table_widget = QTableWidget(self)
+        self.table_widget.setGeometry(42, 93, 793, 483)
+
+        self.table_widget.setAlternatingRowColors(True)
+        self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)
+        self.table_widget.verticalHeader().setVisible(False)
+
+        header = self.table_widget.horizontalHeader()
+        header.setStretchLastSection(False)
+
+        self.table_widget.itemClicked.connect(self.on_table_item_clicked)
+
+        self.table_widget.setStyleSheet("""
+            QTableWidget {
+                background-color: white;
+                gridline-color: #d0d0d0;
+                font-family: Pretendard;
+                font-size: 12px;
+            }
+            QTableWidget::item {
+                padding: 8px;
+            }
+            QHeaderView::section {
+                background-color: #f5f5f5;
+                padding: 8px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+        """)
+
+        self.table_widget.show()
 
     def load_user_data(self):
         """사용자 데이터 로드"""
+        print("🔍 load_user_data() 호출됨")
+
         try:
             # 데이터 로드 시 선택 상태 초기화
             self.selected_rows.clear()
             
             # 모든 사용자 데이터 가져오기
-            users = user_service.get_all_users()
+            # users = user_service.get_all_users()
+            users = user_service.get_available_users()
+            print(f"👥 조회된 사용자 수: {len(users)}")
             self.setup_user_table(users)
+
         except Exception as e:
             print(f"사용자 데이터 로드 오류: {e}")
 
     def setup_user_table(self, users):
-        """사용자 테이블 설정"""
+        """사용자 테이블 설정 (dict 기반)"""
+        print(f"📊 setup_user_table() rows = {len(users)}")
+
         if not hasattr(self, 'table_widget'):
             return
             
@@ -139,12 +144,27 @@ class ManageOperatorView(QMainWindow):
         
         # 데이터 입력
         for row, user in enumerate(users):
-            self.table_widget.setItem(row, 0, QTableWidgetItem(user.user_id))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(user.username or 'N/A'))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(user.role or 'Operator'))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A'))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never'))
-            self.table_widget.setItem(row, 5, QTableWidgetItem('Active' if user.is_active else 'Inactive'))
+            self.table_widget.setItem(row, 0, QTableWidgetItem(user.get("id", "")))
+            self.table_widget.setItem(row, 1, QTableWidgetItem(user.get("name", "N/A")))
+            self.table_widget.setItem(row, 2, QTableWidgetItem(user.get("role", "Operator")))
+
+            created_at = user.get("created_at")
+            last_login = user.get("last_login")
+
+            self.table_widget.setItem(
+                row, 3,
+                QTableWidgetItem(created_at.strftime('%Y-%m-%d %H:%M') if created_at else "N/A")
+            )
+
+            self.table_widget.setItem(
+                row, 4,
+                QTableWidgetItem(last_login.strftime('%Y-%m-%d %H:%M') if last_login else "Never")
+            )
+
+            self.table_widget.setItem(
+                row, 5,
+                QTableWidgetItem("Active" if user.get("is_active", True) else "Inactive")
+            ) # End for
         
         # 컬럼 너비를 컨텐츠에 맞게 조정한 후, 마지막 컬럼만 확장
         self.table_widget.resizeColumnsToContents()

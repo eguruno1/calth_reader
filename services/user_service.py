@@ -131,7 +131,7 @@ class UserService(QObject):
                 self.login_failed.emit("관리자 계정만 접근 가능합니다.")
                 return False
 
-            user.last_login_at = session.execute(text("SELECT now()")).scalar()
+            user.last_login = session.execute(text("SELECT now()")).scalar()
             session.commit()
 
             self._current_user = user
@@ -197,6 +197,8 @@ class UserService(QObject):
         활성 사용자 목록 조회 (PostgreSQL)
         Admin / Operator / Viewer
         """
+        print("📡 get_available_users() 호출됨")
+
         session: Session = get_db_session()
         try:
             users = (
@@ -205,6 +207,8 @@ class UserService(QObject):
                 .order_by(User.user_id)
                 .all()
             )
+
+            print(f"👥 DB에서 조회된 사용자 수: {len(users)}")
 
             result = []
             for user in users:
@@ -217,7 +221,8 @@ class UserService(QObject):
                         else str(user.role)
                     ),
                     "created_at": user.created_at,
-                    "last_login": user.last_login_at,
+                    "last_login": user.last_login,
+                    "is_active": user.is_active,
                 })
 
             return result
@@ -242,7 +247,7 @@ class UserService(QObject):
                 else str(user.role)
             ),
             "created_at": user.created_at,
-            "last_login": user.last_login_at,
+            "last_login": user.last_login,
             "is_active": user.is_active,
         }
     

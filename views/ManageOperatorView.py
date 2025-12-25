@@ -25,7 +25,7 @@ class ManageOperatorView(QMainWindow):
 
     def load_ui(self):
         # 프로젝트 루트 디렉토리
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         
         # UI 파일 경로 설정
@@ -213,7 +213,7 @@ class ManageOperatorView(QMainWindow):
             
         # 프로그래밍 방식으로 직접 색상 설정
         if selected:
-            bg_color = QColor("#1976d2")  # 진한 파란색
+            bg_color   = QColor("#1976d2")  # 진한 파란색
             text_color = QColor("#ff0000")  # 빨간색 텍스트
         else:
             # 기본 행 스타일
@@ -221,6 +221,7 @@ class ManageOperatorView(QMainWindow):
                 bg_color = QColor("#ffffff")  # 흰색
             else:
                 bg_color = QColor("#f5f5f5")  # 연한 회색
+                
             text_color = QColor("#000000")  # 검은색 텍스트
         
         # 해당 행의 모든 셀에 색상 적용

@@ -20,10 +20,10 @@ class UserService(QObject):
     # =========================
     # Signals
     # =========================
-    login_success = pyqtSignal(str)    # user_id
-    login_failed = pyqtSignal(str)     # error message
+    login_success    = pyqtSignal(str)    # user_id
+    login_failed     = pyqtSignal(str)    # error message
     logout_completed = pyqtSignal()
-    user_changed = pyqtSignal(dict)    # user info
+    user_changed     = pyqtSignal(dict)   # user info
 
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -250,16 +250,16 @@ class UserService(QObject):
     # =========================
     def _build_user_info(self, user: User) -> dict:
         return {
-            "id": user.user_id,
-            "name": user.name,
-            "role": (
+            "id"   : user.user_id,
+            "name" : user.name,
+            "role" : (
                 user.role.value
                 if hasattr(user.role, "value")
                 else str(user.role)
             ),
-            "created_at": user.created_at,
-            "last_login": user.last_login,
-            "is_active": user.is_active,
+            "created_at" : user.created_at,
+            "last_login" : user.last_login,
+            "is_active"  : user.is_active,
         }
     
     # bcrypt 해시 여부 확인.

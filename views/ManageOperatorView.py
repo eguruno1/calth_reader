@@ -1,7 +1,7 @@
 import os
 
 from PyQt5.QtWidgets import (QMainWindow, QTableWidget, QTableWidgetItem, 
-                             QHeaderView, QAbstractItemView, QDialog)
+                             QHeaderView, QAbstractItemView, QDialog, QMessageBox)
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 from PyQt5.QtGui import QColor
 from PyQt5 import uic
@@ -14,6 +14,7 @@ class ManageOperatorView(QMainWindow):
     switch_to_settings    = pyqtSignal()
     switch_to_home        = pyqtSignal()
     switch_to_account_add = pyqtSignal()  # 사용자추가 화면으로 전환 (컨텍스트 포함)
+    switch_to_account_edit = pyqtSignal(str)  # ID 변경을 위해 user_id 전달
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -335,6 +336,7 @@ class ManageOperatorView(QMainWindow):
         """
 
     def on_return_from_account_add(self):
+        """사용자 추가후 화면 Refresh"""
         self.show()
         self.load_user_data()
     
@@ -342,18 +344,44 @@ class ManageOperatorView(QMainWindow):
     def on_edit_id_button_clicked(self):
         """EDIT ID 버튼 - 선택된 사용자 ID 편집"""
         print("ManageOperatorView: Edit ID 버튼이 클릭되었습니다.")
-        selected_data = self.get_selected_rows_data()
+        selected_rows = self.get_selected_rows_data()
         
-        if not selected_data:
-            print("편집할 사용자가 선택되지 않았습니다.")
+        # 1️⃣ 선택 여부 체크
+        if not selected_rows:
+            QMessageBox.warning(
+                self,
+                "선택 필요",
+                "먼저 사용자를 선택해주세요."
+            )
             return
-        
-        if len(selected_data) > 1:
-            print("ID 편집을 위해서는 하나의 사용자만 선택해주세요.")
+
+        # 2️⃣ 1명만 선택했는지 체크
+        if len(selected_rows) != 1:
+            QMessageBox.warning(
+                self,
+                "선택 오류",
+                "한 명의 사용자만 선택해주세요."
+            )
             return
-        
-        print(f"ID 편집할 사용자: {selected_data[0]['data']}")
-        
+
+        # 3️⃣ 선택된 사용자 데이터 추출
+        selected_user = selected_rows[0]["data"]
+
+        user_id = selected_user.get("User ID")
+
+        if not user_id:
+            QMessageBox.warning(
+                self,
+                "오류",
+                "선택한 사용자 정보에 User ID가 없습니다."
+            )
+            return
+
+        print(f"ID 편집할 사용자: {selected_user}")
+
+        # 4️⃣ AppController 로 화면 전환 요청
+        self.switch_to_account_edit.emit(user_id)
+
         # 여기에 사용자 ID 편집 다이얼로그나 페이지를 열 수 있습니다
         # self.open_edit_user_id_dialog(selected_data[0]['data'])
 

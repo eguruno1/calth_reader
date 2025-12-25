@@ -14,12 +14,12 @@ from database.connection import get_db_session
 from database.models import User
 
 
-class AccountAddView(QMainWindow):
+class AccountAddView(QWidget):
     """
-    사용자 등록 화면 (QMainWindow)
+    사용자 등록 화면 
     """
     switch_to_manage_operator = pyqtSignal()
-    user_created = pyqtSignal()   # ✅ 추가
+    user_created              = pyqtSignal()   # ✅ 추가
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -32,7 +32,7 @@ class AccountAddView(QMainWindow):
     # UI
     # ==================================================
     def _load_ui(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
 
         ui_path = os.path.join(
@@ -71,10 +71,10 @@ class AccountAddView(QMainWindow):
     # Create User
     # ==================================================
     def on_create_user(self):
-        user_id = self.lineEdit_user_id.text().strip()
-        password = self.lineEdit_password.text()
+        user_id   = self.lineEdit_user_id.text().strip()
+        password  = self.lineEdit_password.text()
         password2 = self.lineEdit_password_2.text()
-        role = self.comboBox_role.currentText()
+        role      = self.comboBox_role.currentText()
 
         if not user_id or not password:
             QMessageBox.warning(self, "입력 오류", "User ID와 Password는 필수입니다.")
@@ -129,11 +129,11 @@ class AccountAddView(QMainWindow):
             password_hash = user_service.create_user_password(password)
 
             user = User(
-                user_id=user_id,
-                name="Add "+role,
-                password_hash=password_hash,
-                role=role,
-                is_active=True
+                user_id       = user_id,
+                name          = "Add "+role,
+                password_hash = password_hash,
+                role          = role,
+                is_active     = True
             )
 
             session.add(user)

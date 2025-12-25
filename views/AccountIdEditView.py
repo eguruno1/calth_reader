@@ -11,11 +11,13 @@ from database.models import User
 
 
 class AccountIdEditView(QWidget):
-
+    """
+    사용자 ID 변경 화면
+    """
     switch_to_manage_operator = pyqtSignal()
-    user_id_updated = pyqtSignal()   # refresh 용
+    user_id_updated           = pyqtSignal()   # refresh 용
 
-    def __init__(self, parent=None):
+    def __init__(self, parent = None):
         super().__init__(parent)
         self._current_user_id = None
         self._load_ui()
@@ -99,6 +101,7 @@ class AccountIdEditView(QWidget):
                 .filter(User.user_id == new_user_id)
                 .first()
             )
+
             if exists:
                 raise Exception("이미 존재하는 사용자 ID입니다.")
 

@@ -550,7 +550,7 @@ QLineEdit:focus {
       <string>Enter your password</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_ok">
+    <widget class="QPushButton" name="pushButton_save">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -584,7 +584,7 @@ QPushButton:pressed {
 }</string>
      </property>
      <property name="text">
-      <string>OK</string>
+      <string>Save</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_password_2">

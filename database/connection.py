@@ -35,7 +35,8 @@ class DatabaseManager:
         """
         
         # PostgreSQL 20251222
-        db_host = os.getenv('DB_HOST', '192.168.0.62')
+        # db_host = os.getenv('DB_HOST', '192.168.0.62')
+        db_host = os.getenv('DB_HOST', 'localhost')
         db_port = os.getenv('DB_PORT', '5433')
         db_name = os.getenv('DB_NAME', 'calth_reader')
         db_user = os.getenv('DB_USER', 'admin')

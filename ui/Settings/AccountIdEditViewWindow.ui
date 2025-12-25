@@ -488,7 +488,7 @@ QLineEdit:focus {
       <string>Enter your ID</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_password">
+    <widget class="QLabel" name="label_change_user_id">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -512,7 +512,7 @@ QLineEdit:focus {
       <string>Change User ID:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_password">
+    <widget class="QLineEdit" name="lineEdit_change_user_id">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -541,16 +541,16 @@ QLineEdit:focus {
 }</string>
      </property>
      <property name="inputMethodHints">
-      <set>Qt::ImhHiddenText|Qt::ImhLatinOnly|Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText|Qt::ImhSensitiveData</set>
+      <set>Qt::ImhLatinOnly</set>
      </property>
      <property name="echoMode">
-      <enum>QLineEdit::Password</enum>
+      <enum>QLineEdit::Normal</enum>
      </property>
      <property name="placeholderText">
       <string>Enter your password</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_login">
+    <widget class="QPushButton" name="pushButton_save">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -584,10 +584,10 @@ QPushButton:pressed {
 }</string>
      </property>
      <property name="text">
-      <string>OK</string>
+      <string>Save</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_login_2">
+    <widget class="QPushButton" name="pushButton_cancel">
      <property name="geometry">
       <rect>
        <x>210</x>

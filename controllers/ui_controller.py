@@ -39,6 +39,9 @@ from views.ResultView1    import ResultView1
 from config.pretest_config import PretestConfig
 from views.ResultView0    import ResultView0
 
+# 계정관리 관련 
+from views.AccountAddView import AccountAddView
+
 from controllers import app_controller as backend_controller
 from config.config import app_config
 
@@ -60,45 +63,54 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.load_view)
         self._setup_shortcuts()
 
+    #==========================================
+    # --- View 선언 ---
+    #==========================================
     def _create_views(self):
-        self.load_view       = LoadView(self)
-        self.home_view       = HomeView(self)
-        self.login_view      = LoginView(self)
+        self.load_view        = LoadView(self)
+        self.home_view        = HomeView(self)
+        self.login_view       = LoginView(self)
         self.admin_login_view = AdminLoginView(self)
-        self.operator_view   = OperatorView(self)
+        self.operator_view    = OperatorView(self)
         # Calibration 전용 views
-        self.calibration_view = PreTestingIntroView(self, PretestConfig.TYPE_CALIBRATION)
-        self.calibration_caution_view = None  # Caution 단계 뷰는 필요 시 생성
+        self.calibration_view               = PreTestingIntroView(self, PretestConfig.TYPE_CALIBRATION)
+        self.calibration_caution_view       = None  # Caution 단계 뷰는 필요 시 생성
         self.calibration_insert_device_view = None  # Insert Device 단계 뷰는 필요 시 생성
-        self.calibration_device_check_view = None  # Device Check 단계 뷰는 필요 시 생성
-        self.calibration_eject_device_view = None  # Eject Device 단계 뷰는 필요 시 생성
-        self.calibration_result_view = None  # Result 단계 뷰는 필요 시 생성
-        self.calibration_complete_view = None  # Complete 단계 뷰는 필요 시 생성
+        self.calibration_device_check_view  = None  # Device Check 단계 뷰는 필요 시 생성
+        self.calibration_eject_device_view  = None  # Eject Device 단계 뷰는 필요 시 생성
+        self.calibration_result_view        = None  # Result 단계 뷰는 필요 시 생성
+        self.calibration_complete_view      = None  # Complete 단계 뷰는 필요 시 생성
         # QC 전용 views (필요 시 생성)
-        self.qc_view = None
-        self.qc_caution_view = None
+        self.qc_view               = None
+        self.qc_caution_view       = None
         self.qc_insert_device_view = None
-        self.qc_device_check_view = None
-        self.qc_eject_device_view = None
-        self.qc_result_view = None
-        self.qc_complete_view = None
+        self.qc_device_check_view  = None
+        self.qc_eject_device_view  = None
+        self.qc_result_view        = None
+        self.qc_complete_view      = None
         # 기타 views
-        self.settings_view   = SettingsView(self)
-        self.datetime_settings_view = DateTimeSettingsView(self)
-        self.update_settings_view = UpdateSettingsView(self)
+        self.settings_view                = SettingsView(self)
+        self.datetime_settings_view       = DateTimeSettingsView(self)
+        self.update_settings_view         = UpdateSettingsView(self)
         self.calibration_qc_settings_view = CalibrationQCSettingsView(self)
-        self.general_settings_view = GeneralSettingsView(self)
-        self.power_management_view = PowerManagementView(self)
-        self.manage_operator_view = ManageOperatorView(self)
-        self.resultList_view = ResultListView(self)
-        self.result_category_view = ResultCategoryView(self)
-        self.info_view       = InfoView(self)
-        self.select_view     = SelectView(self)
-        self.test_info_view  = TestInfoView(self)
-        self.measure_view    = MeasureView(self)
-        self.result_view0    = ResultView0(self)
-        #self.result_view1    = ResultView1(self)
+        self.general_settings_view        = GeneralSettingsView(self)
+        self.power_management_view        = PowerManagementView(self)
+        self.manage_operator_view         = ManageOperatorView(self)  # 계정관리
+        self.resultList_view              = ResultListView(self)
+        self.result_category_view         = ResultCategoryView(self)
+        self.info_view                    = InfoView(self)
+        self.select_view                  = SelectView(self)
+        self.test_info_view               = TestInfoView(self)
+        self.measure_view                 = MeasureView(self)
+        self.result_view0                 = ResultView0(self)
+        #self.result_view1                = ResultView1(self)
 
+        # 계정관련 views
+        self.account_add_view             = AccountAddView(self)  # 신규 사용자 추가.
+
+    #==========================================
+    # --- View Stack Add ---
+    #==========================================
     def _add_views_to_stack(self):
         self.stacked_widget.addWidget(self.load_view)
         self.stacked_widget.addWidget(self.home_view)
@@ -123,6 +135,12 @@ class AppController(QMainWindow):
         self.stacked_widget.addWidget(self.result_view0)
         #self.stacked_widget.addWidget(self.result_view1)
 
+        # 계정관련
+        self.stacked_widget.addWidget(self.account_add_view)
+
+    #==========================================
+    # --- 시그널 연결 ---
+    #==========================================
     def _connect_signals(self):
         self.load_view.finished.connect(self.switch_to_home_view)
         self.home_view.switch_to_select.connect(self.switch_to_select_view)
@@ -168,6 +186,19 @@ class AppController(QMainWindow):
         self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
         self.calibration_view.switch_to_home.connect(self.switch_to_home_view)
         self.calibration_view.switch_to_next_step.connect(self.on_calibration_intro_next)
+        # 계정관련
+        self.manage_operator_view.switch_to_account_add.connect(
+            self.switch_to_account_add_view
+        )
+
+        self.account_add_view.switch_to_manage_operator.connect(
+            self.switch_to_manage_operator_view
+        )
+        # 계정 추가후 기존 목록 Refresh
+        self.account_add_view.user_created.connect(
+            self.manage_operator_view.load_user_data
+        )
+
 
     def _setup_shortcuts(self):
         self.quit_shortcut = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Q), self)
@@ -236,21 +267,30 @@ class AppController(QMainWindow):
         else:
             super().keyPressEvent(event)
 
+    #==========================================
     # --- 페이지 전환 함수들 ---
+    #==========================================
     def switch_to_home_view(self):
         self.stacked_widget.setCurrentWidget(self.home_view)
+
     def switch_to_operator_view(self):
         self.stacked_widget.setCurrentWidget(self.operator_view)
+
     def switch_to_calibration_view(self):
         self.stacked_widget.setCurrentWidget(self.calibration_view)
+
     def switch_to_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.settings_view)
+
     def switch_to_datetime_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.datetime_settings_view)
+
     def switch_to_update_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.update_settings_view)
+
     def switch_to_calibration_qc_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.calibration_qc_settings_view)
+
     def switch_to_general_settings_view(self):
         self.stacked_widget.setCurrentWidget(self.general_settings_view)
     
@@ -259,35 +299,46 @@ class AppController(QMainWindow):
     
     def switch_to_manage_operator_view(self):
         self.stacked_widget.setCurrentWidget(self.manage_operator_view)
+
     def switch_to_resultList_view(self):
         print("Patient Results로 전환")
         self.resultList_view.set_result_type("patient")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
+
     def switch_to_result_category_view(self):
         print("Result Category View로 전환")
         self.result_category_view.reset_view()
         self.stacked_widget.setCurrentWidget(self.result_category_view)
+
     def switch_to_calibration_results(self):
         print("Calibration Results로 전환")
         self.resultList_view.set_result_type("calibration")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
+
     def switch_to_qc_results(self):
         print("QC Results로 전환")
         self.resultList_view.set_result_type("qc")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
+
     def switch_to_info_view(self):
         self.stacked_widget.setCurrentWidget(self.info_view)
+
     def switch_to_select_view(self):
         self.stacked_widget.setCurrentWidget(self.select_view)
+
     def switch_to_test_info_view(self, test_type):
         self.test_info_view.set_selected_test_type(test_type)
         self.stacked_widget.setCurrentWidget(self.test_info_view)
+
     def switch_to_measure_view(self):
         self.stacked_widget.setCurrentWidget(self.measure_view)
+
     def switch_to_result_view(self):
         self.stacked_widget.setCurrentWidget(self.result_view0)
+
     def switch_to_login_view(self):
         self.stacked_widget.setCurrentWidget(self.login_view)
+
     def switch_to_login_view_with_context(self, context: str):
         """컨텍스트와 함께 로그인 뷰로 전환"""
         if hasattr(self.login_view, 'set_context'):
@@ -298,9 +349,19 @@ class AppController(QMainWindow):
         """컨텍스트와 함께 로그인 화면으로 전환"""
         self.login_view.set_context(context)
         self.stacked_widget.setCurrentWidget(self.login_view)
+
     def switch_to_admin_login_view(self, target: str):
         self.admin_login_view.set_target(target)
         self.stacked_widget.setCurrentWidget(self.admin_login_view)
+
+    # 계정관련
+    def switch_to_account_add_view(self):
+        self.stacked_widget.setCurrentWidget(self.account_add_view)
+    
+    #==========================================
+    # --- 여기까지 페이지 전환 함수들 ---
+    #==========================================    
+
     def on_admin_login_success(self, target: str):
         if target == "calibration":
             print("Admin 로그인 성공: Calibration 기능으로 이동")
@@ -323,6 +384,7 @@ class AppController(QMainWindow):
             self.qc_view.switch_to_next_step.connect(self.on_qc_intro_next)
             self.stacked_widget.addWidget(self.qc_view)
         self.stacked_widget.setCurrentWidget(self.qc_view)
+
     def on_time_setting_changed(self, setting):
         print(f"시간 설정 변경됨: {setting}")
         views_to_update = [

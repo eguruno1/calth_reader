@@ -1,6 +1,7 @@
 import os
 
-from PyQt5.QtWidgets import QMainWindow, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
+from PyQt5.QtWidgets import (QMainWindow, QTableWidget, QTableWidgetItem, 
+                             QHeaderView, QAbstractItemView, QDialog)
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 from PyQt5.QtGui import QColor
 from PyQt5 import uic
@@ -10,8 +11,9 @@ from views.Utils import (update_date_time, start_date_time_update, stop_date_tim
 from services.user_service import user_service
 
 class ManageOperatorView(QMainWindow):
-    switch_to_settings = pyqtSignal()
-    switch_to_home = pyqtSignal()
+    switch_to_settings    = pyqtSignal()
+    switch_to_home        = pyqtSignal()
+    switch_to_account_add = pyqtSignal()  # 사용자추가 화면으로 전환 (컨텍스트 포함)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -312,14 +314,30 @@ class ManageOperatorView(QMainWindow):
         
         return selected_data
 
-    
-
+    #==========================================
+    # --- 화면 이동 ---
+    #==========================================
     def on_create_id_button_clicked(self):
         """CREATE ID 버튼 - 새 사용자 생성"""
         print("ManageOperatorView: Create ID 버튼이 클릭되었습니다.")
         
         # 여기에 새 사용자 생성 다이얼로그나 페이지를 열 수 있습니다
         # self.open_create_user_dialog()
+        self.switch_to_account_add.emit()
+        """
+        self.account_add_view = AccountAddView()
+        self.account_add_view.switch_to_manage_operator.connect(
+            self.on_return_from_account_add
+        )
+
+        self.account_add_view.show()
+        self.close()
+        """
+
+    def on_return_from_account_add(self):
+        self.show()
+        self.load_user_data()
+    
 
     def on_edit_id_button_clicked(self):
         """EDIT ID 버튼 - 선택된 사용자 ID 편집"""
@@ -385,6 +403,9 @@ class ManageOperatorView(QMainWindow):
         self.clear_table_selection()  # 페이지 전환 시 선택 초기화
         self.switch_to_settings.emit()
 
+    #==========================================
+    # --- 헤더 현재시간 & 배터리 상태 연결 ---
+    #==========================================
     def update_date_time(self):
         update_date_time(self)
 

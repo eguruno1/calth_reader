@@ -259,6 +259,7 @@ class UserService(QObject):
     """
     계정 생성시 비밀번호 암호화.
     """
+    @staticmethod
     def create_user_password(password: str) -> str:
         return bcrypt.hashpw(
             password.encode("utf-8"),

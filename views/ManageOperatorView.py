@@ -11,10 +11,11 @@ from views.Utils import (update_date_time, start_date_time_update, stop_date_tim
 from services.user_service import user_service
 
 class ManageOperatorView(QMainWindow):
-    switch_to_settings    = pyqtSignal()
-    switch_to_home        = pyqtSignal()
-    switch_to_account_add = pyqtSignal()  # 사용자추가 화면으로 전환 (컨텍스트 포함)
-    switch_to_account_edit = pyqtSignal(str)  # ID 변경을 위해 user_id 전달
+    switch_to_settings        = pyqtSignal()
+    switch_to_home            = pyqtSignal()
+    switch_to_account_add     = pyqtSignal()  # 사용자추가 화면으로 전환 (컨텍스트 포함)
+    switch_to_account_edit    = pyqtSignal(str)  # ID 변경을 위해 user_id 전달
+    switch_to_account_pw_edit = pyqtSignal(str)  # PW 변경을 위해 user_id 전달
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -388,17 +389,36 @@ class ManageOperatorView(QMainWindow):
     def on_edit_pw_button_clicked(self):
         """EDIT PW 버튼 - 선택된 사용자 비밀번호 편집"""
         print("ManageOperatorView: Edit PW 버튼이 클릭되었습니다.")
-        selected_data = self.get_selected_rows_data()
-        
-        if not selected_data:
-            print("비밀번호를 변경할 사용자가 선택되지 않았습니다.")
+        selected_rows = self.get_selected_rows_data()
+
+        if not selected_rows:
+            QMessageBox.warning(
+                self,
+                "선택 필요",
+                "먼저 사용자를 선택해주세요."
+            )
             return
-        
-        if len(selected_data) > 1:
-            print("비밀번호 변경을 위해서는 하나의 사용자만 선택해주세요.")
+
+        if len(selected_rows) != 1:
+            QMessageBox.warning(
+                self,
+                "선택 오류",
+                "한 명의 사용자만 선택해주세요."
+            )
             return
-        
-        print(f"비밀번호 변경할 사용자: {selected_data[0]['data']}")
+
+        user_data = selected_rows[0]["data"]
+        user_id = user_data.get("User ID")
+
+        if not user_id:
+            QMessageBox.warning(
+                self,
+                "오류",
+                "User ID 정보를 찾을 수 없습니다."
+            )
+            return
+
+        self.switch_to_account_pw_edit.emit(user_id)
         
         # 여기에 사용자 비밀번호 변경 다이얼로그나 페이지를 열 수 있습니다
         # self.open_edit_user_password_dialog(selected_data[0]['data'])

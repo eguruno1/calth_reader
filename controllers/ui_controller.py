@@ -42,6 +42,7 @@ from views.ResultView0    import ResultView0
 # 계정관리 관련 
 from views.AccountAddView import AccountAddView
 from views.AccountIdEditView import AccountIdEditView
+from views.AccountPwEditView import AccountPwEditView
 
 
 from controllers import app_controller as backend_controller
@@ -110,6 +111,7 @@ class AppController(QMainWindow):
         # 계정관련 views
         self.account_add_view             = AccountAddView(self)  # 신규 사용자 추가.
         self.account_id_edit_view         = AccountIdEditView(self) # ID 변경.
+        self.account_pw_edit_view         = AccountPwEditView(self) # PW 변경.
 
 
     #==========================================
@@ -142,6 +144,7 @@ class AppController(QMainWindow):
         # 계정관련
         self.stacked_widget.addWidget(self.account_add_view)
         self.stacked_widget.addWidget(self.account_id_edit_view)
+        self.stacked_widget.addWidget(self.account_pw_edit_view)
 
 
     #==========================================
@@ -205,12 +208,12 @@ class AppController(QMainWindow):
             self.manage_operator_view.load_user_data
         )
 
-        # ManageOperator → Edit
+        # ManageOperator → Edit ID
         self.manage_operator_view.switch_to_account_edit.connect(
             self.switch_to_account_id_edit
         )
 
-        # Edit → ManageOperator
+        # Edit ID → ManageOperator
         self.account_id_edit_view.switch_to_manage_operator.connect(
             self.switch_to_manage_operator_view
         )
@@ -219,6 +222,22 @@ class AppController(QMainWindow):
         self.account_id_edit_view.user_id_updated.connect(
             self.manage_operator_view.load_user_data
         )
+
+        # ManageOperator → Edit PW
+        self.manage_operator_view.switch_to_account_pw_edit.connect(
+            self.switch_to_account_pw_edit
+        )
+
+        # Edit PW → ManageOperator
+        self.account_pw_edit_view.switch_to_manage_operator.connect(
+            self.switch_to_manage_operator_view
+        )
+
+        # PW 변경 완료 → refresh
+        self.account_pw_edit_view.user_pw_updated.connect(
+            self.manage_operator_view.load_user_data
+        )
+        
 
 
 
@@ -386,6 +405,10 @@ class AppController(QMainWindow):
         self.account_id_edit_view.set_user(user_id)
         self.stacked_widget.setCurrentWidget(self.account_id_edit_view)
 
+    def switch_to_account_pw_edit(self, user_id: str):
+        """사용자 PW 변경"""
+        self.account_pw_edit_view.set_user(user_id)
+        self.stacked_widget.setCurrentWidget(self.account_pw_edit_view)
     
     #==========================================
     # --- 여기까지 페이지 전환 함수들 ---

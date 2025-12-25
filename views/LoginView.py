@@ -9,6 +9,12 @@ from PyQt5 import uic
 from controllers import app_controller
 from views.VKeyboard import VKeyboard
 
+"""
+Session Save
+"""
+from database.audit_logger import write_audit_log
+from controllers.session_context import get_session_context
+
 class LoginView(QWidget):
     """로그인 화면"""
     
@@ -135,6 +141,22 @@ class LoginView(QWidget):
 
         role = user_info.get("role", "").lower()
         print(f"Login success: {user_id}, role={role}")
+
+        """Session + Audit Log Save"""
+        ctx = get_session_context()
+
+        write_audit_log(
+            action      = "LOGIN",
+            table_name  = "users",
+            record_id   = user_id,
+            user_id     = ctx["user_id"],
+            old_values  = {"password": "***"},
+            new_values  = {"password": "***"},
+            session_id  = ctx["session_id"],
+            ip_address  = ctx["ip_address"],
+            user_agent  = ctx["user_agent"]
+        )
+
         self.clear_form()
         
         # QC 컨텍스트인 경우 권한 확인 후 QC로 진입

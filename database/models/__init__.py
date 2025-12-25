@@ -8,12 +8,15 @@ from uuid import uuid4
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Text,
     Numeric, ForeignKey, CheckConstraint,
-    JSON, LargeBinary, text
+    JSON, LargeBinary, text,
+    BigInteger
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
 
-from database.base import BaseModel, SoftDeleteMixin
+from sqlalchemy.sql import func
+
+from database.base import BaseModel, SoftDeleteMixin, Base
 
 
 # -------------------------------------------------
@@ -297,6 +300,30 @@ class SystemLog(BaseModel):
         back_populates="system_logs"
     )
 
+# -------------------------------------------------
+# AuditLog
+# -------------------------------------------------
+class AuditLog(Base):
+    """데이터 작업내역 로그"""
+    __tablename__ = "audit_logs"
+
+    id         = Column(BigInteger, primary_key=True)
+    action     = Column(String(50), nullable=False)
+
+    table_name = Column(String(50))
+    record_id  = Column(BigInteger)
+
+    old_values = Column(JSONB)
+    new_values = Column(JSONB)
+
+    user_id    = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+
+    session_id = Column(UUID)
+    ip_address = Column(INET)
+    user_agent = Column(String)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 # -------------------------------------------------
 # Public Model API

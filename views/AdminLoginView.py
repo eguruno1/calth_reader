@@ -7,12 +7,17 @@ from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QEvent, QPoint, QPropertyAnimation, QEasingCurve
 from PyQt5 import uic
 from views.VKeyboard import VKeyboard
+"""
+Session Save
+"""
+from database.audit_logger import write_audit_log
+from controllers.session_context import get_session_context
 
 class AdminLoginView(QWidget):
     """Admin 전용 로그인 화면"""
     
     # 시그널 정의
-    login_success = pyqtSignal(str)  # target (calibration/settings)
+    login_success  = pyqtSignal(str)  # target (calibration/settings)
     switch_to_home = pyqtSignal()
     
     def __init__(self, parent=None):
@@ -29,12 +34,12 @@ class AdminLoginView(QWidget):
     def setup_ui(self):
         """UI 설정 - UI 파일 로드"""
         # 프로젝트 루트 디렉토리
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         
         # UI 파일 경로 설정
         ui_filename = 'AdminLoginViewWindow.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Login', ui_filename)
+        ui_file     = os.path.join(project_root, 'ui', 'Login', ui_filename)
         
         # UI 파일 존재 여부 확인 및 로드
         if os.path.exists(ui_file):
@@ -43,10 +48,10 @@ class AdminLoginView(QWidget):
             raise FileNotFoundError(f"UI file not found: {ui_file}")
         
         # UI 요소 참조 설정 (애니메이션용)
-        self.login_frame = self.frame_login
+        self.login_frame    = self.frame_login
         self.password_input = self.lineEdit_password
-        self.login_button = self.pushButton_login
-        self.back_button = self.pushButton_back
+        self.login_button   = self.pushButton_login
+        self.back_button    = self.pushButton_back
     
     def connect_signals(self):
         """시그널 연결"""
@@ -121,6 +126,22 @@ class AdminLoginView(QWidget):
         """로그인 성공 처리"""
         if user_id == "admin":
             print(f"Admin 로그인 성공, 이동할 대상: {self.target}")
+
+            """Session + Audit Log Save"""
+            ctx = get_session_context()
+
+            write_audit_log(
+                action      = "LOGIN",
+                table_name  = "users",
+                record_id   = user_id,
+                user_id     = ctx["user_id"],
+                old_values  = {"password": "***"},
+                new_values  = {"password": "***"},
+                session_id  = ctx["session_id"],
+                ip_address  = ctx["ip_address"],
+                user_agent  = ctx["user_agent"]
+            )
+
             self.clear_form()
             self.login_success.emit(self.target or "")
         else:

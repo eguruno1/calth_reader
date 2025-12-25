@@ -13,6 +13,9 @@ from services.user_service import user_service
 from database.connection import get_db_session
 from database.models import User
 
+from database.audit_logger import write_audit_log
+from controllers.session_context import get_session_context
+
 
 class AccountAddView(QWidget):
     """
@@ -138,6 +141,20 @@ class AccountAddView(QWidget):
 
             session.add(user)
             session.commit()
+
+            """Session + Audit Log Save"""
+            ctx = get_session_context()
+
+            write_audit_log(
+                action     = "CREATE",
+                table_name = "users",
+                record_id  = user.user_id,
+                user_id    = ctx["user_id"],
+                new_values = {
+                    "user_id": user.user_id,
+                    "role"   : user.role
+                }
+            )
 
             print(f"✅ User created: {user_id}")
 

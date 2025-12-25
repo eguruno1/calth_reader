@@ -10,6 +10,8 @@ from PyQt5 import uic
 from database.connection import get_db_session
 from database.models import User
 
+from database.audit_logger import write_audit_log
+from controllers.session_context import get_session_context
 
 class AccountPwEditView(QWidget):
     """
@@ -123,7 +125,22 @@ class AccountPwEditView(QWidget):
                 bcrypt.gensalt()
             ).decode("utf-8")
 
-            session.commit()
+            session.commit()  # DB Commit
+
+            """Session + Audit Log Save"""
+            ctx = get_session_context()
+
+            write_audit_log(
+                action      = "UPDATE",
+                table_name  = "users",
+                record_id   = user.id,
+                user_id     = ctx["user_id"],
+                old_values  = {"password": "***"},
+                new_values  = {"password": "***"},
+                session_id  = ctx["session_id"],
+                ip_address  = ctx["ip_address"],
+                user_agent  = ctx["user_agent"]
+            )
 
         except Exception:
             session.rollback()

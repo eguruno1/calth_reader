@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from database.connection import get_db_session
 from database.models import User
 
-from controllers.session_context import (set_session_context, clear_session_context)
+from common.session_context import (set_session_context, clear_session_context)
 
 class UserService(QObject):
     """사용자 관리 서비스"""
@@ -140,9 +140,10 @@ class UserService(QObject):
             self._current_user = user
             # ✅ session_context 세팅
             set_session_context(
-                user_id    = user.id,
-                ip_address = None,      # 데스크탑 앱이면 None OK
-                user_agent = "CalthReader-App"
+                user_pk    = user.id,          # ⭐ BIGINT PK
+                user_id    = user.user_id,     # 문자열 ID
+                ip_address = None,
+                user_agent = None
             )
             self.login_success.emit(user.user_id)
             self.user_changed.emit(self._build_user_info(user))

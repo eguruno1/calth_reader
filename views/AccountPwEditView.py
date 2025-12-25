@@ -11,7 +11,7 @@ from database.connection import get_db_session
 from database.models import User
 
 from database.audit_logger import write_audit_log
-from controllers.session_context import get_session_context
+from common.session_context import get_session_context
 
 class AccountPwEditView(QWidget):
     """
@@ -133,8 +133,8 @@ class AccountPwEditView(QWidget):
             write_audit_log(
                 action      = "UPDATE",
                 table_name  = "users",
-                record_id   = user.id,
-                user_id     = ctx["user_id"],
+                record_id   = user.id,     # 대상 사용자 PK
+                user_id     = ctx["user_pk"],# 수행자 PK
                 old_values  = {"password": "***"},
                 new_values  = {"password": "***"},
                 session_id  = ctx["session_id"],

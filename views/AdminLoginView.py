@@ -11,7 +11,7 @@ from views.VKeyboard import VKeyboard
 Session Save
 """
 from database.audit_logger import write_audit_log
-from controllers.session_context import get_session_context
+from common.session_context import get_session_context
 
 class AdminLoginView(QWidget):
     """Admin 전용 로그인 화면"""
@@ -133,8 +133,8 @@ class AdminLoginView(QWidget):
             write_audit_log(
                 action      = "LOGIN",
                 table_name  = "users",
-                record_id   = user_id,
-                user_id     = ctx["user_id"],
+                record_id   = ctx["user_pk"],       # ⭐ BIGINT
+                user_id     = ctx["user_pk"],       # ⭐ FK
                 old_values  = {"password": "***"},
                 new_values  = {"password": "***"},
                 session_id  = ctx["session_id"],

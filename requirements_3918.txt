@@ -24,3 +24,6 @@ typing_extensions
 importlib-metadata
 importlib-resources
 zipp
+
+# QR
+pyzbar

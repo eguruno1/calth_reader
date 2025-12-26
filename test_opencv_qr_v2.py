@@ -208,10 +208,17 @@ if __name__ == "__main__":
     print(json.dumps(res, indent=2, ensure_ascii=False))
     print("#########################################")
     
-    print("QR Test")
-    path = "./images/kit_bench_qr_test.jpeg"
+    print("2 Line 흐린 킷")
+    path = "./images/kit_bench_2line_ok_2.jpeg"
     res = analyze_testkit(path)
     print(json.dumps(res, indent=2, ensure_ascii=False))
+
+    print("#########################################")
+    print("2 Line 진한 킷")
+    path = "./images/kit_bench_2line_ok.jpeg"
+    res = analyze_testkit(path)
+    print(json.dumps(res, indent=2, ensure_ascii=False))
+
 
     """
     print("#########################################")
@@ -223,12 +230,6 @@ if __name__ == "__main__":
     print("#########################################")
     print("1 Line")
     path = "./images/kit_bench_1line.jpeg"
-    res = analyze_testkit(path)
-    print(json.dumps(res, indent=2, ensure_ascii=False))
-
-    print("#########################################")
-    print("2 Line")
-    path = "./images/kit_bench_2line_ok.jpeg"
     res = analyze_testkit(path)
     print(json.dumps(res, indent=2, ensure_ascii=False))
 

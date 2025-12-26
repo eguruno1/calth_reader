@@ -29,12 +29,17 @@ def set_session_context(*, user_pk, user_id, ip_address=None, user_agent=None):
 
 
 def clear_session_context():
+    """
+    세션 컨텍스트 초기화 (로그아웃 / 재인증 실패 시 사용)
+    """
     _current_context.update({
-        "user_id": None,
-        "session_id": None,
-        "ip_address": None,
-        "user_agent": None,
+        "user_pk"    : None,
+        "user_id"    : None,
+        "session_id" : None,
+        "ip_address" : None,
+        "user_agent" : None,
     })
+
 
 def get_session_context():
     return _current_context

@@ -40,10 +40,12 @@ from config.pretest_config import PretestConfig
 from views.ResultView0    import ResultView0
 
 # 계정관리 관련 
-from views.AccountAddView import AccountAddView
+from views.AccountAddView    import AccountAddView
 from views.AccountIdEditView import AccountIdEditView
 from views.AccountPwEditView import AccountPwEditView
-from views.AdminPwEdit1View import AdminPwEdit1View
+from views.AdminPwEdit1View  import AdminPwEdit1View
+from views.AdminPwEdit2View  import AdminPwEdit2View
+
 
 
 from controllers import app_controller as backend_controller
@@ -114,8 +116,7 @@ class AppController(QMainWindow):
         self.account_id_edit_view         = AccountIdEditView(self) # ID 변경.
         self.account_pw_edit_view         = AccountPwEditView(self) # PW 변경.
         self.admin_pw_edit1_view          = AdminPwEdit1View(self)  # admin PW 1차 확인.
-
-
+        self.admin_pw_edit2_view          = AdminPwEdit2View(self)  # admin PW 2차 확인.
 
     #==========================================
     # --- View Stack Add ---
@@ -149,6 +150,7 @@ class AppController(QMainWindow):
         self.stacked_widget.addWidget(self.account_id_edit_view)
         self.stacked_widget.addWidget(self.account_pw_edit_view)
         self.stacked_widget.addWidget(self.admin_pw_edit1_view)
+        self.stacked_widget.addWidget(self.admin_pw_edit2_view)
 
 
 
@@ -256,6 +258,20 @@ class AppController(QMainWindow):
         self.admin_pw_edit1_view.switch_to_admin_pw_edit2.connect(
             self.switch_to_admin_pw_edit2
         )
+
+        # admin PW 변경 2차 확인.
+        self.admin_pw_edit1_view.switch_to_admin_pw_edit2.connect(
+            self.switch_to_admin_pw_edit2
+        )
+
+        self.admin_pw_edit2_view.switch_to_manage_operator.connect(
+            self.switch_to_manage_operator_view
+        )
+        # PW 변경 완료 → refresh
+        self.admin_pw_edit2_view.password_updated.connect(
+            self.manage_operator_view.load_user_data
+        )
+
 
 
     def _setup_shortcuts(self):
@@ -433,13 +449,9 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.admin_pw_edit1_view)
 
     def switch_to_admin_pw_edit2(self):
-        # 다음 단계 구현 전까지 임시 처리
-        QMessageBox.information(
-            self,
-            "다음 단계",
-            "비밀번호 변경 2단계로 이동합니다."
-        )
-        self.switch_to_manage_operator_view()
+        self.admin_pw_edit2_view.set_user()
+        self.stacked_widget.setCurrentWidget(self.admin_pw_edit2_view)
+    
     
     
     #==========================================

@@ -201,6 +201,89 @@ class UserService(QObject):
         return self._build_user_info(self._current_user)
 
     # =========================
+    # Password Verify (현재 비밀번호 확인)
+    # =========================
+    def verify_password(self, user_id: str, plain_password: str) -> bool:
+        if not user_id or not plain_password:
+            return False
+
+        session: Session = get_db_session()
+        try:
+            user = (
+                session.query(User)
+                .filter(
+                    User.user_id == user_id,
+                    User.is_active.is_(True)
+                )
+                .first()
+            )
+
+            if not user:
+                return False
+
+            stored_hash = user.password_hash or ""
+            input_pw = plain_password.encode("utf-8")
+
+            # 1️⃣ bcrypt
+            if self._is_bcrypt_hash(stored_hash):
+                return bcrypt.checkpw(input_pw, stored_hash.encode("utf-8"))
+
+            # 2️⃣ SHA-256
+            if len(stored_hash) == 64 and all(c in "0123456789abcdef" for c in stored_hash.lower()):
+                return hashlib.sha256(input_pw).hexdigest() == stored_hash
+
+            # 3️⃣ Plain
+            return plain_password == stored_hash
+
+        except Exception as e:
+            print(f"verify_password error: {e}")
+            return False
+
+        finally:
+            session.close()
+
+
+    # =========================
+    # Password Update (비밀번호 변경)
+    # =========================
+    def update_password(self, user_id: str, new_password: str) -> bool:
+        if not user_id or not new_password:
+            return False
+
+        session: Session = get_db_session()
+        try:
+            user = (
+                session.query(User)
+                .filter(
+                    User.user_id == user_id,
+                    User.is_active.is_(True)
+                )
+                .first()
+            )
+
+            if not user:
+                return False
+
+            # 🔐 항상 bcrypt로 저장
+            user.password_hash = bcrypt.hashpw(
+                new_password.encode("utf-8"),
+                bcrypt.gensalt()
+            ).decode("utf-8")
+
+            session.commit()
+            print(f"[SECURITY] Password updated: {user.user_id}")
+            return True
+
+        except Exception as e:
+            session.rollback()
+            print(f"update_password error: {e}")
+            return False
+
+        finally:
+            session.close()
+
+
+    # =========================
     # Users 조회
     # =========================
     def get_available_users(self) -> List[dict]:
@@ -275,8 +358,6 @@ class UserService(QObject):
             password.encode("utf-8"),
             bcrypt.gensalt()
         ).decode("utf-8")
-
-
 
 
 # =========================

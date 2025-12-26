@@ -11,11 +11,14 @@ from views.Utils import (update_date_time, start_date_time_update, stop_date_tim
 from services.user_service import user_service
 
 class ManageOperatorView(QMainWindow):
+
     switch_to_settings        = pyqtSignal()
     switch_to_home            = pyqtSignal()
-    switch_to_account_add     = pyqtSignal()  # 사용자추가 화면으로 전환 (컨텍스트 포함)
+    switch_to_account_add     = pyqtSignal()     # 사용자추가 화면으로 전환 (컨텍스트 포함)
     switch_to_account_edit    = pyqtSignal(str)  # ID 변경을 위해 user_id 전달
     switch_to_account_pw_edit = pyqtSignal(str)  # PW 변경을 위해 user_id 전달
+    switch_to_admin_pw_edit   = pyqtSignal(str)  # Admin PW 변경  
+
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -316,6 +319,19 @@ class ManageOperatorView(QMainWindow):
             })
         
         return selected_data
+    
+    def get_selected_user(self):
+        """선택된 사용자 가져오기"""
+        selected = self.tableWidget.selectedItems()
+        if not selected:
+            QMessageBox.warning(self, "알림", "사용자를 선택하세요.")
+            return None
+
+        row = selected[0].row()
+        user_id = self.tableWidget.item(row, 0).text()
+        user = user_service.get_user_by_id(user_id)
+        return user
+
 
     #==========================================
     # --- 화면 이동 ---
@@ -327,15 +343,6 @@ class ManageOperatorView(QMainWindow):
         # 여기에 새 사용자 생성 다이얼로그나 페이지를 열 수 있습니다
         # self.open_create_user_dialog()
         self.switch_to_account_add.emit()
-        """
-        self.account_add_view = AccountAddView()
-        self.account_add_view.switch_to_manage_operator.connect(
-            self.on_return_from_account_add
-        )
-
-        self.account_add_view.show()
-        self.close()
-        """
 
     def on_return_from_account_add(self):
         """사용자 추가후 화면 Refresh"""
@@ -381,6 +388,12 @@ class ManageOperatorView(QMainWindow):
 
         print(f"ID 편집할 사용자: {selected_user}")
 
+        user_role = selected_user.get("'Role'")
+        if user_role == "admin":
+            QMessageBox.warning(self, "권한 제한", "관리자는 ID를 변경할 수 없습니다.")
+            return
+
+
         # 4️⃣ AppController 로 화면 전환 요청
         self.switch_to_account_edit.emit(user_id)
 
@@ -409,7 +422,7 @@ class ManageOperatorView(QMainWindow):
             return
 
         user_data = selected_rows[0]["data"]
-        user_id = user_data.get("User ID")
+        user_id   = user_data.get("User ID")
 
         if not user_id:
             QMessageBox.warning(
@@ -418,8 +431,14 @@ class ManageOperatorView(QMainWindow):
                 "User ID 정보를 찾을 수 없습니다."
             )
             return
-
-        self.switch_to_account_pw_edit.emit(user_id)
+        
+        user_role = user_data.get("Role")
+        print(f"PW 변경 할 사용자 user_role : {user_role}")
+        if user_role == "admin":
+            self.switch_to_admin_pw_edit.emit(user_id)
+        else:
+            self.switch_to_account_pw_edit.emit(user_id)
+        
         
         # 여기에 사용자 비밀번호 변경 다이얼로그나 페이지를 열 수 있습니다
         # self.open_edit_user_password_dialog(selected_data[0]['data'])

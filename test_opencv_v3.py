@@ -184,6 +184,11 @@ if __name__ == "__main__":
 
     image_path = sys.argv[1]
     """
+    image_path = "./images/kit_bench_2Line_over.jpeg"
+    result = analyze_testkit(image_path)
+    print(result)
+
+    """
     image_path = "./images/kit_2CT_2line.jpg"
     result = analyze_testkit(image_path)
     print(result)
@@ -203,7 +208,7 @@ if __name__ == "__main__":
     image_path = "./images/kit_2CT_2CT_2.jpg"
     result = analyze_testkit(image_path)
     print(result)
-
+    """
 
 
 # 테스트

@@ -96,4 +96,7 @@ if __name__ == "__main__":
     image_folder = "./images"   # 🔹 여기만 수정하면 됨
     # print(analyze_testkit_folder(image_folder))
     # kit_2CT_2line.jpg
-    print(analyze_testkit("./images/kit_2CT_2line.jpg"))
+    # print(analyze_testkit("./images/kit_2CT_2line.jpg"))
+
+    image_path = "./images/kit_bench_2Line_over.jpeg"
+    print(analyze_testkit(image_path))

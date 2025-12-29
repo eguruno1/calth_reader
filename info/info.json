@@ -1,8 +1,10 @@
 {
     "name": "Calth Reader",
     "sn": "C2024090001",
-    "version": "1.00.716",
+    "sw_version": "1.00.716",
+    "fw_version": "1.00.716",
     "description": "Calth AI 진단 장치",
     "author": "Calth.co",
-    "last_updated": "2023-09-27"
+    "sw_last_updated": "2025-09-27",
+    "fw_last_updated": "2025-12-27"
 }

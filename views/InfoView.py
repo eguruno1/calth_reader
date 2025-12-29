@@ -66,15 +66,21 @@ class InfoView(QMainWindow):
             else:
                 print("'name' key not found in info.json")
             
-            # version 값을 label_version에 설정
-            if 'version' in info_data:
-                self.label_version.setText(info_data['version'])
+            # s/w version 값을 label_sw_version 설정
+            if 'sw_version' in info_data:
+                self.label_sw_version.setText(info_data['sw_version'])
             else:
-                print("'version' key not found in info.json")
+                print("'s/w version' key not found in info.json")
+
+            # f/w version 값을 label_fw_version 설정
+            if 'fw_version' in info_data:
+                self.label_fw_version.setText(info_data['fw_version'])
+            else:
+                print("'f/w version' key not found in info.json")    
             
-            # Serial 값을 label_Serial에 설정
+            # Serial 값을 label_Serial_No 설정
             if 'sn' in info_data:
-                self.label_Serial.setText(info_data['sn'])
+                self.label_Serial_No.setText(info_data['sn'])
             else:
                 print("'sn' key not found in info.json")
 

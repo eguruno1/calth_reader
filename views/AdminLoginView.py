@@ -22,10 +22,10 @@ class AdminLoginView(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.target = None  # 로그인 성공 후 이동할 대상
-        self.keyboard_animation = None  # 키보드 애니메이션
-        self.form_animation = None  # 폼 애니메이션
-        self.original_form_pos = None  # 원래 폼 위치
+        self.target              = None   # 로그인 성공 후 이동할 대상
+        self.keyboard_animation  = None   # 키보드 애니메이션
+        self.form_animation      = None   # 폼 애니메이션
+        self.original_form_pos   = None   # 원래 폼 위치
         self.keyboard_auto_shown = False  # 키보드 자동 표시 여부 플래그
         self.setup_ui()
         self.setup_virtual_keyboard()

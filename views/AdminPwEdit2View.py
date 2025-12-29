@@ -177,10 +177,11 @@ class AdminPwEdit2View(QWidget):
             # 로그인 필요하지 않음.
             # =======================================
             set_session_context(
-                user_pk=admin.id,
-                user_id=admin.user_id,
-                ip_address=session_user.get("ip_address"),
-                user_agent=session_user.get("user_agent"),
+                user_pk    = admin.id,
+                user_id    = admin.user_id,
+                role       = admin.role,
+                ip_address = session_user.get("ip_address"),
+                user_agent = session_user.get("user_agent"),
             )
 
         except Exception:

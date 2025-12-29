@@ -9,6 +9,7 @@ from PyQt5 import uic
 from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
                         update_battery_status, start_battery_update, stop_battery_update)
 from services.user_service import user_service
+from common.session_context import get_session_context
 
 class ManageOperatorView(QMainWindow):
 
@@ -18,6 +19,7 @@ class ManageOperatorView(QMainWindow):
     switch_to_account_edit    = pyqtSignal(str)  # ID 변경을 위해 user_id 전달
     switch_to_account_pw_edit = pyqtSignal(str)  # PW 변경을 위해 user_id 전달
     switch_to_admin_pw_edit   = pyqtSignal(str)  # Admin PW 변경  
+    switch_to_account_delete  = pyqtSignal(str)  # 계정 삭제 화면  
 
 
     def __init__(self, parent=None):
@@ -446,18 +448,51 @@ class ManageOperatorView(QMainWindow):
     def on_delete_id_button_clicked(self):
         """DELETE ID 버튼 - 선택된 사용자 삭제"""
         print("ManageOperatorView: Delete ID 버튼이 클릭되었습니다.")
-        selected_data = self.get_selected_rows_data()
-        
-        if not selected_data:
-            print("삭제할 사용자가 선택되지 않았습니다.")
+
+        # 1️⃣ 로그인 사용자 권한 확인
+        current_user = user_service.get_current_user()
+
+        print("DEBUG current_user:", current_user)
+
+        if not current_user:
+            QMessageBox.warning(self, "오류", "로그인 정보가 없습니다.")
             return
-        
-        print(f"삭제할 사용자 {len(selected_data)}개:")
-        for item in selected_data:
-            print(f"  Row {item['row_number'] + 1}: {item['data']}")
-        
-        # 여기에 실제 삭제 로직을 추가할 수 있습니다
-        # self.delete_users(selected_data)
+
+        current_role = current_user.get("role")
+
+        if current_role != "admin":
+            QMessageBox.warning(
+                self,
+                "권한 없음",
+                "관리자만 사용자를 삭제 할 수 있습니다."
+            )
+            return
+
+        # 2️⃣ 선택 사용자 확인
+        selected_rows = self.get_selected_rows_data()
+        if not selected_rows or len(selected_rows) != 1:
+            QMessageBox.warning(self, "선택 오류", "한 명의 사용자만 선택해주세요.")
+            return
+
+        user_data        = selected_rows[0]["data"]
+        target_user_id   = user_data.get("User ID")
+        target_user_role = user_data.get("Role")
+
+        if not target_user_id:
+            QMessageBox.warning(self, "오류", "User ID를 찾을 수 없습니다.")
+            return
+
+        # 3️⃣ 관리자 삭제 방지
+        if target_user_role == "admin" and target_user_id == "admin":
+            QMessageBox.warning(
+                self,
+                "삭제 불가",
+                "관리자는 삭제 할 수 없습니다."
+            )
+            return
+
+        # 4️⃣ 삭제 화면 이동
+        self.switch_to_account_delete.emit(target_user_id)
 
     def on_auto_logout_button_clicked(self):
         """AUTO LOGOUT 버튼 - 자동 로그아웃 설정"""

@@ -45,6 +45,7 @@ from views.AccountIdEditView import AccountIdEditView
 from views.AccountPwEditView import AccountPwEditView
 from views.AdminPwEdit1View  import AdminPwEdit1View
 from views.AdminPwEdit2View  import AdminPwEdit2View
+from views.AccountDeleteView  import AccountDeleteView
 
 
 
@@ -112,11 +113,12 @@ class AppController(QMainWindow):
         #self.result_view1                = ResultView1(self)
 
         # 계정관련 views
-        self.account_add_view             = AccountAddView(self)  # 신규 사용자 추가.
+        self.account_add_view             = AccountAddView(self)    # 신규 사용자 추가.
         self.account_id_edit_view         = AccountIdEditView(self) # ID 변경.
         self.account_pw_edit_view         = AccountPwEditView(self) # PW 변경.
         self.admin_pw_edit1_view          = AdminPwEdit1View(self)  # admin PW 1차 확인.
         self.admin_pw_edit2_view          = AdminPwEdit2View(self)  # admin PW 2차 확인.
+        self.account_delete_view          = AccountDeleteView(self) # 사용자 삭제(is_active:false)
 
     #==========================================
     # --- View Stack Add ---
@@ -151,6 +153,7 @@ class AppController(QMainWindow):
         self.stacked_widget.addWidget(self.account_pw_edit_view)
         self.stacked_widget.addWidget(self.admin_pw_edit1_view)
         self.stacked_widget.addWidget(self.admin_pw_edit2_view)
+        self.stacked_widget.addWidget(self.account_delete_view)
 
 
 
@@ -269,6 +272,18 @@ class AppController(QMainWindow):
         )
         # PW 변경 완료 → refresh
         self.admin_pw_edit2_view.password_updated.connect(
+            self.manage_operator_view.load_user_data
+        )
+
+        # 사용자 삭제 시그널 연결
+        self.manage_operator_view.switch_to_account_delete.connect(
+            self.switch_to_account_delete
+        )
+
+        self.account_delete_view.switch_to_manage_operator.connect(
+            self.switch_to_manage_operator_view
+        )
+        self.account_delete_view.user_deleted.connect(
             self.manage_operator_view.load_user_data
         )
 
@@ -451,6 +466,11 @@ class AppController(QMainWindow):
     def switch_to_admin_pw_edit2(self):
         self.admin_pw_edit2_view.set_user()
         self.stacked_widget.setCurrentWidget(self.admin_pw_edit2_view)
+
+    def switch_to_account_delete(self, user_id: str):
+        """사용자 삭제"""
+        self.account_delete_view.set_target_user(user_id)
+        self.stacked_widget.setCurrentWidget(self.account_delete_view)    
     
     
     

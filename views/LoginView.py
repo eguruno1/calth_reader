@@ -9,6 +9,8 @@ from PyQt5 import uic
 from controllers import app_controller
 from views.VKeyboard import VKeyboard
 
+
+
 """
 Session Save
 """
@@ -113,6 +115,7 @@ class LoginView(QWidget):
         try:
             # 실제 검증은 UserService에서 수행
             success = app_controller.user_service.login(user_id, password)
+
             # 버튼 상태 복원
             QTimer.singleShot(1000, self.reset_login_button)
         except Exception as e:

@@ -6,13 +6,15 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from typing import Optional, List
 import bcrypt
 import hashlib
+from datetime import timedelta
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from typing import Tuple
 
 from database.connection import get_db_session
 from database.models import User
 
-from common.session_context import (set_session_context, clear_session_context)
+from common.session_context import (set_session_context, get_session_context, clear_session_context)
 
 class UserService(QObject):
     """사용자 관리 서비스"""
@@ -142,6 +144,7 @@ class UserService(QObject):
             set_session_context(
                 user_pk    = user.id,          # ⭐ BIGINT PK
                 user_id    = user.user_id,     # 문자열 ID
+                role       = role_value,       # 권한.
                 ip_address = None,
                 user_agent = None
             )
@@ -178,21 +181,23 @@ class UserService(QObject):
 
     def get_current_user(self) -> Optional[User]:
         """현재 사용자 반환"""
-        return self._current_user
+        # return self._current_user
+        return get_session_context()
 
     def get_current_user_id(self) -> str:
         """현재 사용자 ID"""
-        return self._current_user.user_id if self._current_user else ""
+        ctx = get_session_context()
+        return ctx["user_id"] if ctx else None
 
     def get_current_user_display_name(self) -> str:
         """현재 사용자 표시 이름"""
-        return self._current_user.name if self._current_user else ""
+        ctx = get_session_context()
+        return ctx["name"] if ctx else None
 
     def has_permission(self, required_role: str) -> bool:
         """권한 확인"""
-        if not self._current_user:
-            return False
-        return self._current_user.role == required_role
+        ctx = get_session_context()
+        return ctx["role"] if ctx else None
 
     def get_user_info(self) -> dict:
         """사용자 정보 반환"""
@@ -358,6 +363,99 @@ class UserService(QObject):
             password.encode("utf-8"),
             bcrypt.gensalt()
         ).decode("utf-8")
+    
+    # =========================
+    # Users 삭제시 관리자 로그인 실패 관리.
+    # =========================    
+    def verify_admin_password_with_lock_policy(self, admin_user_id: str, password: str) -> Tuple[bool, str]:
+        """
+        관리자 비밀번호 검증 (삭제용)
+        - users.login_attempts
+        - users.locked_until 사용
+        """
+        session = get_db_session()
+
+        try:
+            admin = (
+                session.query(User)
+                .filter(
+                    User.user_id == admin_user_id,
+                    User.is_active.is_(True)
+                )
+                .first()
+            )
+
+            if not admin:
+                return False, "관리자 정보를 찾을 수 없습니다."
+
+            now = session.execute(text("SELECT now()")).scalar()
+
+            # 🔒 Lock 상태 확인
+            if admin.locked_until and admin.locked_until > now:
+                remain = int((admin.locked_until - now).total_seconds() / 60) + 1
+                return False, f"{remain}분 후 다시 시도해주세요."
+
+            # 🔑 비밀번호 검증
+            if self.verify_password(admin.user_id, password):
+                # ✅ 성공 → 초기화
+                admin.login_attempts = 0
+                admin.locked_until = None
+                session.commit()
+                return True, "OK"
+
+            # ❌ 실패 처리
+            admin.login_attempts = (admin.login_attempts or 0) + 1
+
+            if admin.login_attempts >= 5:
+                admin.locked_until = now + timedelta(minutes=10)
+                session.commit()
+                return False, "5회 실패로 10분간 삭제가 제한됩니다."
+
+            session.commit()
+            return False, f"비밀번호가 올바르지 않습니다. ({admin.login_attempts}/5)"
+
+        finally:
+            session.close()
+
+    # =========================
+    # Admin 사용자 삭제시 잠금 상태 조회
+    # =========================
+    def get_admin_delete_lock_status(self, admin_user_id: str):
+        """
+        관리자 삭제 잠금 상태 조회
+        return:
+        {
+            "locked": bool,
+            "remain_minutes": int | None
+        }
+        """
+        session = get_db_session()
+        try:
+            admin = (
+                session.query(User)
+                .filter(User.user_id == admin_user_id)
+                .first()
+            )
+
+            if not admin or not admin.locked_until:
+                return {"locked": False, "remain_minutes": None}
+
+            now = session.execute(text("SELECT now()")).scalar()
+
+            if admin.locked_until <= now:
+                return {"locked": False, "remain_minutes": None}
+
+            remain_sec = (admin.locked_until - now).total_seconds()
+            remain_min = int(remain_sec // 60) + 1
+
+            return {
+                "locked": True,
+                "remain_minutes": remain_min
+            }
+
+        finally:
+            session.close()
+
 
 
 # =========================

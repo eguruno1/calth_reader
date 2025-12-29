@@ -6,18 +6,20 @@ from PyQt5.QtCore    import QTimer, pyqtSignal, QDateTime
 from PyQt5.QtGui     import QPixmap
 from PyQt5           import uic
 
+from common.session_context import get_session_context
+
 from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update,
                             update_battery_status, start_battery_update, stop_battery_update)
 
 class HomeView(QMainWindow):
-    switch_to_select     = pyqtSignal()
-    switch_to_info       = pyqtSignal()
-    switch_to_resultList = pyqtSignal()
-    switch_to_operator   = pyqtSignal()
-    switch_to_settings   = pyqtSignal()
-    switch_to_login      = pyqtSignal(str)  # 로그인 화면으로 전환 (컨텍스트 포함)
+    switch_to_select      = pyqtSignal()
+    switch_to_info        = pyqtSignal()
+    switch_to_resultList  = pyqtSignal()
+    switch_to_operator    = pyqtSignal()
+    switch_to_settings    = pyqtSignal()
+    switch_to_login       = pyqtSignal(str)  # 로그인 화면으로 전환 (컨텍스트 포함)
     switch_to_admin_login = pyqtSignal(str)  # Admin 전용 로그인 (target 포함)
-    switch_to_qc         = pyqtSignal()  # QC Test로 전환
+    switch_to_qc          = pyqtSignal()  # QC Test로 전환
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -264,3 +266,32 @@ class HomeView(QMainWindow):
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         # 로그인 상태 업데이트
         QTimer.singleShot(200, self.update_login_button)
+
+    #==========================================
+    # --- 권한 체크 ---
+    #==========================================
+    def _check_admin_access(self, target: str) -> bool:
+        """
+        admin 전용 메뉴 접근 체크
+        :param target: 'settings' | 'calibration'
+        :return: True (접근 허용), False (차단)
+        """
+        session_user = get_session_context()
+        print(f"[HomeView] {target} 접근 체크 - session_user: {session_user}")
+
+        # 로그인 안 된 경우 → admin 로그인 화면
+        if not session_user:
+            self.switch_to_admin_login.emit(target)
+            return False
+
+        # admin 이 아닌 경우
+        if session_user.get("role") != "admin":
+            QMessageBox.warning(
+                self,
+                "접근 제한",
+                "관리자만 이용할 수 있는 메뉴 입니다."
+            )
+            return False
+
+        return True
+    

@@ -13,12 +13,12 @@ class LoadView(QMainWindow):
         super().__init__(parent)
         
          # 프로젝트 루트 디렉토리
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         
         # UI 파일 경로 설정 (대소문자 구분 없이)
         ui_filename = 'LoadViewWindow.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Home', ui_filename)
+        ui_file     = os.path.join(project_root, 'ui', 'Home', ui_filename)
         
         # 파일 존재 여부 확인 및 로드
         if os.path.exists(ui_file):

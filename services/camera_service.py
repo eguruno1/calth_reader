@@ -22,10 +22,10 @@ class CameraService(QObject):
     
     def __init__(self, camera_model: CameraModel):
         super().__init__()
-        self.model = camera_model
-        self.cap = None
-        self.timer = None
-        self.dummy_frame = None
+        self.model          = camera_model
+        self.cap            = None
+        self.timer          = None
+        self.dummy_frame    = None
         self._is_debug_mode = app_config.is_debug_mode()
         
         # 시그널 연결
@@ -122,7 +122,7 @@ class CameraService(QObject):
         """디버그용 더미 프레임 캡처"""
         import time
         # 시간에 따라 변화하는 더미 프레임
-        frame = self.dummy_frame.copy()
+        frame     = self.dummy_frame.copy()
         timestamp = int(time.time() * 10) % 360
         
         # 색상 변화하는 원 추가
@@ -241,6 +241,7 @@ class CameraService(QObject):
         else:
             ws = 15
             margin = 10
+
         smooth_signal = smooth(signal, ws)
         left = np.mean(smooth_signal[ws:-ws][:margin])
         line = np.min(smooth_signal[ws:-ws])

@@ -14,6 +14,7 @@ class GeneralSettingsView(QMainWindow):
     """일반 설정 화면"""
     
     switch_to_settings = pyqtSignal()  # 설정 화면으로 돌아가기
+    switch_to_info     = pyqtSignal()  # Info 화면으로
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -136,8 +137,10 @@ class GeneralSettingsView(QMainWindow):
 
     def on_info_clicked(self):
         """Info 버튼 클릭"""
+        self.switch_to_info.emit()
+        """
         try:
-            info_text = """장비 정보:
+            info_text = ""장비 정보:
 • 장비명칭: CalthReader v1.0
 • Serial Number: CR-2024-001
 • Software 버전: v1.2.3
@@ -147,7 +150,7 @@ class GeneralSettingsView(QMainWindow):
 메모리 정보:
 • Patient: 150/3,000
 • QC: 25/200  
-• Calibration: 10/100"""
+• Calibration: 10/100""
             
             QMessageBox.information(
                 self, 
@@ -158,6 +161,7 @@ class GeneralSettingsView(QMainWindow):
                 
         except Exception as e:
             QMessageBox.critical(self, "오류", f"Info 조회 중 오류가 발생했습니다: {e}")
+            """
 
     def on_reset_clicked(self):
         """실행취소 버튼 클릭 - 마지막 저장한 시점으로 돌리기"""

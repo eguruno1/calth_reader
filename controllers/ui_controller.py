@@ -205,6 +205,9 @@ class AppController(QMainWindow):
         self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
         self.calibration_view.switch_to_home.connect(self.switch_to_home_view)
         self.calibration_view.switch_to_next_step.connect(self.on_calibration_intro_next)
+        # info
+        self.general_settings_view.switch_to_info.connect(self.switch_to_info_view)
+
         # 계정관련
         self.manage_operator_view.switch_to_account_add.connect(
             self.switch_to_account_add_view

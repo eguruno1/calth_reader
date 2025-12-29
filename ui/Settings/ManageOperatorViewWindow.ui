@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -57,7 +57,6 @@ QPushButton:pressed {
      <bool>false</bool>
     </property>
    </widget>
-   <!-- User Management Buttons -->
    <widget class="QPushButton" name="pushButton_CreateID">
     <property name="geometry">
      <rect>
@@ -67,13 +66,10 @@ QPushButton:pressed {
       <height>80</height>
      </rect>
     </property>
-    <property name="text">
-     <string>CREATE ID</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>11</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -93,6 +89,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>CREATE ID</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_EditID">
@@ -104,13 +103,10 @@ QPushButton:pressed {
       <height>80</height>
      </rect>
     </property>
-    <property name="text">
-     <string>EDIT ID</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>11</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -130,6 +126,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>EDIT ID</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_EditPW">
@@ -141,13 +140,10 @@ QPushButton:pressed {
       <height>80</height>
      </rect>
     </property>
-    <property name="text">
-     <string>EDIT PW</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>11</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -167,6 +163,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>EDIT PW</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_DeleteID">
@@ -178,13 +177,10 @@ QPushButton:pressed {
       <height>80</height>
      </rect>
     </property>
-    <property name="text">
-     <string>DELETE ID</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>11</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -204,6 +200,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>DELETE ID</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_AutoLogout">
@@ -215,14 +214,10 @@ QPushButton:pressed {
       <height>80</height>
      </rect>
     </property>
-    <property name="text">
-     <string>AUTO
-LOGOUT</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>11</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -243,11 +238,15 @@ QPushButton:pressed {
     background-color: #505050;
 }</string>
     </property>
+    <property name="text">
+     <string>AUTO
+LOGOUT</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_9">
     <property name="geometry">
      <rect>
-      <x>850</x>
+      <x>921</x>
       <y>20</y>
       <width>80</width>
       <height>40</height>
@@ -263,28 +262,6 @@ QPushButton:pressed {
      <bool>true</bool>
     </property>
    </widget>
-   <!-- <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>42</x>
-      <y>93</y>
-      <width>793</width>
-      <height>37</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>../image/07_TestResult/TestResult_TableBar.png</pixmap>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget> -->
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
@@ -532,9 +509,9 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>920</x>
       <y>20</y>
-      <width>150</width>
+      <width>61</width>
       <height>40</height>
      </rect>
     </property>
@@ -587,7 +564,7 @@ QPushButton:pressed {
      <string>000%</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignVCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="label_DateNClock">

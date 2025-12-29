@@ -61,10 +61,10 @@ class HomeView(QMainWindow):
         # 배터리 상태 초기화
         self.init_battery_status()
         
-        # 배터리 상태 업데이트 타이머 (30초마다)
+        # 배터리 상태 업데이트 타이머 (30초마다->60초)
         self.battery_timer = QTimer()
         self.battery_timer.timeout.connect(self.update_battery_status)
-        self.battery_timer.start(30000)  # 30초
+        self.battery_timer.start(60000)  # 36초
         
         # 로그인 상태 초기화
         self.init_login_status()

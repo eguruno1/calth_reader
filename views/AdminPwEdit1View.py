@@ -48,6 +48,9 @@ class AdminPwEdit1View(QWidget):
         self.pushButton_back.clicked.connect(
             lambda: self.switch_to_manage_operator.emit()
         )
+        self.pushButton_cancel.clicked.connect(
+            lambda: self.switch_to_manage_operator.emit()
+        )
         self.pushButton_ok.clicked.connect(self.on_check_password)
 
     def set_user(self, user_id: str):

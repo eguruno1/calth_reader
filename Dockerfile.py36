@@ -1,0 +1,77 @@
+# ===============================
+# Base Image (Python 3.6 고정)
+# ===============================
+FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONIOENCODING=UTF-8
+ENV LANG=C.UTF-8
+
+WORKDIR /app
+
+# ===============================
+# 1. System Dependencies
+# ===============================
+RUN apt update && apt install -y \
+    python3.6 \
+    python3.6-venv \
+    python3-pip \
+    build-essential \
+    curl \
+    git \
+    pkg-config \
+    \
+    # OpenCV / GUI
+    libgl1 \
+    libglib2.0-0 \
+    \
+    # PyQt5 (APT)
+    python3-pyqt5 \
+    qt5-default \
+    qtbase5-dev \
+    \
+    # zbar (QR)
+    libzbar0 \
+    \
+    # PostgreSQL (psycopg2)
+    libpq-dev \
+    \
+    # bcrypt / cffi
+    libffi-dev \
+    \
+    && rm -rf /var/lib/apt/lists/*
+
+# ===============================
+# 2. Python Alias
+# ===============================
+RUN ln -sf /usr/bin/python3.6 /usr/bin/python \
+ && ln -sf /usr/bin/pip3 /usr/bin/pip
+
+# ===============================
+# 3. Virtual Environment
+# ===============================
+RUN python -m venv /app/venv36
+
+ENV PATH="/app/venv36/bin:$PATH"
+
+# ===============================
+# 4. pip 고정 (중요)
+# ===============================
+RUN pip install --upgrade pip==21.3.1 setuptools wheel
+
+# ===============================
+# 5. Python Dependencies
+# ===============================
+COPY requirements_py36.txt /app/
+
+RUN pip install --no-cache-dir -r requirements_py36.txt
+
+# ===============================
+# 6. Project Copy
+# ===============================
+COPY . /app
+
+# ===============================
+# 7. Default Command
+# ===============================
+CMD ["python", "main.py"]

@@ -246,3 +246,44 @@ python test_structure.py
 - 디버그 모드와 실제 하드웨어 모드의 매끄러운 전환
 - 시스템 상태 실시간 모니터링
 - 통합된 백엔드 서비스 관리
+
+
+### QR 관련 패키지 설치
+```bash
+# 시스템 라이브러리 설치
+sudo apt-get update
+sudo apt-get install libzbar0
+# Python 라이브러리 설치
+pip install pyzbar
+# 또는
+# pip3 install pyzbar
+# Jetson 환경에서 pip 미설치 및 설치 오류시 아래 수행.
+# 기존 깨진 pip 관련 패키지 정리
+sudo apt-get remove -y python3-pip python-pip python-pip-whl
+sudo apt-get autoremove -y
+sudo apt-get clean
+# 필수 Python 패키지 수동 설치
+sudo apt-get update
+sudo apt-get install -y \
+    python3-distutils \
+    python3-setuptools \
+    python3-wheel \
+    curl
+# python3-distutils 가 없으면 get-pip.py 실패합니다
+# get-pip.py로 pip3 강제 설치
+curl -sS https://bootstrap.pypa.io/pip/3.6/get-pip.py -o get-pip.py
+sudo python3 get-pip.py
+# 설치확인
+pip3 --version
+# pyzbar 설치
+pip3 install pyzbar
+# zbar 연동 확인 테스트
+python3 - << 'EOF'
+from pyzbar import pyzbar
+print("pyzbar OK")
+EOF
+
+
+
+
+

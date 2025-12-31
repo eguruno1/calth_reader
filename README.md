@@ -311,6 +311,21 @@ v4l2-ctl --list-formats-ext -d /dev/video0
 v4l2-ctl -d /dev/video0 --all
 ```
 
+# Argus 데몬 확인
+```bash
+ps aux | grep nvargus-daemon
+```
+
+# 카메라 단독 테스트
+```bash
+gst-launch-1.0 nvarguscamerasrc ! nvvidconv ! autovideosink
+```
+
+# CSI 카메라 연결 확인
+```bash
+ls /dev/video*
+```
+
 ### UART 연결 문제
 - 디버그 모드에서는 가상 UART가 사용됩니다
 - 권한 문제: `sudo usermod -a -G dialout $USER` 후 재로그인

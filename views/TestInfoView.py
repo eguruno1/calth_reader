@@ -27,14 +27,14 @@ class TestInfoView(QMainWindow):
         self.keyboard_animation = None
 
         # JSON 파일 경로 설정
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
         self.load_operator_from_json()
 
     def load_ui(self):
         # 프로젝트 루트 디렉토리
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         
         # UI 파일 경로 설정 (대소문자 구분 없이)
@@ -218,6 +218,7 @@ class TestInfoView(QMainWindow):
         self.switch_to_select.emit()  # SelectView로 전환 시그널 발생
 
     def on_testinfok_button_clicked(self):
+        """테스트 진단 시작"""
         operator = self.lineEdit_Operator.text() if self.lineEdit_Operator else ""
         patient_id = self.lineEdit_PatientID.text() if self.lineEdit_PatientID else ""
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

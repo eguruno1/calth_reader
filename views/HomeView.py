@@ -30,7 +30,7 @@ class HomeView(QMainWindow):
         
         # UI 파일 경로 설정 (대소문자 구분 없이)
         ui_filename = 'HomeViewWindow.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Home', ui_filename)
+        ui_file     = os.path.join(project_root, 'ui', 'Home', ui_filename)
         
         # UI 파일 존재 여부 확인 및 로드
         if os.path.exists(ui_file):
@@ -66,7 +66,7 @@ class HomeView(QMainWindow):
         # 배터리 상태 업데이트 타이머 (30초마다->60초)
         self.battery_timer = QTimer()
         self.battery_timer.timeout.connect(self.update_battery_status)
-        self.battery_timer.start(60000)  # 36초
+        self.battery_timer.start(60000)  # 60초
         
         # 로그인 상태 초기화
         self.init_login_status()
@@ -114,6 +114,7 @@ class HomeView(QMainWindow):
             print(f"JSON 파일 업데이트 중 오류 발생: {e}")
 
     def on_standard_test_button_clicked(self):
+        # TestInfoView 로 이동.
         print("Standard Test 버튼이 클릭되었습니다.")
         self.update_json_file("StandardTest")
         self.switch_to_select.emit()

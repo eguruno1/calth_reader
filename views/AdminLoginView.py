@@ -136,8 +136,8 @@ class AdminLoginView(QWidget):
                 record_id   = ctx["user_pk"],       # ⭐ BIGINT
                 user_id     = ctx["user_pk"],       # ⭐ FK
                 old_values  = {"password": "***"},
-                new_values  = {"password": "***"},
-                session_id  = ctx["session_id"],
+                new_values  = {"user_id": user_id, "password": "***"},
+                session_id  = str(ctx["session_id"]) if ctx.get("session_id") else None,
                 ip_address  = ctx["ip_address"],
                 user_agent  = ctx["user_agent"]
             )

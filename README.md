@@ -308,6 +308,7 @@ python test_structure.py
 sudo apt update
 sudo apt install -y v4l-utils
 v4l2-ctl --list-formats-ext -d /dev/video0
+v4l2-ctl -d /dev/video0 --all
 ```
 
 ### UART 연결 문제

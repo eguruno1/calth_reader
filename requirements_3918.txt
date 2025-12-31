@@ -1,5 +1,5 @@
 # GUI
-PyQt5==5.15.10
+PyQt5==5.15.9
 opencv-python
 
 # Core

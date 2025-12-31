@@ -93,7 +93,7 @@ calth_reader/
 
 ## 시스템 요구사항
 
-- Python 3.6 이상 -> 3.9.18 업그레이드
+- Python 3.6 이상
 - PyQt5
 - OpenCV (카메라 제어용)
 - pyserial (UART 통신용, 선택사항)
@@ -167,6 +167,86 @@ pip install pyserial
 # 참고 링크
 https://forums.developer.nvidia.com/t/jetson-nano-developer-kit-ubuntu-splash-screen/107984
 https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-logo-to-my-own/83583/15
+
+# 자동 실행관련 재정의
+ 1. 기존 서비스 파일 확인 
+  $ cat ~/PyCalth.service
+
+ 2. 기존 서비스 파일 내용
+  [Unit]
+  Description=Main Python Script
+  After=network.target
+
+  [Service]
+  Environment=XDG_RUNTIME_DIR=/run/user/1000
+  Environment=PYTHONUNBUFFERED=1
+  Environment=XAUTHORITY=/home/calth/.Xauthority
+  Environment=DISPLAY=:0
+  ExecStart=/home/calth/calth_reader/py369/bin/python3 /home/calth/calth_reader/main.py
+  WorkingDirectory=/home/calth/calth_reader
+  StandardOutput=inherit
+  StandardError=inherit
+  Restart=on-failure
+  RestartSec=10
+  User=calth
+  Group=calth
+
+  [Install]
+  WantedBy=multi-user.target
+
+ 3. 서비스파일 상태 확인
+  $ systemctl status PyCalth.service
+  ############## 상태 출력 예시 ##############
+  ● PyCalth.service - Calth Reader Main Script
+     Loaded: loaded (/etc/systemd/system/PyCalth.service; enabled; vendor preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Wed 2025-12-31 10:45:38 KST; 651ms ago
+    Process: 8151 ExecStart=/home/calth/calth_reader/py369/bin/python3 /home/calth/calth_reader/main.py (code=exite
+   Main PID: 8151 (code=exited, status=203/EXEC)
+  ######################################### 
+
+ 4. 파이썬 설치 위치 확인
+  $ which python3
+  /usr/bin/python3
+ 
+ 5. 서비스파일 수정
+  $ sudo nano /etc/systemd/system/PyCalth.service
+  ExecStart=/home/calth/calth_reader/py369/bin/python3 /home/calth/calth_reader/main.py 를
+  ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
+  
+  ############## 서비스파일 내용 ##############
+  [Unit]
+  Description=Calth Reader Application
+  After=network.target graphical.target
+
+  [Service]
+  Type=simple
+  User=calth
+  Group=calth
+  WorkingDirectory=/home/calth/calth_reader
+
+  ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
+
+  Environment=PYTHONUNBUFFERED=1
+  Environment=DISPLAY=:0
+  Environment=XAUTHORITY=/home/calth/.Xauthority
+
+  Restart=always
+  RestartSec=5
+
+  [Install]
+  WantedBy=graphical.target
+  #########################################
+
+ 6. systemd 재적용
+  $ sudo systemctl daemon-reexec
+  $ sudo systemctl daemon-reload
+  $ sudo systemctl restart PyCalth.service
+
+ 7. 상태확인
+  $ systemctl status PyCalth.service 
+
+ 8. 프로그램 실행후 ssh 접속후 콘솔단 로그 확인
+  $ journalctl -u PyCalth.service -f 
 
 
 

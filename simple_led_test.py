@@ -8,6 +8,23 @@ import serial
 import time
 
 # UART 설정
+# 
+"""
+'/dev/ttyTHS1'
+LED 테스트 시작...
+오류: [Errno 13] could not open port /dev/ttyTHS1: [Errno 13] Permission denied: '/dev/ttyTHS1'
+
+'/dev/ttyTHS2'
+LED 테스트 시작...
+UART 연결: /dev/ttyTHS2 @ 115200bps
+1. 명령 전송: L45
+2. 명령 전송: L00
+3. 명령 전송: L45
+4. 명령 전송: L00
+5. 명령 전송: L45
+테스트 완료!
+=> 기기내 LED 온/오프 확인 안됨.
+"""
 PORT = '/dev/ttyTHS1'
 BAUDRATE = 115200
 

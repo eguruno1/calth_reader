@@ -303,11 +303,29 @@ python test_structure.py
 - 디버그 모드에서는 가상 카메라가 사용됩니다
 - 실제 카메라 연결 실패시 자동으로 디버그 모드로 전환됩니다
 - 카메라 권한 확인: `ls -la /dev/video*`
+- 카메라 포맷 확인을 위해 설치.
+```bash
+sudo apt update
+sudo apt install -y v4l-utils
+v4l2-ctl --list-formats-ext -d /dev/video0
+```
 
 ### UART 연결 문제
 - 디버그 모드에서는 가상 UART가 사용됩니다
 - 권한 문제: `sudo usermod -a -G dialout $USER` 후 재로그인
 - 포트 확인: `ls -la /dev/ttyTHS*` 또는 `/dev/ttyUSB*`
+- LED 연동
+```bash
+ls -l /dev/ttyTHS1
+# 예상 출력 : crw-rw---- 1 root dialout ... /dev/ttyTHS1
+calth@calth-00003:~/calth_reader$ ls -la /dev/ttyTHS*
+crw--w---- 1 root tty     238, 1 12월 31 15:50 /dev/ttyTHS1
+crw-rw---- 1 root dialout 238, 2 12월 31 15:49 /dev/ttyTHS2  <= 이걸로 사용
+# 사용자 그룹 추가
+sudo usermod -a -G dialout $USER
+```
+
+
 
 ### 설정 파일 문제
 - 설정 파일 위치: `config/settings.json`

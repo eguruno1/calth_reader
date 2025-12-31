@@ -22,204 +22,186 @@ QR 탐지
 
 import cv2
 import numpy as np
+import os
 import json
+from datetime import datetime
 from pyzbar.pyzbar import decode
 
+# ============================================================
+# SAVE PATH
+# ============================================================
+SAVE_DIR = "./CalthReaderResult/images"
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 # ============================================================
-# QR DETECTION
+# QR DETECTION (FAST)
 # ============================================================
 
-def detect_qr(img):
-    """
-    QR 코드 탐지 및 텍스트 추출
-    """
-    qrs = decode(img)
+def detect_qr_fast(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    small = cv2.resize(gray, None, fx=0.4, fy=0.4)
+
+    qrs = decode(small)
     if not qrs:
         return None, None
 
     qr = qrs[0]
     text = qr.data.decode("utf-8").strip()
-    pts = np.array([(p.x, p.y) for p in qr.polygon])
-
-    if len(pts) < 4:
-        return text, None
-
+    pts = np.array([(p.x / 0.4, p.y / 0.4) for p in qr.polygon])
     return text, pts
 
-
-def rotate_by_qr(img, pts):
-    """
-    QR 위치 기준 회전 보정
-    """
-    rect = cv2.minAreaRect(pts)
-    angle = rect[-1]
-
-    if angle < -45:
-        angle += 90
-
-    h, w = img.shape[:2]
-    M = cv2.getRotationMatrix2D((w//2, h//2), angle, 1.0)
-    return cv2.warpAffine(img, M, (w, h))
-
+# ============================================================
+# IMAGE UTILS
+# ============================================================
 
 def mask_qr(img, pts):
-    """
-    QR 영역 마스킹 (라인 간섭 제거)
-    """
     mask = np.zeros(img.shape[:2], dtype=np.uint8)
     cv2.fillPoly(mask, [pts.astype(np.int32)], 255)
-    img[mask == 255] = (0, 0, 0)
+    img[mask == 255] = 0
     return img
 
-
-# ============================================================
-# RESULT ROI
-# ============================================================
-
 def extract_result_window(img):
-    """
-    결과창 ROI (비율 기반)
-    """
     h, w = img.shape[:2]
-    return img[int(h*0.30):int(h*0.70),
-               int(w*0.35):int(w*0.65)]
-
+    return img[int(h * 0.30):int(h * 0.70),
+               int(w * 0.35):int(w * 0.65)]
 
 # ============================================================
 # LINE DETECTION
 # ============================================================
 
-def find_vertical_candidates(roi):
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(2.5, (8,8))
-    enhanced = clahe.apply(gray)
+def detect_lines(roi):
+    gray16 = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
 
-    edges = cv2.Canny(enhanced, 40, 120)
+    # RG10 → 8bit 변환 (필수)
+    gray8 = (gray16 >> 2).astype(np.uint8)
+
+    edges = cv2.Canny(gray8, 40, 120)
+
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 25))
     vertical = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
-    contours, _ = cv2.findContours(vertical, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        vertical, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
 
     h, w = roi.shape[:2]
-    boxes = []
-
+    xs = []
     for c in contours:
         x, y, cw, ch = cv2.boundingRect(c)
-        if ch > h * 0.25 and cw < w * 0.20:
-            boxes.append((x, y, cw, ch))
+        if ch > h * 0.3 and cw < w * 0.2:
+            xs.append(x)
 
-    return boxes
+    xs = sorted(xs)
+    filtered = []
+    for x in xs:
+        if not filtered or abs(x - filtered[-1]) > 12:
+            filtered.append(x)
 
-
-def verify_real_line(roi, bbox):
-    x, y, w, h = bbox
-    cut = roi[y:y+h, x:x+w]
-
-    score = 0
-    if w >= 2:
-        score += 1
-    if np.std(cv2.cvtColor(cut, cv2.COLOR_BGR2GRAY)) > 5:
-        score += 1
-
-    hsv = cv2.cvtColor(cut, cv2.COLOR_BGR2HSV)
-    if np.mean(hsv[...,1]) > 20:
-        score += 1
-
-    return score >= 2
-
-
-def detect_lines(roi):
-    candidates = find_vertical_candidates(roi)
-    valid = []
-
-    for b in candidates:
-        if verify_real_line(roi, b):
-            valid.append(b)
-
-    valid.sort(key=lambda x: x[0])
-    lines = []
-
-    for b in valid:
-        if not lines or abs(b[0] - lines[-1][0]) > 12:
-            lines.append(b)
-
-    return min(len(lines), 2)
+    return min(len(filtered), 2)
 
 
 # ============================================================
-# REALTIME CAMERA LOOP
+# SAVE RESULT (ONCE)
 # ============================================================
 
-def run_camera(camera_src=0):
-    """
-    camera_src:
-      - 0           → 기본 웹캠
-      - /dev/video0 → USB 카메라
-      - rtsp://...  → RTSP 스트림
-    """
+def save_result_once(img, qr_text, line_cnt):
+    ts = datetime.now()
+    ts_str = ts.strftime("%Y%m%d_%H%M%S_%f")
 
-    cap = cv2.VideoCapture(camera_src)
+    if line_cnt == 2:
+        status = "C_OK_T_OK"
+    elif line_cnt == 1:
+        status = "C_OK_T_NO"
+    else:
+        status = "C_NO_T_NO"
 
-    fixed_rotation = False
-    cached_angle_pts = None
-    qr_text_cached = None
+    img_name = f"{status}_{ts_str}.jpg"
+    json_name = f"{status}_{ts_str}.json"
+
+    cv2.imwrite(os.path.join(SAVE_DIR, img_name), img)
+
+    data = {
+        "timestamp": ts.isoformat(),
+        "qr_detected": qr_text is not None,
+        "qr_text": qr_text,
+        "line_count": line_cnt,
+        "result": {
+            "C": "OK" if line_cnt >= 1 else "NO",
+            "T": "OK" if line_cnt == 2 else "NO"
+        },
+        "image_file": img_name
+    }
+
+    with open(os.path.join(SAVE_DIR, json_name), "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+    print("✅ Saved:", img_name)
+
+# ============================================================
+# CAMERA LOOP (V4L2 RAW RG10)
+# ============================================================
+
+def run_camera():
+    cap = cv2.VideoCapture("/dev/video0", cv2.CAP_V4L2)
+    if not cap.isOpened():
+        print("❌ Camera open failed (V4L2)")
+        return
+
+    # 해상도 명시 (v4l2-ctl 기준)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
+    qr_text = None
+    qr_pts = None
+    frame_count = 0
+
+    MAX_FRAMES = 150  # 약 5초 (30fps 기준)
 
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+        ret, raw = cap.read()
+        if not ret or raw is None:
+            continue
 
-        display = frame.copy()
+        # RAW RG10 → uint16
+        if raw.ndim == 3:
+            raw = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
+        raw16 = raw.astype(np.uint16)
 
-        # QR 탐지는 초기에만
-        if not fixed_rotation:
-            qr_text, pts = detect_qr(frame)
-            if pts is not None:
-                frame = rotate_by_qr(frame, pts)
-                cached_angle_pts = pts
-                qr_text_cached = qr_text
-                fixed_rotation = True
+        # Bayer → RGB
+        rgb = cv2.cvtColor(raw16, cv2.COLOR_BAYER_RG2BGR)
 
-        # QR 마스킹 (고정)
-        if fixed_rotation and cached_angle_pts is not None:
-            frame = mask_qr(frame, cached_angle_pts)
+        if qr_text is None and frame_count % 10 == 0:
+            qr_text, qr_pts = detect_qr_fast(rgb)
+            if qr_text:
+                print("✅ QR detected")
 
-        roi = extract_result_window(frame)
+        proc = rgb
+        if qr_pts is not None:
+            proc = mask_qr(proc, qr_pts)
+
+        roi = extract_result_window(proc)
         line_cnt = detect_lines(roi)
 
-        if line_cnt == 2:
-            status = "C:OK  T:OK"
-        elif line_cnt == 1:
-            status = "C:OK  T:NO"
-        else:
-            status = "C:NO  T:NO"
-
-        # Overlay
-        cv2.putText(display, status, (30, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0), 2)
-
-        if qr_text_cached:
-            cv2.putText(display, "QR:", (30, 80),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,0), 2)
-            y = 110
-            for line in qr_text_cached.splitlines():
-                cv2.putText(display, line, (30, y),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,0), 2)
-                y += 30
-
-        cv2.imshow("TestKit Realtime", display)
-
-        if cv2.waitKey(1) & 0xFF == 27:
+        # ✅ 종료 조건 1: QR 또는 라인
+        if qr_text is not None or line_cnt >= 1:
+            print("🎯 Detection condition met")
+            save_result_once(rgb, qr_text, line_cnt)
             break
 
-    cap.release()
-    cv2.destroyAllWindows()
+        # ✅ 종료 조건 2: 타임아웃
+        if frame_count > MAX_FRAMES:
+            print("⏱ Timeout – force save & exit")
+            save_result_once(rgb, qr_text, line_cnt)
+            break
 
+        frame_count += 1
+
+    cap.release()
+    print("🎯 Program finished")
 
 # ============================================================
 # ENTRY
 # ============================================================
 
 if __name__ == "__main__":
-    run_camera(0)   # 0: webcam
+    run_camera()

@@ -6,7 +6,9 @@ SQLAlchemy 데이터베이스 연결 관리
 
 import os
 from typing import Optional
-from sqlalchemy import create_engine, Engine
+# from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 import logging

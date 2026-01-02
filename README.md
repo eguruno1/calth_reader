@@ -438,7 +438,7 @@ nvvidconv ! \
 'video/x-raw,format=I420' ! \
 x264enc tune=zerolatency speed-preset=ultrafast bitrate=2000 ! \
 mpegtsmux ! \
-udpsink host=192.168.0.250 port=5000 sync=false \
+udpsink host=192.168.0.250 port=5000 sync=false
 ```
 
 2. 예 : Mac -> sdp 파일 생성(터미널 사용)

@@ -170,7 +170,16 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
 
 # 자동 실행관련 재정의
  1. 기존 서비스 파일 확인 
+ ```bash
   $ cat ~/PyCalth.service
+  # 서비스 활성화
+  sudo systemctl enable PyCalth.service
+  sudo systemctl restart PyCalth.service
+  # 상태 확인
+  systemctl status PyCalth.service
+  # 로그 확인
+  journalctl -u PyCalth.service -n 100 --no-pager
+ ```
 
  2. 기존 서비스 파일 내용
   [Unit]
@@ -195,7 +204,9 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   WantedBy=multi-user.target
 
  3. 서비스파일 상태 확인
-  $ systemctl status PyCalth.service
+```bash
+  systemctl status PyCalth.service
+```
   ############## 상태 출력 예시 ##############
   ● PyCalth.service - Calth Reader Main Script
      Loaded: loaded (/etc/systemd/system/PyCalth.service; enabled; vendor preset: enabled)
@@ -205,12 +216,16 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   ######################################### 
 
  4. 파이썬 설치 위치 확인
-  $ which python3
+```bash 
+  which python3
   /usr/bin/python3
- 
+```
+
  5. 서비스파일 수정
   $ sudo nano /etc/systemd/system/PyCalth.service
+
   ExecStart=/home/calth/calth_reader/py369/bin/python3 /home/calth/calth_reader/main.py 를
+
   ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
   
   ############## 서비스파일 내용 ##############
@@ -238,16 +253,21 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   #########################################
 
  6. systemd 재적용
-  $ sudo systemctl daemon-reexec
-  $ sudo systemctl daemon-reload
-  $ sudo systemctl restart PyCalth.service
+```bash
+  sudo systemctl daemon-reexec
+  sudo systemctl daemon-reload
+  sudo systemctl restart PyCalth.service
+```
 
  7. 상태확인
-  $ systemctl status PyCalth.service 
+```bash 
+  systemctl status PyCalth.service 
+```
 
  8. 프로그램 실행후 ssh 접속후 콘솔단 로그 확인
-  $ journalctl -u PyCalth.service -f 
-
+```bash  
+  journalctl -u PyCalth.service -f 
+```
 
 
 
@@ -396,8 +416,53 @@ python3 - << 'EOF'
 from pyzbar import pyzbar
 print("pyzbar OK")
 EOF
+```
 
+### Jetson 카메라 외부 원격 확인(VLC 이용)
+1. 우분투 스트리밍 설정
+host=[확인하고자 하는 로컬PC IP]
+```bash
+# RTP
+gst-launch-1.0 -v nvarguscamerasrc ! \
+'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1' ! \
+nvvidconv ! \
+'video/x-raw,format=I420' ! \
+x264enc tune=zerolatency speed-preset=ultrafast bitrate=2000 key-int-max=30 ! \
+rtph264pay config-interval=1 pt=96 ! \
+udpsink host=192.168.0.250 port=5000 sync=false
 
+# MPEG-TS
+gst-launch-1.0 nvarguscamerasrc ! \
+'video/x-raw(memory:NVMM),width=1280,height=720,framerate=30/1' ! \
+nvvidconv ! \
+'video/x-raw,format=I420' ! \
+x264enc tune=zerolatency speed-preset=ultrafast bitrate=2000 ! \
+mpegtsmux ! \
+udpsink host=192.168.0.250 port=5000 sync=false \
+```
 
+2. 예 : Mac -> sdp 파일 생성(터미널 사용)
+```bash
+cat <<EOF > jetson.sdp
+v=0
+o=- 0 0 IN IP4 192.168.0.250
+s=JetsonCam
+c=IN IP4 192.168.0.250
+t=0 0
+m=video 5000 RTP/AVP 96
+a=rtpmap:96 H264/90000
+a=fmtp:96 packetization-mode=1
+EOF
+```
 
+3. 카메라 영상 확인.
+ - vlc 실행 -> 파일 오픈 -> .sdp 파일 선택
+ - 터미널 : jetson.sdp 파일이 위치한 곳에서
+```bash
+open -a VLC jetson.sdp
+# OR MPEG-TS 면 sdp 필요없음.
+open -a VLC udp://@:5000
+# OR (VLC 캐시 문제 방지)
+open -a VLC --args --network-caching=0 udp://@:5000
+```
 

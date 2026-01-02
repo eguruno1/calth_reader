@@ -37,7 +37,7 @@ os.makedirs(IMG_SAVE_DIR, exist_ok=True)
 os.makedirs(JSON_SAVE_DIR, exist_ok=True)
 
 # UART (LED 제어)
-UART_PORT = "/dev/ttyTHS2"  # "/dev/ttyTHS1"
+UART_PORT = "/dev/ttyTHS1"  # "/dev/ttyTHS2"
 UART_BAUD = 115200
 
 LED_ON_CMD = "L45"

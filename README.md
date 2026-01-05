@@ -416,6 +416,13 @@ python3 - << 'EOF'
 from pyzbar import pyzbar
 print("pyzbar OK")
 EOF
+# DataMatrix (ECC200) 설치.
+sudo apt update
+sudo apt install -y libdmtx0a libdmtx-dev
+# 정상 설치 확인
+ldconfig -p | grep dmtx
+# libdmtx.so  또는  libdmtx.so.0 확인
+pip3 install pylibdmtx
 ```
 
 ### Jetson 카메라 외부 원격 확인(VLC 이용)

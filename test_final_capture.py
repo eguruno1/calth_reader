@@ -11,6 +11,14 @@ test_final_capture의 Docstring
 7. 저장된 이미지 다시 로드(QR/Line 인식을 위해)
 8. 모든 결과 JSON 파일로 저장
 9. LED OFF & 자원 해제
+
+촬영
+ └─ 판독
+     ├─ 박스 표시
+     ├─ 결과 텍스트
+     ├─ 원본 이미지 저장
+     ├─ 썸네일 생성
+     └─ JSON 저장
 """
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -39,6 +47,7 @@ LED_OFF_CMD   = "L00"
 # SAVE_DIR   = "captures"
 IMG_SAVE_DIR  = "./CalthReaderResult/images"
 JSON_SAVE_DIR = "./CalthReaderResult/json"
+THUM_SAVE_DIR = "./CalthReaderResult/thumbnails"
 
 # =========================================================
 # LED 제어
@@ -533,6 +542,44 @@ def draw_result_label(img, line_count):
         cv2.LINE_AA
     )
 
+# =========================================================
+# 썸네일 생성
+# =========================================================
+def create_thumbnail(
+    img,
+    original_path,
+    thumb_dir=THUM_SAVE_DIR,
+    max_size=300
+):
+    """
+    결과 이미지 썸네일 생성
+    - 비율 유지
+    - 긴 변 기준 max_size 픽셀
+    """
+
+    os.makedirs(thumb_dir, exist_ok=True)
+
+    h, w = img.shape[:2]
+
+    if w >= h:
+        scale = max_size / w
+    else:
+        scale = max_size / h
+
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+
+    thumb = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
+    base = os.path.basename(original_path)
+    name, ext = os.path.splitext(base)
+
+    thumb_path = os.path.join(thumb_dir, f"{name}_thumb{ext}")
+
+    cv2.imwrite(thumb_path, thumb)
+
+    return thumb_path
+
 
 
 # =========================================================
@@ -611,14 +658,18 @@ def main():
         line_count2 = colorimetric_analyze(img)
         print(f"✅ Line Count 2: {line_count2}")
 
+        # 썸네일 생성s
+        thumb_path = create_thumbnail(img, img_path)
+        print(f"🖼 Thumbnail saved: {thumb_path}")
+
         # 8. JSON 결과 저장
         result = {
             "timestamp": ts,
             "image_path": img_path,
+            "thumbnail_path": thumb_path,
             "qr_detected": qr_text is not None,
             "qr_text": qr_text,
-            "reaction_line_count1": line_count,
-            "reaction_line_count2": line_count2
+            "reaction_line_count1": line_count
         }
 
         with open(json_path, "w", encoding="utf-8") as f:

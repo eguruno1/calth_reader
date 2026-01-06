@@ -1,11 +1,10 @@
 """
 test_final_scan_kit_images의 Docstring
 
+QR Code 가 아닌 DataMatrix 인 관계로 수정.
+
 1. 이미지 로드
-2. detect_2d_code()
-   ├─ 실패 → line_count = 0
-   └─ 성공 → qr_rect 확보
-3. detect_reaction_lines(qr_rect 기준)
+2. detect_datamatrix()
 4. JSON 기록
 """
 

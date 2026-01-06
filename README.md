@@ -355,8 +355,8 @@ ls /dev/video*
 ls -l /dev/ttyTHS1
 # 예상 출력 : crw-rw---- 1 root dialout ... /dev/ttyTHS1
 calth@calth-00003:~/calth_reader$ ls -la /dev/ttyTHS*
-crw--w---- 1 root tty     238, 1 12월 31 15:50 /dev/ttyTHS1
-crw-rw---- 1 root dialout 238, 2 12월 31 15:49 /dev/ttyTHS2  <= 이걸로 사용
+crw--w---- 1 root tty     238, 1 12월 31 15:50 /dev/ttyTHS1  <= 이걸로 사용해야됩니다.
+crw-rw---- 1 root dialout 238, 2 12월 31 15:49 /dev/ttyTHS2  
 # 사용자 그룹 추가
 sudo usermod -a -G dialout $USER
 ```

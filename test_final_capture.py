@@ -1,3 +1,17 @@
+"""
+test_final_capture의 Docstring
+
+[동작 순서]
+1. LED ON (UART) 
+2. 카메라 오픈 (Jetson ISP 경유)
+3. 노출/게인 안정화 대기
+4. 포커스 안정화
+5. 프레임 1장 캡처
+6. 이미지 저장
+7. 저장된 이미지 다시 로드(QR/Line 인식을 위해)
+8. 모든 결과 JSON 파일로 저장
+9. LED OFF & 자원 해제
+"""
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -545,7 +559,7 @@ def main():
         print("📷 Stabilizing camera...")
         time.sleep(1.5)
 
-        # 3. 포커스 안정화
+        # 4. 포커스 안정화
         print("📷 Adjusting focus...")
         best_score = 0
         best_frame = None
@@ -564,18 +578,18 @@ def main():
         # 포커스 최적 프레임 사용
         frame = best_frame
 
-        # 4. 프레임 1장 캡처
+        # 5. 프레임 1장 캡처
         # ret, frame = cap.read()
         if not ret:
             led_off()
             cap.release()
             raise RuntimeError("❌ Frame capture failed")
 
-        # 5. 이미지 저장
+        # 6. 이미지 저장
         cv2.imwrite(img_path, frame)
         print(f"✅ Image saved: {img_path}")
 
-        # 6. 저장된 이미지 다시 로드 (중요!)
+        # 7. 저장된 이미지 다시 로드 (중요!)
         img = cv2.imread(img_path)
         if img is None:
             led_off()

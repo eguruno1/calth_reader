@@ -71,7 +71,7 @@ def open_camera():
 
     gst_pipeline = (
         "nvarguscamerasrc sensor-id=0 ! "
-        "video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1 ! "
+        "video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1 ! "
         "nvvidconv ! "
         "video/x-raw, format=BGRx ! "
         "videoconvert ! "
@@ -108,7 +108,7 @@ def open_camera():
     if not cap.isOpened():
         raise RuntimeError("❌ Camera open failed (ISP pipeline)")
 
-    print("📷 Camera opened (3264x2464 @21fps, ISP OK)")
+    print("📷 Camera opened (1280x720 @30fps, ISP OK)")
     return cap
 
 # ============================================================
@@ -220,7 +220,7 @@ def main():
         cv2.imwrite(image_path, frame)
         print("📸 Image saved:", image_path)
 
-        # QR 코드 스캔 (1회)
+        # QR 코드 스캔 (1회) : QR Not Use
         qr_ok, qr_data = detect_qr(frame)
         result["qr_detected"] = qr_ok
         result["qr_data"] = qr_data

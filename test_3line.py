@@ -196,14 +196,15 @@ def detect_reaction_lines_from_image(img):
     # -------------------------------
     # 박스 좌표 생성 (⭐ 기존 계산 그대로)
     # -------------------------------
+    max_width = max(w for _, _, w in final_peaks)
     boxes = []
 
-    for label, center, width in final_peaks:
+    for label, center, _ in final_peaks:
         x_center = roi_x1 + center
 
-        box_x = int(x_center - width // 2)
+        box_x = int(x_center - max_width // 2)
         box_y = roi_y1
-        box_w = int(width)
+        box_w = int(max_width)
         box_h = int(roi_y2 - roi_y1)
 
         boxes.append((box_x, box_y, box_w, box_h))
@@ -229,7 +230,7 @@ def detect_reaction_3lines_from_image(img):
     # 1. ROI (Y축만 제한)
     # =========================
     roi_y1 = int(h * 0.35)
-    roi_y2 = int(h * 0.65)
+    roi_y2 = int(h * 0.58)
     roi = img[roi_y1:roi_y2, :]
 
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
@@ -282,7 +283,7 @@ def detect_reaction_3lines_from_image(img):
         if np.sum(weights) > 0:
             cx = int(np.sum(xs * weights) / np.sum(weights))
         else:
-            cx = int((x1 + x2) / 2)
+            cx = int((x1 + x2) // 2)
 
         centers.append((cx, x1, x2))
 
@@ -317,10 +318,12 @@ def detect_reaction_3lines_from_image(img):
     # =========================
     # 8. 박스 생성 (폭 보정)
     # =========================
+    print("matched:", matched)
+    
     boxes = []
     min_box_w = int(w * 0.025)
 
-    for idx, (_, cx, x1, x2) in enumerate(matched):
+    for _, cx, x1, x2 in matched:
         line_w = max(x2 - x1, min_box_w)
         box_x = max(0, int(cx - line_w // 2))
 

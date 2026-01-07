@@ -122,7 +122,7 @@ class UARTTerminal:
         print("  help, h       : 도움말")
         print("  monitor, m    : 모니터링 모드 토글")
         print("  clear, c      : 화면 클리어")
-        print("  그 외 텍스트  : MCU로 전송")
+        print("  그 외 텍스트     : MCU로 전송")
         print("-" * 60)
         
         if not self.connect():
@@ -158,7 +158,7 @@ class UARTTerminal:
                         print("  monitor, m  : 연속 모니터링 모드 토글")
                         print("  clear, c    : 화면 클리어")
                         print("  quit        : 종료")
-                        print("  기타        : 입력한 텍스트를 그대로 전송")
+                        print("  기타         : 입력한 텍스트를 그대로 전송")
                         continue
                     elif command.lower() in ['monitor', 'm']:
                         self.toggle_monitor_mode()

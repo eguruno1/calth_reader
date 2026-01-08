@@ -231,78 +231,108 @@ def detect_reaction_lines_from_image(img):
 # =========================================================
 def detect_reaction_3lines_from_image(img):
     """
-    3라인 진단키트 전용 반응라인 검출 (좌표 보정 완료 버전)
-    - 연한/진한 색상 무관
-    - L1/L2/L3 위치 정확히 매칭
+    3라인 진단키트 전용 반응라인 검출 (2라인 알고리즘 통합 최종판)
+    - 실제 판독라인 크기 기반 박스 생성
+    - 연한 / 진한 색상 무관
+    - L1 / L2 / L3 위치 정확히 매칭
     - 반환: (라인 수, 박스 리스트)
     """
 
+    import cv2
+    import numpy as np
+
     h, w = img.shape[:2]
 
-    # =========================
-    # 1. ROI (Y축만 제한)
-    # =========================
+    # =========================================================
+    # 1. ROI 설정 (Y축만 제한, 기존 유지)
+    # =========================================================
     roi_y1 = int(h * 0.35)
     roi_y2 = int(h * 0.58)
     roi = img[roi_y1:roi_y2, :]
 
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    roi_h, roi_w = roi.shape[:2]
 
-    # =========================
-    # 2. 대비 강화
-    # =========================
-    clahe = cv2.createCLAHE(2.0, (8, 8))
-    gray = clahe.apply(gray)
+    # =========================================================
+    # 2. R-G 강조 (2라인과 동일)
+    # =========================================================
+    b, g, r = cv2.split(roi)
+    diff = cv2.subtract(r, g)
+    diff = cv2.GaussianBlur(diff, (5, 5), 0)
 
-    # =========================
-    # 3. 수직 투영 (전체 X 기준)
-    # =========================
-    proj = np.mean(255 - gray, axis=0)
+    _, binary = cv2.threshold(diff, 12, 255, cv2.THRESH_BINARY)
 
-    # =========================
-    # 4. Threshold
-    # =========================
-    thresh = np.mean(proj) + np.std(proj) * 0.7
-    mask = proj > thresh
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 9))
+    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # =========================
-    # 5. 연속 구간 검출
-    # =========================
+    # =========================================================
+    # 3. X축 투영 (전체 폭 기준)
+    # =========================================================
+    col_sum = np.sum(binary, axis=0)
+    thresh = np.max(col_sum) * 0.25
+    active = col_sum > thresh
+
+    # =========================================================
+    # 4. 연속 X 세그먼트 검출
+    # =========================================================
     segments = []
     start = None
 
-    for x in range(len(mask)):
-        if mask[x] and start is None:
+    for x in range(len(active)):
+        if active[x] and start is None:
             start = x
-        elif not mask[x] and start is not None:
+        elif not active[x] and start is not None:
             if x - start > 6:
                 segments.append((start, x))
             start = None
 
-    if start is not None and len(mask) - start > 6:
-        segments.append((start, len(mask)))
+    if start is not None and len(active) - start > 6:
+        segments.append((start, len(active)))
 
     if len(segments) == 0:
         return 0, []
 
-    # =========================
-    # 6. 중심 계산 (무게중심)
-    # =========================
-    centers = []
+    # =========================================================
+    # 5. 각 세그먼트 실제 라인 정보 계산
+    # =========================================================
+    lines = []
+
     for x1, x2 in segments:
-        weights = proj[x1:x2]
-        xs = np.arange(x1, x2)
+        seg_mask = binary[:, x1:x2]
+        ys, xs = np.where(seg_mask > 0)
 
-        if np.sum(weights) > 0:
-            cx = int(np.sum(xs * weights) / np.sum(weights))
-        else:
-            cx = int((x1 + x2) // 2)
+        if len(ys) == 0:
+            continue
 
-        centers.append((cx, x1, x2))
+        y_min = np.min(ys)
+        y_max = np.max(ys)
 
-    # =========================
-    # 7. ⭐ 기대 위치 기반 매칭 (핵심 수정)
-    # =========================
+        # ⭐ 높이 보정 (아래쪽 확장)
+        pad = int(roi_h * 0.05)
+        y_min = max(0, y_min - pad)
+        y_max = min(roi_h - 1, y_max + pad)
+
+        line_w = x2 - x1
+        line_h = y_max - y_min
+
+        if line_h < roi_h * 0.08 or line_w < 4:
+            continue
+
+        cx = (x1 + x2) // 2
+
+        lines.append({
+            "cx": cx,
+            "x1": x1,
+            "x2": x2,
+            "y1": y_min,
+            "y2": y_max
+        })
+
+    if len(lines) == 0:
+        return 0, []
+
+    # =========================================================
+    # 6. 기대 위치 기반 매칭 (기존 로직 유지)
+    # =========================================================
     expected = [
         int(w * 0.30),  # L1
         int(w * 0.50),  # L2
@@ -316,38 +346,41 @@ def detect_reaction_3lines_from_image(img):
         best = None
         best_dist = 1e9
 
-        for i, (cx, x1, x2) in enumerate(centers):
+        for i, line in enumerate(lines):
             if i in used:
                 continue
-            d = abs(cx - exp_x)
+            d = abs(line["cx"] - exp_x)
             if d < best_dist:
                 best_dist = d
-                best = (i, cx, x1, x2)
+                best = (i, line)
 
         if best:
             used.add(best[0])
-            matched.append(best)
+            matched.append(best[1])
 
-    # =========================
-    # 8. 박스 생성 (폭 보정)
-    # =========================
-    print("matched:", matched)
-    
+    if len(matched) == 0:
+        return 0, []
+
+    # =========================================================
+    # 7. 박스 생성 (실제 판독라인 크기 그대로)
+    # =========================================================
     boxes = []
-    min_box_w = int(w * 0.025)
 
-    for _, cx, x1, x2 in matched:
-        line_w = max(x2 - x1, min_box_w)
-        box_x = max(0, int(cx - line_w // 2))
+    for line in matched:
+        box_x = line["x1"]
+        box_y = roi_y1 + line["y1"]
+        box_w = line["x2"] - line["x1"]
+        box_h = line["y2"] - line["y1"]
 
         boxes.append((
-            box_x,
-            roi_y1,
-            line_w,
-            roi_y2 - roi_y1
+            int(box_x),
+            int(box_y),
+            int(box_w),
+            int(box_h)
         ))
 
     return len(boxes), boxes
+
 
 
 # =========================================================

@@ -101,100 +101,129 @@ def get_detection_mode():
 # =========================================================
 def detect_reaction_lines_from_image(img):
     """
-    2라인 전용 (C / T)
-    - 카메라 위치 변화 자동 보정
-    - 라인 중심 기준 ROI 이동
-    - 반환: (라인 수, 박스 리스트)
+    2라인(C / T) 반응라인 검출 - 위치/높이 보정 최종 안정판
     """
+
+    import cv2
+    import numpy as np
 
     h, w = img.shape[:2]
 
-    # ======================================================
-    # STEP 0. 전체 이미지 기준 반응라인 X 중심 추정 (⭐ 핵심)
-    # ======================================================
-    gray_full = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(2.0, (8, 8))
-    gray_full = clahe.apply(gray_full)
-
-    proj_full = np.mean(255 - gray_full, axis=0)
-    proj_full = cv2.GaussianBlur(
-        proj_full.astype(np.float32), (51, 1), 0
-    )
-
-    x_center_est = int(np.argmax(proj_full))
-
-    # ======================================================
-    # ROI 자동 이동 (중심 기준)
-    # ======================================================
-    roi_width = int(w * 0.50)
-
-    roi_x1 = max(0, x_center_est - roi_width // 2)
-    roi_x2 = min(w, roi_x1 + roi_width)
-
-    roi_y1 = int(h * 0.30)
-    roi_y2 = int(h * 0.62)
+    # =========================================================
+    # 1. ROI (기존 유지)
+    # =========================================================
+    roi_y1 = int(h * 0.38)
+    roi_y2 = int(h * 0.58)
+    roi_x1 = int(w * 0.25)
+    roi_x2 = int(w * 0.75)
 
     roi = img[roi_y1:roi_y2, roi_x1:roi_x2].copy()
+    roi_h, roi_w = roi.shape[:2]
 
-    # -------------------------------
-    # R-G 강조 (기존 유지)
-    # -------------------------------
+    # =========================================================
+    # 2. R-G 강조
+    # =========================================================
     b, g, r = cv2.split(roi)
     diff = cv2.subtract(r, g)
     diff = cv2.GaussianBlur(diff, (5, 5), 0)
 
-    _, binary = cv2.threshold(diff, 15, 255, cv2.THRESH_BINARY)
+    _, binary = cv2.threshold(diff, 12, 255, cv2.THRESH_BINARY)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 9))
     binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # -------------------------------
-    # contour 기반 라인 분리
-    # -------------------------------
-    contours, _ = cv2.findContours(
-        binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-    )
+    # =========================================================
+    # 3. X축 세그먼트 검출
+    # =========================================================
+    col_sum = np.sum(binary, axis=0)
+    thresh = np.max(col_sum) * 0.25
+    active = col_sum > thresh
 
-    candidates = []
-    for c in contours:
-        x, y, cw, ch = cv2.boundingRect(c)
+    segments = []
+    start = None
 
-        if ch < (roi_y2 - roi_y1) * 0.45:
-            continue
-        if cw < 4 or cw > roi.shape[1] * 0.20:
-            continue
-        if cv2.contourArea(c) < 150:
-            continue
+    for x in range(len(active)):
+        if active[x] and start is None:
+            start = x
+        elif not active[x] and start is not None:
+            if x - start > 4:
+                segments.append((start, x))
+            start = None
 
-        candidates.append((x, y, cw, ch))
+    if start is not None and len(active) - start > 4:
+        segments.append((start, len(active)))
 
-    if not candidates:
+    if len(segments) == 0:
         return 0, []
 
-    # -------------------------------
-    # 좌 → 우 정렬 (C / T)
-    # -------------------------------
-    candidates = sorted(candidates, key=lambda v: v[0])[:2]
+    # =========================================================
+    # 4. 라인 정보 계산
+    # =========================================================
+    lines = []
 
-    # -------------------------------
-    # 박스 생성 (폭 통일)
-    # -------------------------------
-    max_w = max(cw for _, _, cw, _ in candidates)
+    for x1, x2 in segments:
+        seg_mask = binary[:, x1:x2]
+        ys, xs = np.where(seg_mask > 0)
+
+        if len(ys) == 0:
+            continue
+
+        y_min = np.min(ys)
+        y_max = np.max(ys)
+
+        # ⭐ 높이 보정 (아래쪽 확장)
+        pad = int(roi_h * 0.05)
+        y_min = max(0, y_min - pad)
+        y_max = min(roi_h - 1, y_max + pad)
+
+        line_w = x2 - x1
+        line_h = y_max - y_min
+
+        if line_h < roi_h * 0.08 or line_w < 3:
+            continue
+
+        r_mean = np.mean(r[y_min:y_max, x1:x2])
+        g_mean = np.mean(g[y_min:y_max, x1:x2])
+        strength = r_mean - g_mean
+
+        lines.append({
+            "x_center": (x1 + x2) // 2,
+            "x1": x1,
+            "x2": x2,
+            "y1": y_min,
+            "y2": y_max,
+            "strength": strength
+        })
+
+    if len(lines) == 0:
+        return 0, []
+
+    # =========================================================
+    # 5. C/T 판별 (색상 기준)
+    # =========================================================
+    lines = sorted(lines, key=lambda x: x["strength"], reverse=True)
+    lines = lines[:2]
+
+    # =========================================================
+    # 6. ⭐ 표시용 위치 재정렬 (좌 → 우)
+    # =========================================================
+    lines = sorted(lines, key=lambda x: x["x_center"])
 
     boxes = []
-    for x, y, cw, ch in candidates:
-        cx = x + cw // 2
+    for line in lines:
+        box_x = roi_x1 + line["x1"]
+        box_y = roi_y1 + line["y1"]
+        box_w = line["x2"] - line["x1"]
+        box_h = line["y2"] - line["y1"]
 
-        box_x = int(roi_x1 + cx - max_w // 2)
-        box_y = roi_y1 + y
-        box_w = max_w
-        box_h = ch
-
-        boxes.append((box_x, box_y, box_w, box_h))
+        boxes.append((
+            int(box_x),
+            int(box_y),
+            int(box_w),
+            int(box_h)
+        ))
 
     return len(boxes), boxes
-
-
 
 
 # =========================================================

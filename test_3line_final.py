@@ -237,10 +237,7 @@ def detect_reaction_3lines_from_image(img):
     - L1 / L2 / L3 위치 정확히 매칭
     - 반환: (라인 수, 박스 리스트)
     """
-
-    import cv2
-    import numpy as np
-
+    
     h, w = img.shape[:2]
 
     # =========================================================

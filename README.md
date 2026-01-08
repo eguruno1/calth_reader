@@ -257,6 +257,7 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   sudo systemctl daemon-reexec
   sudo systemctl daemon-reload
   sudo systemctl restart PyCalth.service
+  sudo systemctl stop PyCalth.service
 ```
 
  7. 상태확인

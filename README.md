@@ -439,7 +439,7 @@ nvvidconv ! \
 'video/x-raw,format=I420' ! \
 x264enc tune=zerolatency speed-preset=ultrafast bitrate=2000 key-int-max=30 ! \
 rtph264pay config-interval=1 pt=96 ! \
-udpsink host=192.168.0.91 port=5000 sync=false
+udpsink host=192.168.0.250 port=5000 sync=false
 
 # MPEG-TS
 gst-launch-1.0 nvarguscamerasrc ! \

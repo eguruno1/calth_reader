@@ -229,6 +229,7 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
   
   ############## 서비스파일 내용 ##############
+
   [Unit]
   Description=Calth Reader Application
   After=network.target graphical.target
@@ -250,6 +251,7 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
 
   [Install]
   WantedBy=graphical.target
+  
   #########################################
 
  6. systemd 재적용

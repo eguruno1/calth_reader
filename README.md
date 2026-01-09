@@ -208,11 +208,13 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   systemctl status PyCalth.service
 ```
   ############## 상태 출력 예시 ##############
+
   ● PyCalth.service - Calth Reader Main Script
      Loaded: loaded (/etc/systemd/system/PyCalth.service; enabled; vendor preset: enabled)
      Active: activating (auto-restart) (Result: exit-code) since Wed 2025-12-31 10:45:38 KST; 651ms ago
     Process: 8151 ExecStart=/home/calth/calth_reader/py369/bin/python3 /home/calth/calth_reader/main.py (code=exite
    Main PID: 8151 (code=exited, status=203/EXEC)
+
   ######################################### 
 
  4. 파이썬 설치 위치 확인
@@ -251,7 +253,7 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
 
   [Install]
   WantedBy=graphical.target
-  
+
   #########################################
 
  6. systemd 재적용
@@ -274,6 +276,20 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   journalctl -u PyCalth.service -f 
 ```
 
+ 9. UART 통신을 위해 /dev/ttyTHS1 소유 그룹 확인 및 권한부여.
+```bash  
+  ls -l /dev/ttyTHS1
+  crw--w---- 1 root tty 238, 1  1월  9 13:05 /dev/ttyTHS1
+  # calth 사용자를 tty 그룹에 추가 후 반드시 로그아웃 또는 재부팅 필요
+  sudo usermod -aG tty calth
+  # 서비스 재시작
+  sudo systemctl daemon-reload
+  sudo systemctl restart PyCalth.service
+  # 소유그룹 확인
+  groups calth
+  # calth@calth-00003:~$ groups calth
+  # calth : calth adm tty dialout cdrom sudo audio dip video plugdev i2c lpadmin gdm lightdm docker gpio weston-launch sambashare
+```
 
 
 ## 실행 방법

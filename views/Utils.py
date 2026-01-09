@@ -214,7 +214,7 @@ def start_battery_update(view):
         view.battery_timer.timeout.connect(lambda: update_battery_status(view))
     
     if not view.battery_timer.isActive():
-        view.battery_timer.start(10000)  # 10초마다 업데이트
+        view.battery_timer.start(1000 * 60)  # 60초마다 업데이트
 
 def stop_battery_update(view):
     """배터리 상태 업데이트 중지"""

@@ -1,5 +1,6 @@
 """
-test_3line의 Docstring
+test_3line_final 의 Docstring
+카메라 위치 변경으로 ROI 보정.
 
 [동작 순서]
 0. 2라인 / 3라인 선택 판독
@@ -103,9 +104,6 @@ def detect_reaction_lines_from_image(img):
     """
     2라인(C / T) 반응라인 검출 - 위치/높이 보정 최종 안정판
     """
-
-    import cv2
-    import numpy as np
 
     h, w = img.shape[:2]
 
@@ -237,7 +235,7 @@ def detect_reaction_3lines_from_image(img):
     - L1 / L2 / L3 위치 정확히 매칭
     - 반환: (라인 수, 박스 리스트)
     """
-    
+
     h, w = img.shape[:2]
 
     # =========================================================
@@ -420,6 +418,9 @@ def draw_reaction_boxes(img, boxes, mode=2):
         if mode == 2:
             color = (0, 255, 0) if idx == 0 else (0, 0, 255)
             label = "C" if idx == 0 else "T"
+        elif mode == 3:
+            color = (0, 255, 0) if idx == 0 else (0, 0, 255)
+            label = "C" if idx == 0 else f"T{idx}"
         else:
             color = (0, 0, 255)
             label = f"L{idx + 1}"

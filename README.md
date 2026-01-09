@@ -233,23 +233,21 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   ############## 서비스파일 내용 ##############
 
   [Unit]
-  Description=Calth Reader Application
-  After=network.target graphical.target
+  Description=Calth Reader Main Script
+  After=graphical.target
 
   [Service]
   Type=simple
-  User=calth
-  Group=calth
-  WorkingDirectory=/home/calth/calth_reader
-
-  ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
-
+  Environment=XDG_RUNTIME_DIR=/run/user/1000
   Environment=PYTHONUNBUFFERED=1
-  Environment=DISPLAY=:0
   Environment=XAUTHORITY=/home/calth/.Xauthority
-
+  Environment=DISPLAY=:0
+  ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
+  WorkingDirectory=/home/calth/calth_reader
+  StandardOutput=journal
+  StandardError=journal
   Restart=always
-  RestartSec=5
+  RestartSec=10
 
   [Install]
   WantedBy=graphical.target
@@ -276,7 +274,7 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   journalctl -u PyCalth.service -f 
 ```
 
- 9. UART 통신을 위해 /dev/ttyTHS1 소유 그룹 확인 및 권한부여.
+ 9. UART 통신을 위해 /dev/ttyTHS1 소유 그룹 확인 및 권한부여. Jetson은 tty 그룹을 사용.
 ```bash  
   ls -l /dev/ttyTHS1
   crw--w---- 1 root tty 238, 1  1월  9 13:05 /dev/ttyTHS1
@@ -289,6 +287,63 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
   groups calth
   # calth@calth-00003:~$ groups calth
   # calth : calth adm tty dialout cdrom sudo audio dip video plugdev i2c lpadmin gdm lightdm docker gpio weston-launch sambashare
+
+  # udev rule로 권한을 "읽기 가능" 하게 변경
+  # udev rule 생성
+  sudo nano /etc/udev/rules.d/99-ttyths.rules
+
+  # KERNEL=="ttyTHS1", MODE="0660", GROUP="tty"
+  # 로 수정 후
+  sudo udevadm control --reload-rules
+  sudo udevadm trigger
+  # 우분투 재기동
+  sudo reboot
+  # 또는
+  # KERNEL=="ttyTHS1", MODE="0660", GROUP="dialout"
+  # 확인
+  ls -l /dev/ttyTHS1
+  crw-rw---- 1 root tty ... /dev/ttyTHS1
+  # 권한 확인이 안되면 아래 순서대로...
+  # 1단계: nvgetty 완전 비활성화 (enabled → disabled)
+  sudo systemctl disable nvgetty
+  sudo systemctl stop nvgetty
+  # nvgetty 상태확인
+  systemctl is-enabled nvgetty
+  calth@calth-00003:~$ systemctl is-enabled nvgetty
+  enabled  -> disabled 가 되어야 함.
+  # 2단계: kernel console에서 ttyTHS1 제거
+    # 현재 커널 파라미터 확인
+    cat /proc/cmdline
+    # console=ttyTHS1 또는 console=ttyTHS1,115200 가 하나라도 있으면 안됨.
+    # /boot/extlinux/extlinux.conf 수정
+    sudo nano /boot/extlinux/extlinux.conf
+    # 기존 파일 내용 확인 
+    TIMEOUT 30
+    DEFAULT primary
+
+    MENU TITLE L4T boot options
+
+    LABEL primary
+          MENU LABEL primary kernel
+          LINUX /boot/Image
+          INITRD /boot/initrd
+          APPEND ${cbootargs} quiet loglevel=0 vt.global_cursor_default=0 console=tty1 fbcon=map:1 root=/dev/mmcblk0p1 rw rootwai$
+    # console=tty1 삭제 console=tty0 수정.
+    TIMEOUT 30
+    DEFAULT primary
+
+    MENU TITLE L4T boot options
+
+    LABEL primary
+          MENU LABEL primary kernel
+          LINUX /boot/Image
+          INITRD /boot/initrd
+          APPEND ${cbootargs} quiet loglevel=0 vt.global_cursor_default=0 console=tty0 fbcon=map:1 root=/dev/mmcblk0p1 rw rootwai$
+  # 3단계: 재부팅 (필수)
+  sudo reboot
+  # rw 권한 확인.
+  calth@calth-00003:~$ ls -l /dev/ttyTHS1
+  crw-rw---- 1 root tty 238, 1  1월  9 16:25 /dev/ttyTHS1
 ```
 
 

@@ -3,15 +3,16 @@ import json
 
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore    import pyqtSignal, QTimer
+from PyQt5.QtGui     import QPixmap
 from PyQt5           import uic
 
-from views.Utils     import update_date_time, start_date_time_update, stop_date_time_update, update_battery_status, start_battery_update, stop_battery_update
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
 
 class SelectView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_test_info = pyqtSignal(str)  # 테스트 유형을 전달하기 위한 시그널
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         self.load_ui()
         self.init_ui()
@@ -20,6 +21,17 @@ class SelectView(QMainWindow):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
+
+        # 배터리
+        self.uart_model = uart_model
+
+        # 🔋 UARTModel 옵저버 등록
+        if self.uart_model:
+            self.uart_model.add_observer(self)
+
+            battery = self.uart_model.get_battery_info()
+            if battery:
+                self._update_battery_ui(battery)
 
     def load_ui(self):
         # 프로젝트 루트 디렉토리
@@ -49,16 +61,16 @@ class SelectView(QMainWindow):
         self.update_date_time()
         
         # 초기 배터리 상태 설정
-        self.update_battery_status()
+        # self.update_battery_status()
 
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
+        # QTimer.singleShot(100, lambda: start_battery_update(self))
 
     def closeEvent(self, event):
         stop_date_time_update(self)
-        stop_battery_update(self)
+        # stop_battery_update(self)
         super().closeEvent(event)
 
     def on_back_button_clicked(self):
@@ -70,10 +82,10 @@ class SelectView(QMainWindow):
 
     def update_date_time(self):
         update_date_time(self)
-    
+    """    
     def update_battery_status(self):
         update_battery_status(self)
-
+    """
     def update_json_file(self, test_type):
         try:
             with open(self.current_json_path, 'r+') as f:
@@ -84,3 +96,49 @@ class SelectView(QMainWindow):
                 f.truncate()
         except Exception as e:
             print(f"JSON 파일 업데이트 중 오류 발생: {e}")
+
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        if event_type == "battery_changed" and data:
+            self._update_battery_ui(data)
+
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[SelectView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[SelectView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[SelectView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[SelectView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[SelectView] Battery UI update error: {e}")
+

@@ -106,7 +106,7 @@ class AppController(QMainWindow):
         self.resultList_view              = ResultListView(self)
         self.result_category_view         = ResultCategoryView(self)
         self.info_view                    = InfoView(self)
-        self.select_view                  = SelectView(self)
+        self.select_view                  = SelectView(self, uart_model=backend_controller.uart_model)
         self.test_info_view               = TestInfoView(self)
         self.measure_view                 = MeasureView(self)
         self.result_view0                 = ResultView0(self)

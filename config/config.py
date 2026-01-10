@@ -64,17 +64,17 @@ class Config:
     
     def is_debug_mode(self):
         """디버그 모드 여부 반환"""
-        print(f"Config 디버그 모드: {self.debug_mode}")
+        # print(f"Config 디버그 모드: {self.debug_mode}")
         return self.debug_mode
     
     def is_camera_enabled(self):
         """카메라 활성화 여부 반환"""
-        print(f"Config 카메라 모드: {self.camera_enabled}")
+        # print(f"Config 카메라 모드: {self.camera_enabled}")
         return self.camera_enabled
     
     def is_uart_enabled(self):
         """UART 활성화 여부 반환"""
-        print(f"Config UART 모드: {self.uart_enabled}")
+        # print(f"Config UART 모드: {self.uart_enabled}")
         return self.uart_enabled
 
 # 전역 설정 인스턴스

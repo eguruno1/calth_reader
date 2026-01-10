@@ -276,3 +276,19 @@ class UARTService(QObject):
         except Exception as e:
             error_msg = f"UART 종료 실패: {str(e)}"
             self.error_occurred.emit(error_msg)
+
+    #####################################################
+    # Battery Status
+    #####################################################
+    def _handle_received_data(self, data: dict):
+        if "battery" not in data:
+            return
+
+        battery = data["battery"]
+
+        self.model.update_battery_info(
+            level=battery.get("level", 0),
+            is_charging=battery.get("is_charging", False),
+            voltage=battery.get("voltage", 0.0),
+            temperature=battery.get("temperature", 0.0)
+        )

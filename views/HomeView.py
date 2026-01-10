@@ -8,8 +8,7 @@ from PyQt5           import uic
 
 from common.session_context import get_session_context
 
-from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update,
-                            update_battery_status, start_battery_update, stop_battery_update)
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
 
 class HomeView(QMainWindow):
     switch_to_select      = pyqtSignal()
@@ -21,7 +20,7 @@ class HomeView(QMainWindow):
     switch_to_admin_login = pyqtSignal(str)  # Admin 전용 로그인 (target 포함)
     switch_to_qc          = pyqtSignal()  # QC Test로 전환
 
-    def __init__(self, parent=None):
+    def __init__(self, controller, uart_model=None, parent=None):
         super().__init__(parent)
 
         # 프로젝트 루트 디렉토리
@@ -60,6 +59,7 @@ class HomeView(QMainWindow):
         # JSON 파일 경로 설정
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
         
+        """
         # 배터리 상태 초기화
         self.init_battery_status()
         
@@ -67,12 +67,24 @@ class HomeView(QMainWindow):
         self.battery_timer = QTimer()
         self.battery_timer.timeout.connect(self.update_battery_status)
         self.battery_timer.start(1000 * 30)  # 30초
-        
+        """
         # 로그인 상태 초기화
         self.init_login_status()
         
         # 사용자 서비스 시그널 연결
         self.connect_user_signals()
+
+        #####################################################
+        # Battery Status
+        #####################################################
+        self.uart_model = uart_model
+        # ✅ Model 옵저버 등록
+        if self.uart_model:
+            self.uart_model.add_observer(self)
+
+            battery = self.uart_model.get_battery_info()
+            if battery:
+                self._update_battery_ui(battery)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -96,7 +108,7 @@ class HomeView(QMainWindow):
     def hideEvent(self, event):
         super().hideEvent(event)
         stop_date_time_update(self)
-        stop_battery_update(self)
+        # stop_battery_update(self)
 
     def closeEvent(self, event):
         stop_date_time_update(self)
@@ -182,23 +194,24 @@ class HomeView(QMainWindow):
     def update_date_time(self):
         update_date_time(self)
 
-    def init_battery_status(self):
-        """배터리 상태 초기화"""
-        start_battery_update(self)
-    
+    """배터리 상태 초기화
+    def init_battery_status(self): 
+        # start_battery_update(self)
+    """
+    """배터리 상태 업데이트 (Utils.py 함수 사용)
     def update_battery_status(self):
-        """배터리 상태 업데이트 (Utils.py 함수 사용)"""
         update_battery_status(self)
-    
+    """
+    """배터리 디스플레이 업데이트 (Utils.py 함수 사용)
     def update_battery_display(self):
-        """배터리 디스플레이 업데이트 (Utils.py 함수 사용)"""
         update_battery_status(self)
-    
+    """
+    """UART 이벤트 핸들러 (옵저버 패턴)-기존 방식 사용안함.
     def on_uart_event(self, event_type: str, data=None):
-        """UART 이벤트 핸들러 (옵저버 패턴)"""
         if event_type == 'battery_changed':
             self.update_battery_display()
-    
+    """
+
     # 로그인 관련 메서드들
     def init_login_status(self):
         """로그인 상태 초기화"""
@@ -296,3 +309,37 @@ class HomeView(QMainWindow):
 
         return True
     
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        """
+        옵저버 콜백
+        UARTModel.notify_observers()와 1:1 대응
+        """
+        if event_type == "battery_changed" and data:
+            self._update_battery_ui(data)
+
+    def _update_battery_ui(self, battery_info):
+        """
+        UARTModel battery_changed 이벤트 수신 시 호출
+        battery_info: BatteryInfo
+        """
+        # 🔒 UI 위젯 생성 여부 확인
+        if not hasattr(self, "label_BatteryIcon") or not hasattr(self, "label_BatteryText"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            self.label_BatteryIcon.setPixmap(
+                QPixmap(f":/icons/{icon_name}")
+            )
+
+            self.label_BatteryText.setText(
+                battery_info.get_status_text()
+            )
+
+        except Exception as e:
+            print(f"[HomeView] Battery UI update error: {e}")
+
+        

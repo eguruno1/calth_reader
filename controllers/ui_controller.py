@@ -75,7 +75,7 @@ class AppController(QMainWindow):
     #==========================================
     def _create_views(self):
         self.load_view        = LoadView(self)
-        self.home_view        = HomeView(self)
+        self.home_view        = HomeView(self, uart_model=backend_controller.uart_model)
         self.login_view       = LoginView(self)
         self.admin_login_view = AdminLoginView(self)
         self.operator_view    = OperatorView(self)

@@ -3,7 +3,7 @@ import json
 import threading
 
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
-from PyQt5.QtCore    import QTimer, pyqtSignal, QDateTime
+from PyQt5.QtCore    import QTimer, pyqtSignal, QDateTime, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QPixmap
 from PyQt5           import uic
 
@@ -274,6 +274,12 @@ class HomeView(QMainWindow):
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         # 로그인 상태 업데이트
         QTimer.singleShot(200, self.update_login_button)
+        # 배터리 상태 업데이트s
+        from controllers import app_controller
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
 
     #==========================================
     # --- 권한 체크 ---
@@ -319,8 +325,14 @@ class HomeView(QMainWindow):
 
         if event_type == "battery_changed" and data:
             # ❗ UART RX 스레드 → UI 스레드로 전달
-            QTimer.singleShot(0, lambda d=data: self._update_battery_ui(d))
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
 
+    @pyqtSlot(object)
     def _update_battery_ui(self, battery_info):
         """
         UARTModel battery_changed 이벤트 수신 시 호출

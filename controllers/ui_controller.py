@@ -788,14 +788,17 @@ class AppController(QMainWindow):
         """
         print(f"[UIController] set active uart view: {view.__class__.__name__}")
 
-        uart_model = self.backend_controller.uart_model
-
-        # ✅ 이전 View 제거
+        # 기존 observer 제거
         if self._active_uart_view:
-            uart_model.remove_observer(self._active_uart_view)
+            self.backend_controller.uart_model.remove_observer(self._active_uart_view)
 
-        # ✅ 새 View 등록
-        uart_model.add_observer(view)
         self._active_uart_view = view
+        self.backend_controller.uart_model.add_observer(view)
+
+        # 🔥🔥🔥 핵심 추가 🔥🔥🔥
+        battery_info = self.backend_controller.uart_model.get_battery_info()
+        if battery_info and hasattr(view, "on_uart_event"):
+            print("[UIController] push cached battery info to new view")
+            view.on_uart_event("battery_changed", battery_info)
 
 

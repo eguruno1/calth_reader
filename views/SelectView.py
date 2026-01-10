@@ -3,7 +3,7 @@ import json
 import threading
 
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore    import pyqtSignal, QTimer
+from PyQt5.QtCore    import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QPixmap
 from PyQt5           import uic
 
@@ -61,6 +61,12 @@ class SelectView(QMainWindow):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         # QTimer.singleShot(100, lambda: start_battery_update(self))
+        # 배터리 상태 업데이트s
+        from controllers import app_controller
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
 
     def closeEvent(self, event):
         stop_date_time_update(self)
@@ -103,8 +109,14 @@ class SelectView(QMainWindow):
 
         if event_type == "battery_changed" and data:
             # ❗ UART RX 스레드 → UI 스레드로 전달
-            QTimer.singleShot(0, lambda d=data: self._update_battery_ui(d))
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
 
+    @pyqtSlot(object)
     def _update_battery_ui(self, battery_info):
         if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
             return

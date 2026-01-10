@@ -25,6 +25,11 @@ class UARTService(QObject):
     
     def __init__(self, uart_model: UARTModel):
         super().__init__()
+
+        # RX 스레드 제어 : UART 수신용
+        self._rx_thread = None
+        self._rx_running = False
+
         self.model = uart_model
         self.ser = None
         self._lock = threading.Lock()
@@ -84,6 +89,8 @@ class UARTService(QObject):
                 
                 # LED 초기화 (끄기)
                 self.set_led_brightness(0)
+                # RX 스레드 시작
+                self._start_rx_loop()
                 return True
             else:
                 raise Exception("UART 포트를 열 수 없음")
@@ -103,6 +110,8 @@ class UARTService(QObject):
         
         # 가상 LED 초기화
         self.model.set_led_brightness(0)
+        # RX 스레드 시작
+        self._start_rx_loop()
         return True
     
     def set_led_brightness(self, brightness: int) -> bool:
@@ -257,6 +266,9 @@ class UARTService(QObject):
     def shutdown(self):
         """서비스 종료"""
         try:
+            # RX 종료
+            self._rx_running = False
+            
             # LED 끄기
             self.led_off()
             time.sleep(0.1)
@@ -292,3 +304,40 @@ class UARTService(QObject):
             voltage=battery.get("voltage", 0.0),
             temperature=battery.get("temperature", 0.0)
         )
+
+    def _start_rx_loop(self):
+        """RX 루프 구현"""
+        if self._rx_running:
+            return
+
+        self._rx_running = True
+        self._rx_thread = threading.Thread(
+            target=self._rx_loop,
+            daemon=True
+        )
+        self._rx_thread.start()
+        print("[UARTService] RX loop started")
+
+    def _rx_loop(self):
+        """
+        UART 수신 루프
+        - 배터리 상태는 내부적으로 1분 주기 제한됨
+        """
+        while self._rx_running:
+            try:
+                battery = self.get_battery_status()
+                if battery:
+                    print(f"[UARTService] 배터리 수신: {battery}")
+
+                    self.model.update_battery_info(
+                        level=battery.get("level", 0),
+                        is_charging=battery.get("is_charging") or False,
+                        voltage=battery.get("voltage") or 0.0,
+                        temperature=battery.get("temperature") or 0.0
+                    )
+
+            except Exception as e:
+                print(f"[UARTService] RX loop error: {e}")
+
+            time.sleep(0.2)  # CPU 보호
+

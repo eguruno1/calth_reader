@@ -328,18 +328,40 @@ class HomeView(QMainWindow):
         battery_info: BatteryInfo
         """
         # 🔒 UI 위젯 생성 여부 확인
-        if not hasattr(self, "label_BatteryIcon") or not hasattr(self, "label_BatteryText"):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
             return
 
         try:
             icon_name = battery_info.get_icon_name()
-            self.label_BatteryIcon.setPixmap(
-                QPixmap(f":/icons/{icon_name}")
+            print(f"[HomeView] Battery UI icon_name: {icon_name}")
+
+            # ✅ 프로젝트 루트 기준 아이콘 경로
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
             )
 
-            self.label_BatteryText.setText(
+            if not os.path.exists(icon_path):
+                print(f"[HomeView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[HomeView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
                 battery_info.get_status_text()
             )
+
+            print(f"[HomeView] Battery UI updated: {battery_info.level}%")
 
         except Exception as e:
             print(f"[HomeView] Battery UI update error: {e}")

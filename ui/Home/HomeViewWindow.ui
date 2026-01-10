@@ -78,10 +78,6 @@
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>Standard
-Test</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #606060;
@@ -95,6 +91,10 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>Standard
+Test</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_ReadOnly">
@@ -114,9 +114,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>Read Only</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #606060;
@@ -130,6 +127,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>Read Only</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_QCTest">
@@ -149,9 +149,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>QC Test</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #505050;
@@ -165,6 +162,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #404040;
 }</string>
+    </property>
+    <property name="text">
+     <string>QC Test</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Calibration">
@@ -184,9 +184,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>Calibration</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #505050;
@@ -200,6 +197,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #404040;
 }</string>
+    </property>
+    <property name="text">
+     <string>Calibration</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Review">
@@ -219,9 +219,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>Review</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #505050;
@@ -235,6 +232,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #404040;
 }</string>
+    </property>
+    <property name="text">
+     <string>Review</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Settings">
@@ -254,9 +254,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>Settings</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #505050;
@@ -270,6 +267,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #404040;
 }</string>
+    </property>
+    <property name="text">
+     <string>Settings</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Statistics">
@@ -289,9 +289,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <property name="text">
-     <string>Log In</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     background-color: #505050;
@@ -305,6 +302,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #404040;
 }</string>
+    </property>
+    <property name="text">
+     <string>Log In</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_DateNClock">
@@ -429,7 +429,7 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4">
+   <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
       <x>850</x>
@@ -448,7 +448,7 @@ QPushButton:pressed {
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label_BatteryGuage">
+   <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
       <x>820</x>
@@ -502,9 +502,6 @@ QPushButton:pressed {
       <bold>true</bold>
      </font>
     </property>
-    <!-- <property name="text">
-     <string>전원상태</string>
-    </property> -->
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
@@ -573,7 +570,7 @@ QPushButton:pressed {
      <string>Camera: Connected | UART: Connected</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignTrailing|Qt::AlignRight|Qt::AlignVCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
   </widget>

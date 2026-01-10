@@ -68,11 +68,6 @@ class HomeView(QMainWindow):
         self.battery_timer.timeout.connect(self.update_battery_status)
         self.battery_timer.start(1000 * 30)  # 30초
         """
-        # 로그인 상태 초기화
-        self.init_login_status()
-        
-        # 사용자 서비스 시그널 연결
-        self.connect_user_signals()
 
         #####################################################
         # Battery Status
@@ -86,10 +81,13 @@ class HomeView(QMainWindow):
             if battery:
                 self._update_battery_ui(battery)
 
+    """ 아래 동일 함수명 중복선언 :
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
+    """
 
+    """ 아래 동일 함수명 중복선언 : Utils.py 사용
     def update_date_time(self):
         current_datetime = QDateTime.currentDateTime()
         formatted_datetime = current_datetime.toString("yyyy-MM-dd  HH:mm")
@@ -104,6 +102,7 @@ class HomeView(QMainWindow):
         self.date_time_timer = QTimer(self)
         self.date_time_timer.timeout.connect(self.update_date_time)
         self.date_time_timer.start(1000)  # 1초마다 업데이트
+    """
 
     def hideEvent(self, event):
         super().hideEvent(event)
@@ -277,6 +276,7 @@ class HomeView(QMainWindow):
     def showEvent(self, event):
         """화면 표시시 로그인 상태 업데이트"""
         super().showEvent(event)
+        # 날짜/시간 시작
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         # 로그인 상태 업데이트
         QTimer.singleShot(200, self.update_login_button)
@@ -317,6 +317,8 @@ class HomeView(QMainWindow):
         옵저버 콜백
         UARTModel.notify_observers()와 1:1 대응
         """
+        print(f"[HomeView] on_uart_event: {event_type}, {data}")
+
         if event_type == "battery_changed" and data:
             self._update_battery_ui(data)
 

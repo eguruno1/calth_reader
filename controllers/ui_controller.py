@@ -70,6 +70,10 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.load_view)
         self._setup_shortcuts()
 
+        # 배터리 상태를 위해..
+        self.backend_controller = backend_controller
+        self._active_uart_view = None
+
     #==========================================
     # --- View 선언 ---
     #==========================================
@@ -363,7 +367,14 @@ class AppController(QMainWindow):
     # --- 페이지 전환 함수들 ---
     #==========================================
     def switch_to_home_view(self):
+        print("[UIController] switch_to_home_view")
+
         self.stacked_widget.setCurrentWidget(self.home_view)
+        self._set_active_uart_view(self.home_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.home_view._update_battery_ui(battery)
 
     def switch_to_operator_view(self):
         self.stacked_widget.setCurrentWidget(self.operator_view)
@@ -416,7 +427,13 @@ class AppController(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.info_view)
 
     def switch_to_select_view(self):
+        print("[UIController] switch_to_select_view")
         self.stacked_widget.setCurrentWidget(self.select_view)
+        self._set_active_uart_view(self.select_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.select_view._update_battery_ui(battery)
 
     def switch_to_test_info_view(self, test_type):
         self.test_info_view.set_selected_test_type(test_type)
@@ -760,4 +777,25 @@ class AppController(QMainWindow):
         if hasattr(self.qc_view, 'reset_view'):
             self.qc_view.reset_view()
         self.stacked_widget.setCurrentWidget(self.qc_view)
+
+
+    #==========================================
+    # --- 배터리 상태 확인을 위해 ---
+    #========================================== 
+    def _set_active_uart_view(self, view):
+        """
+        현재 화면에 보이는 View만 UART 옵저버로 유지
+        """
+        print(f"[UIController] set active uart view: {view.__class__.__name__}")
+
+        uart_model = self.backend_controller.uart_model
+
+        # ✅ 이전 View 제거
+        if self._active_uart_view:
+            uart_model.remove_observer(self._active_uart_view)
+
+        # ✅ 새 View 등록
+        uart_model.add_observer(view)
+        self._active_uart_view = view
+
 

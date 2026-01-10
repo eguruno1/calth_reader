@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore    import pyqtSignal, QTimer
@@ -24,14 +25,7 @@ class SelectView(QMainWindow):
 
         # 배터리
         self.uart_model = uart_model
-
-        # 🔋 UARTModel 옵저버 등록
-        if self.uart_model:
-            self.uart_model.add_observer(self)
-
-            battery = self.uart_model.get_battery_info()
-            if battery:
-                self._update_battery_ui(battery)
+        print(f"[SelectView] uart_model injected: {self.uart_model}")
 
     def load_ui(self):
         # 프로젝트 루트 디렉토리
@@ -70,7 +64,7 @@ class SelectView(QMainWindow):
 
     def closeEvent(self, event):
         stop_date_time_update(self)
-        # stop_battery_update(self)
+        # stop_battery_update(self)    
         super().closeEvent(event)
 
     def on_back_button_clicked(self):
@@ -101,8 +95,15 @@ class SelectView(QMainWindow):
     # Battery Status (UART 기반)
     #####################################################
     def on_uart_event(self, event_type: str, data):
+        print(f"[SelectView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[SelectView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
         if event_type == "battery_changed" and data:
-            self._update_battery_ui(data)
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QTimer.singleShot(0, lambda d=data: self._update_battery_ui(d))
 
     def _update_battery_ui(self, battery_info):
         if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):

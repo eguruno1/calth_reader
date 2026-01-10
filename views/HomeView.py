@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore    import QTimer, pyqtSignal, QDateTime
@@ -73,13 +74,6 @@ class HomeView(QMainWindow):
         # Battery Status
         #####################################################
         self.uart_model = uart_model
-        # ✅ Model 옵저버 등록
-        if self.uart_model:
-            self.uart_model.add_observer(self)
-
-            battery = self.uart_model.get_battery_info()
-            if battery:
-                self._update_battery_ui(battery)
 
     """ 아래 동일 함수명 중복선언 :
     def showEvent(self, event):
@@ -318,9 +312,14 @@ class HomeView(QMainWindow):
         UARTModel.notify_observers()와 1:1 대응
         """
         print(f"[HomeView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[HomeView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
 
         if event_type == "battery_changed" and data:
-            self._update_battery_ui(data)
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QTimer.singleShot(0, lambda d=data: self._update_battery_ui(d))
 
     def _update_battery_ui(self, battery_info):
         """

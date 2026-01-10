@@ -3,7 +3,7 @@ import os
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import QTimer, pyqtSignal, Qt
 from PyQt5 import uic
-from controllers import app_controller
+# from controllers import app_controller
 
 
 class LoadView(QMainWindow):
@@ -61,8 +61,8 @@ class LoadView(QMainWindow):
         self.display_version()
         
         # 애플리케이션 컨트롤러 시그널 연결
-        app_controller.initialization_complete.connect(self.on_initialization_complete)
-        app_controller.system_ready.connect(self.on_system_ready)
+        # app_controller.initialization_complete.connect(self.on_initialization_complete)
+        # app_controller.system_ready.connect(self.on_system_ready)
         
         # 타이머 설정
         self.timer = QTimer(self)

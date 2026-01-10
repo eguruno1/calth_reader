@@ -18,7 +18,7 @@ class UARTSettings:
     """UART 설정 데이터 클래스"""
     port: str = '/dev/ttyTHS1'
     baudrate: int = 115200
-    timeout: float = 1.0
+    timeout: float = 1.5
     bytesize: int = 8
     parity: str = 'N'
     stopbits: int = 1
@@ -110,16 +110,23 @@ class UARTModel:
     
     def add_observer(self, observer):
         """옵저버 추가"""
-        self._observers.append(observer)
+        if observer not in self._observers:
+            self._observers.append(observer)
+            print(f"[UARTModel] observer added: {observer.__class__.__name__}")
     
     def remove_observer(self, observer):
         """옵저버 제거"""
         if observer in self._observers:
             self._observers.remove(observer)
+            print(f"[UARTModel] observer removed: {observer.__class__.__name__}")
+
+    def clear_observers(self):
+        self._observers.clear()
+        print("[UARTModel] observers cleared")
     
     def notify_observers(self, event_type: str, data=None):
         """옵저버들에게 변경사항 알림"""
-        for observer in self._observers:
+        for observer in list(self._observers):
             if hasattr(observer, 'on_uart_event'):
                 observer.on_uart_event(event_type, data)
     

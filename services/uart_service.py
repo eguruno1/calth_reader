@@ -178,7 +178,10 @@ class UARTService(QObject):
         }
     
     def get_battery_status(self):
-        """배터리 상태 읽기 (RX only, 1분 주기 제한)"""
+        """
+        배터리 상태 읽기 (RX only, 1분 주기 제한)
+        사용하지 않음.
+        """
 
         now = time.time()
 
@@ -316,28 +319,52 @@ class UARTService(QObject):
             daemon=True
         )
         self._rx_thread.start()
-        print("[UARTService] RX loop started")
 
     def _rx_loop(self):
-        """
-        UART 수신 루프
-        - 배터리 상태는 내부적으로 1분 주기 제한됨
-        """
+        print("[UARTService] RX loop started")
+
         while self._rx_running:
             try:
-                battery = self.get_battery_status()
-                if battery:
-                    print(f"[UARTService] 배터리 수신: {battery}")
+                line = self.ser.readline()   # blocking
+                if not line:
+                    continue
 
-                    self.model.update_battery_info(
-                        level=battery.get("level", 0),
-                        is_charging=battery.get("is_charging") or False,
-                        voltage=battery.get("voltage") or 0.0,
-                        temperature=battery.get("temperature") or 0.0
-                    )
+                raw = line.decode("utf-8", errors="ignore").strip()
+                print(f"[UARTService] RX raw: {raw}")
+
+                # 🔋 배터리 데이터 처리
+                if raw.startswith("B+"):
+                    self._handle_battery_raw(raw) # 수신데이터 처리.
 
             except Exception as e:
                 print(f"[UARTService] RX loop error: {e}")
 
-            time.sleep(0.2)  # CPU 보호
+    def _handle_battery_raw(self, raw: str):
+        """
+        수신 예:
+        B+FF  → 100%
+        B+95  → 95%
+        B+10  → 10%
+        """
+        try:
+            value = raw[2:]  # "FF" or "95" or "10"
+
+            if value.upper() == "FF":
+                level = 100
+            else:
+                level = int(value)
+
+            print(f"[UARTService] 배터리 수신 파싱됨: {level}%")
+
+            self.model.update_battery_info(
+                level=level,
+                is_charging=False,   # 장비 프로토콜상 정보 없음
+                voltage=0.0,
+                temperature=0.0
+            )
+
+        except Exception as e:
+            print(f"[UARTService] 배터리 파싱 오류 ({raw}): {e}")
+
+
 

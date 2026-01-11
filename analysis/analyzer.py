@@ -19,5 +19,6 @@ class Analyzer:
         return {
             "mode": mode,
             "line_count": count,
+            "boxes": boxes,
             "metrics": metrics
         }

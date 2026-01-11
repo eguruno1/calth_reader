@@ -13,6 +13,7 @@ from datetime import datetime
 
 from analysis.analyzer import Analyzer # ✅ 추가
 from analysis.focus import focus_score
+from analysis.utils import draw_result_boxes, create_thumbnail
 
 class MeasurementController(QObject):
     """측정 프로세스 컨트롤러"""
@@ -208,6 +209,48 @@ class MeasurementController(QObject):
             "line_count": line_count,
             "metrics": metrics,
         }
+
+        # ===============================
+        # 결과 박스 이미지 생성
+        # ===============================
+        boxes = analysis.get("boxes", [])
+        metrics = analysis.get("metrics", {}).get("lines", [])
+
+        if boxes and metrics:
+            result_img = draw_result_boxes(
+                self.captured_frame,
+                boxes,
+                metrics
+            )
+
+            # 결과 이미지 저장
+            base, ext = os.path.splitext(self.captured_filename)
+            result_filename = base + "_result.jpg"
+            result_path = os.path.join(
+                os.path.dirname(self.captured_image_path),
+                result_filename
+            )
+
+            cv2.imwrite(result_path, result_img)
+            self.result_image_path = result_path
+
+            # ===============================
+            # 썸네일 생성
+            # ===============================
+            thumb = create_thumbnail(result_img, width=320)
+            thumb_filename = base + "_thumb.jpg"
+            thumb_path = os.path.join(
+                os.path.dirname(self.captured_image_path),
+                thumb_filename
+            )
+
+            cv2.imwrite(thumb_path, thumb)
+            self.thumbnail_path = thumb_path
+
+        else:
+            self.result_image_path = None
+            self.thumbnail_path = None
+
         
         # 가상의 분석 결과 생성
         """
@@ -238,11 +281,12 @@ class MeasurementController(QObject):
         # 측정 결과 생성
         measurement_result = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'duration': self.elapsed_time / 1000.0,  # 초 단위
-            'captured_image': getattr(self, 'captured_filename', None),
-            'analysis_result_old': getattr(self, 'analysis_result', None),
-            "analysis_result": getattr(self, 'analysis_result', None),
-            'success': True
+            "duration": self.elapsed_time / 1000.0,
+            "captured_image": self.captured_filename,
+            "result_image": getattr(self, "result_image_path", None),
+            "thumbnail_image": getattr(self, "thumbnail_path", None),
+            "analysis_result": self.analysis_result,
+            "success": True
         }
         
         print("측정 프로세스 완료")

@@ -137,15 +137,15 @@ class MeasurementController(QObject):
         # LED ON 이후 ISP 안정화 대기
         # print("[MeasurementController] LED ON")
         # app_controller.led_on(45)
-        time.sleep(1.0)
+        # time.sleep(1.0)
 
         #print("[MeasurementController] Restart camera after LED ON")
         #app_controller.camera_service.restart_camera()
         #time.sleep(1.5)
 
         # ✅ AE 안정화 대기
-        print("[MeasurementController] Waiting for AE stabilization...")
-        app_controller.camera_service.discard_frames(duration_sec=2.0)
+        #print("[MeasurementController] Waiting for AE stabilization...")
+        #app_controller.camera_service.discard_frames(duration_sec=2.0)
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"measurement_{timestamp}.jpg"
@@ -288,6 +288,11 @@ class MeasurementController(QObject):
         """
         best_focus = -1.0
         best_frame = None
+
+        #warm-up discard도 추가 가능
+        for _ in range(5):
+            app_controller.camera_service.get_current_frame()
+            time.sleep(0.05)
 
         for i in range(sample_count):
             cam_frame = app_controller.camera_service.get_current_frame()

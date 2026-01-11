@@ -112,13 +112,27 @@ class MeasureView(QMainWindow):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         #QTimer.singleShot(100, lambda: start_battery_update(self))
-        QTimer.singleShot(500, self.start_measurement)  # 측정 시작
+        #QTimer.singleShot(500, self.start_measurement)  # 측정 시작
+
+        # ✅ 1. LED 먼저 켠다
+        QTimer.singleShot(300, self._prepare_and_start_measurement)
         
         # 배터리 상태 업데이트
         model = app_controller.uart_model
         battery_info = model.get_battery_info()
         if battery_info:
             self._update_battery_ui(battery_info)
+
+    def _prepare_and_start_measurement(self):
+        """
+        test_3line_auto와 동일한 흐름:
+        LED ON → ISP 안정화 → 측정 시작
+        """
+        print("[MeasureView] LED ON (pre-measurement)")
+        app_controller.led_on(45)
+
+        # ISP / AE 안정화 대기 (중요)
+        QTimer.singleShot(1500, self.start_measurement)            
 
     def start_measurement(self):
         """측정 시작 - 컨트롤러에 위임"""

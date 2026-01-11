@@ -1,11 +1,13 @@
 import os
+import threading
 
-from PyQt5.QtWidgets    import QMainWindow
-from PyQt5.QtCore       import QTimer, pyqtSignal, Qt
 from PyQt5              import uic
+from PyQt5.QtWidgets    import QMainWindow
+from PyQt5.QtCore       import (QTimer, pyqtSignal, QMetaObject, Qt, Q_ARG, pyqtSlot)
+from PyQt5.QtGui        import QPixmap
 
-from views.Utils        import update_date_time, start_date_time_update, stop_date_time_update, start_battery_update, stop_battery_update
-from controllers import measurement_controller
+from views.Utils        import (update_date_time, start_date_time_update, stop_date_time_update)
+from controllers import measurement_controller, app_controller
 
 
 class MeasureView(QMainWindow):
@@ -13,10 +15,14 @@ class MeasureView(QMainWindow):
     #measure_finished    = pyqtSignal()
     switch_to_result = pyqtSignal()  # ResultView로 전환하기 위한 시그널
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         self.load_ui()
         self.init_ui()
+
+        # 배터리
+        self.uart_model = uart_model
+        print(f"[MeasureView] uart_model injected: {self.uart_model}")
         
     def load_ui(self):
         # 프로젝트 루트 디렉토리
@@ -82,8 +88,14 @@ class MeasureView(QMainWindow):
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
+        #QTimer.singleShot(100, lambda: start_battery_update(self))
         QTimer.singleShot(500, self.start_measurement)  # 측정 시작
+        
+        # 배터리 상태 업데이트
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
 
     def start_measurement(self):
         """측정 시작 - 컨트롤러에 위임"""
@@ -118,7 +130,7 @@ class MeasureView(QMainWindow):
     def closeEvent(self, event):
         """뷰 종료시 정리"""
         stop_date_time_update(self)
-        stop_battery_update(self)
+        # stop_battery_update(self)
         
         # 측정 중이라면 중지
         if hasattr(self, 'measurement_controller'):
@@ -128,3 +140,61 @@ class MeasureView(QMainWindow):
 
     def update_date_time(self):
         update_date_time(self)
+
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        print(f"[MeasureView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[MeasureView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
+        if event_type == "battery_changed" and data:
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
+
+    @pyqtSlot(object)
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[MeasureView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[MeasureView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[MeasureView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[MeasureView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[MeasureView] Battery UI update error: {e}")    

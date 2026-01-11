@@ -112,8 +112,8 @@ class AppController(QMainWindow):
         self.info_view                    = InfoView(self)
         self.select_view                  = SelectView(self, uart_model=backend_controller.uart_model)
         self.test_info_view               = TestInfoView(self, uart_model=backend_controller.uart_model)
-        self.measure_view                 = MeasureView(self)
-        self.result_view0                 = ResultView0(self)
+        self.measure_view                 = MeasureView(self, uart_model=backend_controller.uart_model)
+        self.result_view0                 = ResultView0(self, uart_model=backend_controller.uart_model)
         #self.result_view1                = ResultView1(self)
 
         # 계정관련 views
@@ -443,13 +443,23 @@ class AppController(QMainWindow):
         # 초기 배터리 상태
         battery = self.backend_controller.uart_model.get_battery_info()
         if battery:
-            self.select_view._update_battery_ui(battery)
+            self.test_info_view._update_battery_ui(battery)
 
     def switch_to_measure_view(self):
         self.stacked_widget.setCurrentWidget(self.measure_view)
+        self._set_active_uart_view(self.measure_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.measure_view._update_battery_ui(battery)
 
     def switch_to_result_view(self):
         self.stacked_widget.setCurrentWidget(self.result_view0)
+        self._set_active_uart_view(self.result_view0)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.result_view0._update_battery_ui(battery)
 
     def switch_to_login_view(self):
         self.stacked_widget.setCurrentWidget(self.login_view)

@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -176,7 +176,7 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_battery_icon">
+   <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
       <x>850</x>
@@ -195,7 +195,6 @@ QPushButton:pressed {
      <bool>true</bool>
     </property>
    </widget>
-
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
@@ -301,7 +300,7 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-      <widget class="QLabel" name="label_BatteryGuage">
+   <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
       <x>820</x>
@@ -362,13 +361,14 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <zorder>pushButton_MeasureBackArrow</zorder>
+   <zorder>label_MeasureTitle</zorder>
+   <zorder>label_BatteryGuage</zorder>
    <zorder>progressBar_Meas</zorder>
-   <zorder>label_2</zorder>
    <zorder>label_4</zorder>
    <zorder>label_6</zorder>
-   <zorder>label</zorder>
    <zorder>label_DateNClock</zorder>
-   <zorder>label_BatteryGuage</zorder>
+   <zorder>label_BatteryGuageTxt</zorder>
   </widget>
  </widget>
  <resources/>

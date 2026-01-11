@@ -32,6 +32,13 @@ class CameraFrame:
     def size(self) -> int:
         """프레임 데이터 크기 반환"""
         return self.frame_data.size if self.frame_data is not None else 0
+    
+    @property
+    def image(self) -> np.ndarray:
+        """
+        외부 분석/측정 로직에서 사용하는 표준 이미지 인터페이스
+        """
+        return self.frame_data
 
 class CameraModel:
     """카메라 데이터 모델"""

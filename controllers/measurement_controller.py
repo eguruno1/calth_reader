@@ -2,9 +2,17 @@
 """
 Measurement Controller - 측정 프로세스 제어
 """
+import os
+import time
+import cv2
+import numpy as np
+
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from controllers.system_controller import app_controller
 from datetime import datetime
+
+from analysis.analyzer import Analyzer # ✅ 추가
+from analysis.focus import focus_score
 
 class MeasurementController(QObject):
     """측정 프로세스 컨트롤러"""
@@ -23,12 +31,18 @@ class MeasurementController(QObject):
         self.current_phase = 0
         self.phase_start_time = 0
         self.is_measuring = False
+
+        # ✅ 추가
+        self.test_type = None
+        self.analysis_result = None
+        self.captured_frame = None   # 🔥 최종 선택된 프레임
         
         # 측정 단계 정의
         self.measurement_phases = [
             {"name": "LED 켜기", "duration": 1000, "action": self._phase_led_on},
             {"name": "카메라 캡처", "duration": 2000, "action": self._phase_capture},
-            {"name": "이미지 분석", "duration": 1500, "action": self._phase_analysis},
+            #{"name": "이미지 분석", "duration": 1500, "action": self._phase_analysis},
+            {"name": "이미지 분석", "duration": 4000, "action": self._phase_analysis},
             {"name": "LED 끄기", "duration": 500, "action": self._phase_led_off}
         ]
     
@@ -115,31 +129,95 @@ class MeasurementController(QObject):
             print("LED 켜기 실패 (디버그 모드에서는 정상)")
     
     def _phase_capture(self):
-        """2단계: 카메라 캡처"""
+        """
+        2단계: 카메라 캡처
+        test_3line_auto 기반 최적 프레임 획득
+        """
+        print("[MeasurementController] 최적 프레임 선택 시작")
+        # LED ON 이후 ISP 안정화 대기
+        # print("[MeasurementController] LED ON")
+        # app_controller.led_on(45)
+        time.sleep(1.0)
+
+        #print("[MeasurementController] Restart camera after LED ON")
+        #app_controller.camera_service.restart_camera()
+        #time.sleep(1.5)
+
+        # ✅ AE 안정화 대기
+        print("[MeasurementController] Waiting for AE stabilization...")
+        app_controller.camera_service.discard_frames(duration_sec=2.0)
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"measurement_{timestamp}.jpg"
-        
-        success = app_controller.capture_image(filename)
-        if success:
-            print(f"이미지 캡처 완료: {filename}")
-            self.captured_filename = filename
-        else:
-            print("이미지 캡처 실패 (디버그 모드에서는 정상)")
-            self.captured_filename = None
+        save_dir = "./CalthReaderResult/images"
+        os.makedirs(save_dir, exist_ok=True)
+
+        # 🔥 핵심: 최적 프레임 선택
+        best_frame = self._select_best_frame()   # np.ndarray
+
+        if best_frame is None:
+            raise RuntimeError("카메라 캡처 실패: 유효한 프레임이 없습니다.")
+
+        # 🔥 MeasurementController가 직접 저장
+        image_path = os.path.join(save_dir, filename)
+        cv2.imwrite(image_path, best_frame)
+
+        self.captured_frame = best_frame
+        self.captured_filename = filename
+        self.captured_image_path = image_path
+
+        print(f"[MeasurementController] 이미지 캡처 완료: {filename}")
     
     def _phase_analysis(self):
         """3단계: 이미지 분석 (시뮬레이션)"""
         # 실제 구현에서는 여기서 이미지 분석 알고리즘 실행
-        print("이미지 분석 시뮬레이션...")
+        print("_phase_analysis : 이미지 분석 알고리즘 실행...")
+
+        """
+        test_3line_auto 기반 실제 분석 Phase
+        """
+
+        if self.captured_frame is None:
+            raise RuntimeError("분석할 프레임이 없습니다.")
+
+        analysis = Analyzer.analyze(self.captured_frame, self.test_type)
+
+        if analysis is None:
+            raise RuntimeError("이미지 분석 실패: Analyzer 결과가 None 입니다.")
+
+        if not isinstance(analysis, dict):
+            raise RuntimeError("이미지 분석 실패: 잘못된 결과 형식")
+
+        mode = analysis.get("mode")
+        line_count = analysis.get("line_count")
+        metrics = analysis.get("metrics") or {}
+
+        if mode is None or line_count is None:
+            raise RuntimeError("분석 결과 형식이 올바르지 않습니다.")
+
+        positive = (
+            analysis["line_count"] >= 2
+            if analysis["mode"] == 2
+            else analysis["line_count"] >= 1
+        )
+
+        self.analysis_result = {
+            "positive": positive,
+            "mode": mode,
+            "line_count": line_count,
+            "metrics": metrics,
+        }
         
         # 가상의 분석 결과 생성
+        """
         import random
         self.analysis_result = {
             'positive': random.choice([True, False]),
             'confidence': random.uniform(0.7, 0.99),
             'detected_lines': random.randint(1, 3)
         }
-    
+        """
+
     def _phase_led_off(self):
         """4단계: LED 끄기"""
         success = app_controller.led_off()
@@ -158,10 +236,11 @@ class MeasurementController(QObject):
         
         # 측정 결과 생성
         measurement_result = {
-            'timestamp': datetime.now(),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'duration': self.elapsed_time / 1000.0,  # 초 단위
             'captured_image': getattr(self, 'captured_filename', None),
-            'analysis_result': getattr(self, 'analysis_result', None),
+            'analysis_result_old': getattr(self, 'analysis_result', None),
+            "analysis_result": getattr(self, 'analysis_result', None),
             'success': True
         }
         
@@ -198,6 +277,53 @@ class MeasurementController(QObject):
             'elapsed_time': self.elapsed_time,
             'is_measuring': self.is_measuring
         }
+    
+    ###################################################
+    # 최적 프레임 선택
+    ###################################################
+    def _select_best_frame(self, sample_count=10):
+        """
+        camera_service가 관리하는 최신 프레임 중
+        focus score 기준 최적 프레임 선택
+        """
+        best_focus = -1.0
+        best_frame = None
+
+        for i in range(sample_count):
+            cam_frame = app_controller.camera_service.get_current_frame()
+
+            if cam_frame is None or not cam_frame.is_valid:
+                time.sleep(0.05)
+                continue
+
+            img = cam_frame.frame_data
+            if img is None:
+                time.sleep(0.05)
+                continue
+
+            mean_val = np.mean(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+            if mean_val > 245:
+                print("[WARN] Frame overexposed, skipping")
+                continue
+
+            # focus 계산
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            focus = cv2.Laplacian(gray, cv2.CV_64F).var()
+
+            print(f"[DEBUG] frame {i} focus={focus:.2f}")
+
+            if focus > best_focus:
+                best_focus = focus
+                best_frame = img.copy()  # ✅ 최종 선택 시점에서만 copy
+
+            time.sleep(0.05)
+
+        if best_frame is None:
+            raise RuntimeError("유효한 프레임을 획득하지 못했습니다.")
+
+        print(f"[MeasurementController] Best focus score: {best_focus:.2f}")
+        return best_frame
+
 
 # 전역 측정 컨트롤러 인스턴스
 measurement_controller = MeasurementController()

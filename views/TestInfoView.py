@@ -286,7 +286,7 @@ class TestInfoView(QMainWindow):
         self.selected_test_type = test_type
         if self.label_NOTE1:
             # Simple test type display
-            self.label_NOTE1.setText(f"Selected Test: {test_type}")
+            self.label_NOTE1.setText(f"{test_type}")
         else:
             print("Warning: Cannot set selected test type. label_NOTE1 not found.")
 

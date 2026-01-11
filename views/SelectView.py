@@ -47,7 +47,7 @@ class SelectView(QMainWindow):
         self.pushButton_SelectBackArrow.clicked.connect(self.on_back_button_clicked)
 
         # 버튼들 연결
-        self.pushButton_Covid19.clicked.connect(lambda: self.on_test_button_clicked("Covid-19"))
+        self.pushButton_Covid19.clicked.connect(lambda: self.on_test_button_clicked("COVID-19 Ag"))
         self.pushButton_Influenza.clicked.connect(lambda: self.on_test_button_clicked("Influenza A & B"))
         self.pushButton_Cadiac.clicked.connect(lambda: self.on_test_button_clicked("Cardiac Troponin I"))
 

@@ -1,5 +1,7 @@
 import os
+import json
 import threading
+from datetime import datetime
 
 from PyQt5              import uic
 from PyQt5.QtWidgets    import QMainWindow
@@ -28,6 +30,8 @@ class MeasureView(QMainWindow):
         # 프로젝트 루트 디렉토리
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
+        # TestInfoView 정보를 json에서 읽는다.
+        self.current_json_path = os.path.join(project_root, 'info', 'current.json')
         
         # UI 파일 경로 설정 
         ui_filename = 'MeasureViewWindow.ui'
@@ -38,6 +42,8 @@ class MeasureView(QMainWindow):
             uic.loadUi(ui_file, self)
         else:
             raise FileNotFoundError(f"UI file not found: {ui_file}")   
+        
+        self._load_test_info()
 
     def init_ui(self):
         
@@ -85,6 +91,23 @@ class MeasureView(QMainWindow):
         # 날짜와 시간 표시
         self.update_date_time()
 
+
+    def _load_test_info(self):
+        """
+        JSON에서 검사 정보 읽기 (Read Only)
+        """
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.test_type = data.get("test_type1", "")
+
+            print(f"[MeasureView] test_type 로드: {self.test_type}")
+
+        except Exception as e:
+            print(f"[MeasureView] JSON 로드 오류: {e}")
+
+
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
@@ -118,6 +141,29 @@ class MeasureView(QMainWindow):
     def on_measurement_finished(self, result: dict):
         """측정 완료 (컨트롤러에서 알림)"""
         print(f"측정 완료: {result}")
+
+        """
+        측정 완료 후 JSON 결과 반영
+        """
+        try:
+            with open(self.current_json_path, "r+", encoding="utf-8") as f:
+                data = json.load(f)
+
+                # 결과만 갱신
+                data["datentime"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                data["control"]   = "Positive" if result["analysis_result"]["positive"] else "Negative"
+                data["resulta"]   = "POS" if result["analysis_result"]["positive"] else "NEG"
+                data["resultb"]   = "POS" if result["analysis_result"]["positive"] else "NEG"
+
+                f.seek(0)
+                json.dump(data, f, indent=4, ensure_ascii=False)
+                f.truncate()
+
+            print("[MeasureView] JSON 결과 업데이트 완료")
+
+        except Exception as e:
+            print(f"[MeasureView] JSON 업데이트 오류: {e}")
+
         self.progressBar_Meas.setFormat("측정 완료 - %p%")
         # 1초 후 결과 화면으로 전환
         QTimer.singleShot(1000, lambda: self.switch_to_result.emit())

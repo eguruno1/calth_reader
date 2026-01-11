@@ -6,10 +6,10 @@ class Analyzer:
 
     @staticmethod
     def analyze(frame, test_type: str) -> dict:
-        if "Influenza" in test_type:
-            mode = 2
-        else:
+        if "Influenza A&B" in test_type:
             mode = 3
+        else:
+            mode = 2
 
         if mode == 2:
             count, boxes, metrics = detect_reaction_lines_from_image(frame)

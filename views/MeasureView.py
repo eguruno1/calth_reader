@@ -137,6 +137,7 @@ class MeasureView(QMainWindow):
     def start_measurement(self):
         """측정 시작 - 컨트롤러에 위임"""
         print("측정 시작 요청")
+        measurement_controller.test_type = self.test_type  # 2 or 3 라인 판독을 위해....
         success = self.measurement_controller.start_measurement()
         if not success:
             print("측정 시작 실패")

@@ -176,6 +176,7 @@ class MeasurementController(QObject):
         """
         test_3line_auto 기반 실제 분석 Phase
         """
+        print(f"[MeasurementController] test_type: {self.test_type}")
 
         if self.captured_frame is None:
             raise RuntimeError("분석할 프레임이 없습니다.")

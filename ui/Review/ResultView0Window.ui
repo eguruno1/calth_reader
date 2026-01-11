@@ -84,7 +84,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>866</x>
-      <y>334</y>
+      <y>370</y>
       <width>102</width>
       <height>102</height>
      </rect>
@@ -136,7 +136,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>866</x>
-      <y>446</y>
+      <y>482</y>
       <width>102</width>
       <height>102</height>
      </rect>
@@ -181,9 +181,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>53</x>
-      <y>160</y>
+      <y>140</y>
       <width>156</width>
-      <height>340</height>
+      <height>391</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -203,9 +203,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>236</x>
-      <y>178</y>
+      <y>210</y>
       <width>218</width>
-      <height>55</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -225,7 +225,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>236</x>
-      <y>240</y>
+      <y>336</y>
       <width>218</width>
       <height>55</height>
      </rect>
@@ -247,7 +247,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>236</x>
-      <y>302</y>
+      <y>150</y>
       <width>218</width>
       <height>55</height>
      </rect>
@@ -269,7 +269,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>236</x>
-      <y>364</y>
+      <y>400</y>
       <width>218</width>
       <height>55</height>
      </rect>
@@ -291,7 +291,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>236</x>
-      <y>426</y>
+      <y>462</y>
       <width>218</width>
       <height>55</height>
      </rect>
@@ -313,9 +313,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>459</x>
-      <y>178</y>
+      <y>210</y>
       <width>364</width>
-      <height>55</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -335,7 +335,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>459</x>
-      <y>364</y>
+      <y>400</y>
       <width>364</width>
       <height>55</height>
      </rect>
@@ -357,9 +357,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>459</x>
-      <y>240</y>
+      <y>336</y>
       <width>364</width>
-      <height>55</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -379,7 +379,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>459</x>
-      <y>302</y>
+      <y>150</y>
       <width>364</width>
       <height>55</height>
      </rect>
@@ -401,7 +401,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>459</x>
-      <y>426</y>
+      <y>462</y>
       <width>364</width>
       <height>55</height>
      </rect>
@@ -423,9 +423,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>178</y>
+      <y>210</y>
       <width>120</width>
-      <height>55</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="palette">
@@ -481,7 +481,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>240</y>
+      <y>336</y>
       <width>120</width>
       <height>55</height>
      </rect>
@@ -539,7 +539,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>302</y>
+      <y>150</y>
       <width>120</width>
       <height>55</height>
      </rect>
@@ -590,14 +590,14 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>DISEASE</string>
+     <string>TEST ITEM</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_19">
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>364</y>
+      <y>400</y>
       <width>120</width>
       <height>55</height>
      </rect>
@@ -655,7 +655,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>426</y>
+      <y>462</y>
       <width>120</width>
       <height>55</height>
      </rect>
@@ -713,7 +713,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>240</y>
+      <y>336</y>
       <width>310</width>
       <height>55</height>
      </rect>
@@ -734,7 +734,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>426</y>
+      <y>462</y>
       <width>310</width>
       <height>55</height>
      </rect>
@@ -792,9 +792,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>178</y>
+      <y>210</y>
       <width>310</width>
-      <height>55</height>
+      <height>50</height>
      </rect>
     </property>
     <property name="font">
@@ -813,7 +813,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>490</x>
-      <y>364</y>
+      <y>400</y>
       <width>310</width>
       <height>55</height>
      </rect>
@@ -833,18 +833,18 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_25">
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>302</y>
+      <x>480</x>
+      <y>150</y>
       <width>310</width>
-      <height>55</height>
+      <height>50</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
       <pointsize>16</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">
@@ -1032,6 +1032,129 @@ QPushButton:pressed {
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_26">
+    <property name="geometry">
+     <rect>
+      <x>490</x>
+      <y>270</y>
+      <width>310</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>2025-01-01</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_27">
+    <property name="geometry">
+     <rect>
+      <x>459</x>
+      <y>270</y>
+      <width>364</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../image/06_Result/Result_InputBKG.png</pixmap>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>236</x>
+      <y>270</y>
+      <width>218</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../image/06_Result/Result_TitleBar.png</pixmap>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_28">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>270</y>
+      <width>120</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="palette">
+     <palette>
+      <active>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>232</red>
+          <green>232</green>
+          <blue>232</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>232</red>
+          <green>232</green>
+          <blue>232</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>120</red>
+          <green>120</green>
+          <blue>120</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>16</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>OPERATOR ID</string>
     </property>
    </widget>
   </widget>

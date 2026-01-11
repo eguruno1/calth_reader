@@ -2,7 +2,7 @@ import os
 import threading
 
 from PyQt5           import uic
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QLabel
 from PyQt5.QtCore    import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QPixmap
 
@@ -38,6 +38,14 @@ class ResultView0(QMainWindow):
             raise FileNotFoundError(f"UI file not found: {ui_file}")
 
     def init_ui(self):
+        # label 찾기
+        self.label_18 = self.findChild(QLabel, "label_18") #Test Item Title
+        self.label_18.setStyleSheet("Color : blue") #글자색 변환
+        self.label_20 = self.findChild(QLabel, "label_20") #Result
+        self.label_20.setStyleSheet("Color : blue") #글자색 변환
+        self.label_25 = self.findChild(QLabel, "label_25") #Test Item Name
+        self.label_25.setStyleSheet("Color : red") #글자색 변환
+
         # 버튼들 연결
         self.pushButton_ResultHome.clicked.connect(self.on_resultHome_button_clicked)
         self.pushButton_Retest.clicked.connect(self.on_resiltRetest_button_clicked)

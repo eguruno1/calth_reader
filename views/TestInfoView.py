@@ -66,6 +66,7 @@ class TestInfoView(QMainWindow):
 
         # label_NOTE1 찾기
         self.label_NOTE1 = self.findChild(QLabel, "label_NOTE1")
+        self.label_NOTE1.setStyleSheet("Color : red") #글자색 변환
         if not self.label_NOTE1:
             print("Warning: label_NOTE1 not found")
 
@@ -85,7 +86,7 @@ class TestInfoView(QMainWindow):
             "label",
             "label_DateNClock",
             "label_BatteryGuage",
-            "label_2"
+            "label_BatteryGuageTxt"
         ]
 
         # 원래 위치 저장

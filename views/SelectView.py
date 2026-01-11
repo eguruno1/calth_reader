@@ -61,7 +61,7 @@ class SelectView(QMainWindow):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         # QTimer.singleShot(100, lambda: start_battery_update(self))
-        # 배터리 상태 업데이트s
+        # 배터리 상태 업데이트
         from controllers import app_controller
         model = app_controller.uart_model
         battery_info = model.get_battery_info()

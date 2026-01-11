@@ -1,13 +1,14 @@
 import os
 import json
+import threading
 from datetime import datetime
 
 from PyQt5.QtWidgets import QMainWindow, QLineEdit, QWidget, QLabel, QMessageBox
-from PyQt5.QtCore    import pyqtSignal, QPoint, QRect, QEvent, QPropertyAnimation, QEasingCurve, QTimer
-from PyQt5.QtGui     import QResizeEvent
+from PyQt5.QtCore    import (pyqtSignal, QPoint, QRect, QEvent, QPropertyAnimation, QEasingCurve, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot)
+from PyQt5.QtGui     import QResizeEvent, QPixmap
 from PyQt5           import uic
 
-from views.Utils     import set_current_date, update_date_time, start_date_time_update, stop_date_time_update, start_battery_update, stop_battery_update, update_battery_status
+from views.Utils     import (set_current_date, update_date_time, start_date_time_update, stop_date_time_update)
 from views.VKeyboard import VKeyboard
 from controllers import app_controller
 
@@ -15,7 +16,7 @@ class TestInfoView(QMainWindow):
     switch_to_select  = pyqtSignal()  
     switch_to_measure = pyqtSignal()  
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         
         self.load_ui()
@@ -25,6 +26,10 @@ class TestInfoView(QMainWindow):
         self.setup_virtual_keyboard()
         self.installEventFilter(self)
         self.keyboard_animation = None
+
+        # 배터리
+        self.uart_model = uart_model
+        print(f"[TestInfoView] uart_model injected: {self.uart_model}")
 
         # JSON 파일 경로 설정
         current_dir  = os.path.dirname(os.path.abspath(__file__))
@@ -67,7 +72,7 @@ class TestInfoView(QMainWindow):
         self.update_date_time()
         
         # 배터리 상태 초기화
-        self.update_battery_status()
+        # self.update_battery_status()
 
         # centralwidget 찾기
         self.central_widget = self.centralWidget()
@@ -271,8 +276,10 @@ class TestInfoView(QMainWindow):
     def update_date_time(self):
         update_date_time(self)
     
+    """
     def update_battery_status(self):
         update_battery_status(self)
+    """
 
     def set_selected_test_type(self, test_type):
         self.selected_test_type = test_type
@@ -316,7 +323,13 @@ class TestInfoView(QMainWindow):
         # 시간과 배터리 상태 업데이트 시작
         from PyQt5.QtCore import QTimer
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
+        #QTimer.singleShot(100, lambda: start_battery_update(self))
+
+        # 배터리 상태 업데이트
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
 
         # TestInfoView가 표시될 때 lineEdit_PatientID에 포커스 설정
         if self.lineEdit_PatientID:
@@ -324,8 +337,67 @@ class TestInfoView(QMainWindow):
             self.show_virtual_keyboard(self.lineEdit_PatientID)
         else:
             print("Warning: lineEdit_PatientID not found when trying to set focus")
+            
 
     def closeEvent(self, event):
         stop_date_time_update(self)
-        stop_battery_update(self)
+        # stop_battery_update(self)
         super().closeEvent(event)
+
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        print(f"[TestInfoView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[TestInfoView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
+        if event_type == "battery_changed" and data:
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
+
+    @pyqtSlot(object)
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[TestInfoView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[TestInfoView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[TestInfoView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[TestInfoView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[TestInfoView] Battery UI update error: {e}")        

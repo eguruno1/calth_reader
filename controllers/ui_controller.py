@@ -111,7 +111,7 @@ class AppController(QMainWindow):
         self.result_category_view         = ResultCategoryView(self)
         self.info_view                    = InfoView(self)
         self.select_view                  = SelectView(self, uart_model=backend_controller.uart_model)
-        self.test_info_view               = TestInfoView(self)
+        self.test_info_view               = TestInfoView(self, uart_model=backend_controller.uart_model)
         self.measure_view                 = MeasureView(self)
         self.result_view0                 = ResultView0(self)
         #self.result_view1                = ResultView1(self)
@@ -436,8 +436,14 @@ class AppController(QMainWindow):
             self.select_view._update_battery_ui(battery)
 
     def switch_to_test_info_view(self, test_type):
+        print("[UIController] switch_to_test_info_view")
         self.test_info_view.set_selected_test_type(test_type)
         self.stacked_widget.setCurrentWidget(self.test_info_view)
+        self._set_active_uart_view(self.test_info_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.select_view._update_battery_ui(battery)
 
     def switch_to_measure_view(self):
         self.stacked_widget.setCurrentWidget(self.measure_view)

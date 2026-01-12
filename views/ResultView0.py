@@ -5,7 +5,7 @@ from datetime import datetime
 from PyQt5           import uic
 from PyQt5.QtWidgets import QMainWindow, QLabel
 from PyQt5.QtCore    import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
-from PyQt5.QtGui     import QPixmap
+from PyQt5.QtGui     import QPixmap, QTransform
 
 from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
 
@@ -250,5 +250,14 @@ class ResultView0(QMainWindow):
             return
 
         pixmap = QPixmap(image_path)
-        self.label_4_resultImage.setPixmap(pixmap)
-        self.label_4_resultImage.setScaledContents(True)            
+        if pixmap.isNull():
+            print("[ResultView0] Failed to load thumbnail pixmap")
+            return
+
+        # 🔁 90도 회전 (가로 → 세로)
+        transform = QTransform()
+        transform.rotate(90)   # 시계 방향
+        rotated_pixmap = pixmap.transformed(transform, Qt.SmoothTransformation)
+
+        self.label_4_resultImage.setPixmap(rotated_pixmap)
+        self.label_4_resultImage.setScaledContents(True)        

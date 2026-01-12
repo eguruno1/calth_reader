@@ -21,7 +21,7 @@ from analysis.quality import calculate_quality_score
 class MeasureView(QMainWindow):
     #switch_to_test_info = pyqtSignal()
     #measure_finished    = pyqtSignal()
-    switch_to_result = pyqtSignal()  # ResultView로 전환하기 위한 시그널
+    switch_to_result = pyqtSignal(int)  # ResultView0로 전환하기 위한 시그널
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
@@ -219,8 +219,8 @@ class MeasureView(QMainWindow):
             return
 
         self.progressBar_Meas.setFormat("측정 완료 - %p%")
-        # 1초 후 결과 화면으로 전환
-        QTimer.singleShot(1000, lambda: self.switch_to_result.emit())
+        # 1초 후 결과 화면으로 전환 : 현재 test_session_id를 파라미터로 전달 & 데이터 조회용.
+        QTimer.singleShot(1000, lambda: self.switch_to_result.emit(self.test_session_id))
 
     def on_measurement_error(self, error_message: str):
         """측정 오류 (컨트롤러에서 알림)"""

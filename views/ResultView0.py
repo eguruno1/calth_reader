@@ -1,5 +1,6 @@
 import os
 import threading
+from datetime import datetime
 
 from PyQt5           import uic
 from PyQt5.QtWidgets import QMainWindow, QLabel
@@ -10,6 +11,16 @@ from views.Utils     import (update_date_time, start_date_time_update, stop_date
 
 from controllers import app_controller
 
+# DB
+from database.connection import get_db_session
+from database.models import (
+    TestSession,
+    MeasurementResult,
+    TestType,
+    User,
+    Patient
+)
+
 class ResultView0(QMainWindow):
     switch_to_home = pyqtSignal()
 
@@ -17,6 +28,8 @@ class ResultView0(QMainWindow):
         super().__init__(parent)
         self.load_ui()
         self.init_ui()
+
+        self._test_session_id = None
 
         # 배터리
         self.uart_model = uart_model
@@ -55,8 +68,20 @@ class ResultView0(QMainWindow):
         # 초기 날짜와 시간 설정
         self.update_date_time()
 
+    # DB 저장을 위해...
+    def set_test_session_id(self, test_session_id):
+        print(f"[ResultView0] set_test_session_id: {test_session_id}")
+        self._test_session_id = test_session_id
+
+        self.load_result_data()
+        
+
     def showEvent(self, event):
         super().showEvent(event)
+        
+        if self._test_session_id:
+            self.load_result_data()
+
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         # QTimer.singleShot(100, lambda: start_battery_update(self))
 
@@ -144,3 +169,86 @@ class ResultView0(QMainWindow):
 
         except Exception as e:
             print(f"[ResultView0] Battery UI update error: {e}")
+
+
+    # ==================================================
+    # Data Load
+    # ==================================================
+    def load_result_data(self):
+        if not self._test_session_id:
+            print("[ResultView0] test_session_id 없음")
+            return
+
+        session = get_db_session()
+        try:
+            ts = (
+                session.query(TestSession)
+                .filter(TestSession.id == self._test_session_id)
+                .first()
+            )
+
+            if not ts:
+                raise Exception("TestSession not found")
+
+            mr = (
+                session.query(MeasurementResult)
+                .filter(MeasurementResult.session_id == ts.id)
+                .order_by(MeasurementResult.measured_at.desc())
+                .first()
+            )
+
+            test_type = session.query(TestType).get(ts.test_type_id)
+            operator = session.query(User).get(ts.operator_id)
+            patient = (
+                session.query(Patient).get(ts.patient_id)
+                if ts.patient_id else None
+            )
+
+            self._bind_ui(ts, mr, test_type, operator, patient)
+
+        finally:
+            session.close()            
+
+    # ==================================================
+    # UI Binding
+    # ==================================================
+    def _bind_ui(self, ts, mr, test_type, operator, patient):
+        analysis = mr.result_data.get("analysis_result", {})
+
+        # 3-1 테스트 타입
+        self.label_25_testItem.setText(test_type.code)
+
+        # 3-2 측정 날짜
+        self.label_23_date.setText(
+            ts.completed_at.strftime("%Y-%m-%d %H:%M")
+        )
+
+        # 3-3 검사자
+        self.label_26_operatorId.setText(operator.user_id)
+
+        # 3-4 환자 ID
+        self.label_21_patientId.setText(
+            patient.patient_id if patient else "-"
+        )
+
+        # 3-5 컨트롤
+        self.label_24_control.setText(
+            "Positive" if analysis.get("positive") else "Negative"
+        )
+
+        # 3-6 진단 결과
+        self.label_22_result.setText(
+            "POS" if analysis.get("positive") else "NEG"
+        )
+
+        # 3-7 썸네일 이미지
+        self._load_thumbnail(mr.thumbnail_path)
+
+    def _load_thumbnail(self, image_path: str):
+        if not image_path or not os.path.exists(image_path):
+            print("[ResultView0] thumbnail not found")
+            return
+
+        pixmap = QPixmap(image_path)
+        self.label_4_resultImage.setPixmap(pixmap)
+        self.label_4_resultImage.setScaledContents(True)            

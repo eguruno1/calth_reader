@@ -453,7 +453,10 @@ class AppController(QMainWindow):
         if battery:
             self.measure_view._update_battery_ui(battery)
 
-    def switch_to_result_view(self):
+    def switch_to_result_view(self, test_session_id=None):
+        if test_session_id is not None:
+            self.result_view0.set_test_session_id(test_session_id)
+            
         self.stacked_widget.setCurrentWidget(self.result_view0)
         self._set_active_uart_view(self.result_view0)
         # 초기 배터리 상태

@@ -6,6 +6,9 @@ class Analyzer:
 
     @staticmethod
     def analyze(frame, test_type: str) -> dict:
+        
+        print(f"[Analyzer] test_type: {test_type}")
+
         if "INFLUENZA" in test_type:
             mode = 3
         else:

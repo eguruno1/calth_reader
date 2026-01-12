@@ -1055,7 +1055,7 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string/>
+     <string>sdfasdf</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_27">
@@ -1160,6 +1160,40 @@ QPushButton:pressed {
      <string>OPERATOR ID</string>
     </property>
    </widget>
+   <zorder>label_27</zorder>
+   <zorder>pushButton_ResultBackArrow</zorder>
+   <zorder>pushButton_ResultHome</zorder>
+   <zorder>pushButton_ResultSend</zorder>
+   <zorder>pushButton_Retest</zorder>
+   <zorder>pushButton_Print</zorder>
+   <zorder>label_BatteryGuage</zorder>
+   <zorder>label_4_resultImage</zorder>
+   <zorder>label_5</zorder>
+   <zorder>label_6</zorder>
+   <zorder>label_7</zorder>
+   <zorder>label_9</zorder>
+   <zorder>label_10</zorder>
+   <zorder>label_11</zorder>
+   <zorder>label_12</zorder>
+   <zorder>label_13</zorder>
+   <zorder>label_14</zorder>
+   <zorder>label_15</zorder>
+   <zorder>label_16</zorder>
+   <zorder>label_17</zorder>
+   <zorder>label_18</zorder>
+   <zorder>label_19</zorder>
+   <zorder>label_20</zorder>
+   <zorder>label_21_patientId</zorder>
+   <zorder>label_22_result</zorder>
+   <zorder>label_23_date</zorder>
+   <zorder>label_24_control</zorder>
+   <zorder>label_25_testItem</zorder>
+   <zorder>label_DateNClock</zorder>
+   <zorder>label</zorder>
+   <zorder>label_BatteryGuageTxt</zorder>
+   <zorder>label_8</zorder>
+   <zorder>label_28</zorder>
+   <zorder>label_26_operatorId</zorder>
   </widget>
  </widget>
  <resources/>

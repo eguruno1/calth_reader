@@ -101,16 +101,21 @@ class ResultView0(QMainWindow):
 
     def on_resultHome_button_clicked(self):
         print("ResultView: HOME 버튼이 클릭되었습니다." )
+        self.on_retry_measurement() # 모든값 초기화
+
         self.switch_to_home.emit()
         
     def on_resiltRetest_button_clicked(self):
         print("ResultView: RE-TEST 버튼이 클릭되었습니다.")
+        self.on_retry_measurement() # 모든값 초기화
         
     def on_resultSend_button_clicked(self):
         print("ResultView: Send 버튼이 클릭되었습니다.")
+        self.on_retry_measurement() # 모든값 초기화
         
     def on_resultPrint_button_clicked(self):
         print("ResultView: Print 버튼이 클릭되었습니다.")
+        self.on_retry_measurement() # 모든값 초기화
 
     def update_date_time(self):
         update_date_time(self)
@@ -288,12 +293,58 @@ class ResultView0(QMainWindow):
         """
         try:
             if not os.path.exists(self.current_json_path):
-                print("[MeasureView] current.json not found")
+                print("[ResultView0] current.json not found")
                 return {}
 
             with open(self.current_json_path, "r") as f:
                 return json.load(f)
 
         except Exception as e:
-            print(f"[MeasureView] current.json load error: {e}")
+            print(f"[ResultView0] current.json load error: {e}")
             return {}           
+        
+
+    def on_retry_measurement(self):
+        """
+        모든 값 초기화.
+        """
+        print("[ResultView0] reset for new measurement")
+
+        # 1️⃣ UI 초기화
+        # 필요시 결과 관련 라벨 전부 clear
+        self.label_25_testItem.clear()
+        self.label_23_date.clear()
+        self.label_26_operatorId.clear()
+        self.label_21_patientId.clear()
+        self.label_24_control.clear()
+        self.label_22_result.clear()
+        self.label_4_resultImage.clear()
+
+        # 2️⃣ current.json 초기화
+        self.reset_current_json()
+
+    def reset_current_json(self):
+        empty = {
+            "test_type0": None,
+            "test_type1": None,
+            "operator": None,
+            "patient_id": None,
+            "datentime": None,
+            "control": None,
+            "resultb": None,
+            "resulta": None
+        }
+         
+        print("[ResultView0] current.json reset")
+        
+        self.update_json_file(empty)
+       
+    def update_json_file(self, empty):
+        try:
+            with open(self.current_json_path, 'r+') as f:
+                data = empty
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+        except Exception as e:
+            print(f"[ResultView0] JSON 파일 업데이트 중 오류 발생: {e}")        

@@ -5,6 +5,7 @@ Measurement Controller - 측정 프로세스 제어
 import os
 import time
 import cv2
+import json
 import numpy as np
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
@@ -32,6 +33,12 @@ class MeasurementController(QObject):
         self.current_phase = 0
         self.phase_start_time = 0
         self.is_measuring = False
+
+        # 프로젝트 루트 디렉토리
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        # TestInfoView 정보를 json에서 읽는다.
+        self.current_json_path = os.path.join(project_root, 'info', 'current.json')
 
         # ✅ 추가
         self.test_type = None
@@ -178,6 +185,9 @@ class MeasurementController(QObject):
         """
         test_3line_auto 기반 실제 분석 Phase
         """
+        current_data = self._load_current_json()
+        self.test_type = current_data.get("test_type1")
+
         print(f"[MeasurementController] test_type: {self.test_type}")
 
         if self.captured_frame is None:
@@ -375,6 +385,22 @@ class MeasurementController(QObject):
         print(f"[MeasurementController] Best focus score: {best_focus:.2f}")
         return best_frame
 
+
+    def _load_current_json(self):
+        """
+        TestInofView 에서 입력한 정보(json) 값을 다시 로드. 
+        """
+        try:
+            if not os.path.exists(self.current_json_path):
+                print("[MeasurementController] current.json not found")
+                return {}
+
+            with open(self.current_json_path, "r") as f:
+                return json.load(f)
+
+        except Exception as e:
+            print(f"[MeasurementController] current.json load error: {e}")
+            return {} 
 
 # 전역 측정 컨트롤러 인스턴스
 measurement_controller = MeasurementController()

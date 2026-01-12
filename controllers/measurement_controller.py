@@ -37,6 +37,7 @@ class MeasurementController(QObject):
         self.test_type = None
         self.analysis_result = None
         self.captured_frame = None   # 🔥 최종 선택된 프레임
+        self.test_session_id = None  # DB
         
         # 측정 단계 정의
         self.measurement_phases = [

@@ -11,6 +11,12 @@ from PyQt5.QtGui        import QPixmap
 from views.Utils        import (update_date_time, start_date_time_update, stop_date_time_update)
 from controllers import measurement_controller, app_controller
 
+# 진단 분석 진행상태 DB 처리
+import uuid
+from database.connection import get_db_session
+from database.models import TestSession, MeasurementResult, TestType
+from common.session_context import get_session_context
+from analysis.quality import calculate_quality_score
 
 class MeasureView(QMainWindow):
     #switch_to_test_info = pyqtSignal()
@@ -25,6 +31,10 @@ class MeasureView(QMainWindow):
         # 배터리
         self.uart_model = uart_model
         print(f"[MeasureView] uart_model injected: {self.uart_model}")
+
+        # 진단결과 처리용
+        self.test_session_id = None
+        self.test_session_uuid = None
         
     def load_ui(self):
         # 프로젝트 루트 디렉토리
@@ -137,8 +147,14 @@ class MeasureView(QMainWindow):
     def start_measurement(self):
         """측정 시작 - 컨트롤러에 위임"""
         print("측정 시작 요청")
+        # DB 진단 시작정보 저장.
+        self.create_test_session(self.test_type)
+
         measurement_controller.test_type = self.test_type  # 2 or 3 라인 판독을 위해....
+        measurement_controller.test_session_id = self.test_session_id
+
         success = self.measurement_controller.start_measurement()
+
         if not success:
             print("측정 시작 실패")
 
@@ -147,6 +163,8 @@ class MeasureView(QMainWindow):
         print("측정이 시작되었습니다")
         self.progressBar_Meas.setValue(0)
         self.progressBar_Meas.setFormat("측정 준비 중... - %p%")
+
+        
 
     def on_progress_updated(self, progress: int, phase_name: str):
         """진행률 업데이트 (컨트롤러에서 알림)"""
@@ -158,8 +176,21 @@ class MeasureView(QMainWindow):
         print(f"측정 완료: {result}")
 
         """
-        측정 완료 후 JSON 결과 반영
+        측정 완료 후 DB 저장을 위한 파라미터 세팅
+        및 JSON 결과 반영
         """
+        # ✅ 1. 결과 멤버 변수 선 저장 (가장 중요)
+        self.analysis_result = result.get("analysis_result")
+        self.captured_image_path = result.get("captured_image")
+        self.result_image_path = result.get("result_image")
+        self.thumbnail_path = result.get("thumbnail_image")
+
+        # 안전성 체크
+        if not self.analysis_result:
+            self.mark_session_failed("analysis_result is missing")
+            return
+        
+        # ✅ 2. JSON 업데이트 (DB와 분리)
         try:
             with open(self.current_json_path, "r+", encoding="utf-8") as f:
                 data = json.load(f)
@@ -179,6 +210,14 @@ class MeasureView(QMainWindow):
         except Exception as e:
             print(f"[MeasureView] JSON 업데이트 오류: {e}")
 
+        # ✅ 3. DB 저장 (핵심)
+        try:
+            self.save_measurement_result()
+        except Exception as e:
+            print(f"[MeasureView] DB 저장 실패: {e}")
+            self.mark_session_failed(str(e))
+            return
+
         self.progressBar_Meas.setFormat("측정 완료 - %p%")
         # 1초 후 결과 화면으로 전환
         QTimer.singleShot(1000, lambda: self.switch_to_result.emit())
@@ -187,6 +226,8 @@ class MeasureView(QMainWindow):
         """측정 오류 (컨트롤러에서 알림)"""
         print(f"측정 오류: {error_message}")
         self.progressBar_Meas.setFormat(f"오류: {error_message}")
+        # 진단 오류 저장.
+        self.mark_session_failed(error_message)
 
     def closeEvent(self, event):
         """뷰 종료시 정리"""
@@ -201,6 +242,133 @@ class MeasureView(QMainWindow):
 
     def update_date_time(self):
         update_date_time(self)
+
+    #####################################################
+    # DB 처리
+    #####################################################
+    def create_test_session(self, test_type_code: str):
+        session = get_db_session()
+        try:
+            test_type_id = self.get_test_type_id_by_code(test_type_code)
+
+            session_user = get_session_context()
+            operator_id = session_user["user_pk"]
+
+            # TestSession 세션 진행중 처리
+            test_session = TestSession(
+                session_id=uuid.uuid4(),
+                test_type_id=test_type_id,     # ✅ int
+                operator_id=operator_id,
+                patient_id=None,
+                device_serial=None,
+                cartridge_lot=None,
+                temperature=None,
+                humidity=None,
+                status="in_progress",
+                started_at=datetime.now()
+            )
+
+            session.add(test_session)
+            session.commit()
+            session.refresh(test_session)
+
+            self.test_session_id = test_session.id
+            return test_session
+
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()     
+
+
+    def save_measurement_result(self):
+        """
+        진단결과 저장.
+        """
+        if not self.test_session_id:
+            raise Exception("[MeasureView] save_measurement_result : test_session_id is None")
+    
+        session = get_db_session()
+        try:
+            quality_score = calculate_quality_score(
+                metrics=self.analysis_result["metrics"],
+                line_count=self.analysis_result["line_count"],
+                expected_lines=2 if self.analysis_result["mode"] == 2 else 3
+            )
+
+            # 결과 저장
+            result = MeasurementResult(
+                session_id=self.test_session_id,        # FK
+                measurement_type=self.test_type,        # 예: COVID19
+                result_data={
+                    "analysis_result": self.analysis_result,
+                    "timestamp": datetime.now().isoformat()
+                },
+                image_path=self.result_image_path, #self.captured_image_path
+                thumbnail_path=self.thumbnail_path,
+                quality_score=quality_score,
+                is_valid=True
+            )
+            session.add(result)
+
+            print(f"[MeasureView] save_measurement_result : {result}")
+
+            # TestSession 세션 완료 처리
+            ts = session.query(TestSession).get(self.test_session_id)
+            ts.status = "completed"
+            ts.completed_at = datetime.now()
+
+            session.commit()
+            print("[MeasureView] measurement_result + session completed 저장 완료")
+
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()            
+
+    def mark_session_failed(self, error_msg):
+        """
+        진단 오류 결과 저장.
+        """
+        print(f"[MeasureView] mark_session_failed : {error_msg}")
+
+        session = get_db_session()
+        try:
+            ts = session.query(TestSession).get(self.test_session_id)
+            ts.status = "failed"
+            ts.error_message = error_msg
+            ts.completed_at = datetime.now()
+            session.commit()
+        except Exception:
+            session.rollback()
+        finally:
+            session.close()
+
+    def get_test_type_id_by_code(self, test_type_code: str) -> int:
+        """
+        test_type 테이블에서 진단구분에 맞는 id 를 조회.
+        
+        :param self: 설명
+        :param test_type_code: 진단구분 
+        :type test_type_code: str
+        :return: 진단구분 id
+        :rtype: int
+        """
+        session = get_db_session()
+        try:
+            test_type = (
+                session.query(TestType)
+                .filter(TestType.code == test_type_code)
+                .first()
+            )
+            if not test_type:
+                raise Exception(f"Unknown test_type_code: {test_type_code}")
+            return test_type.id
+        finally:
+            session.close()            
+        
 
     #####################################################
     # Battery Status (UART 기반)

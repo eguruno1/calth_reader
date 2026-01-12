@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QMainWindow, QLabel
 from PyQt5.QtCore    import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QPixmap
 
-from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update, start_battery_update, stop_battery_update)
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
 
 from controllers import app_controller
 
@@ -43,8 +43,8 @@ class ResultView0(QMainWindow):
         self.label_18.setStyleSheet("Color : blue") #글자색 변환
         self.label_20 = self.findChild(QLabel, "label_20") #Result
         self.label_20.setStyleSheet("Color : blue") #글자색 변환
-        self.label_25 = self.findChild(QLabel, "label_25") #Test Item Name
-        self.label_25.setStyleSheet("Color : red") #글자색 변환
+        self.label_25_testItem = self.findChild(QLabel, "label_25_testItem") #Test Item Name
+        self.label_25_testItem.setStyleSheet("Color : red") #글자색 변환
 
         # 버튼들 연결
         self.pushButton_ResultHome.clicked.connect(self.on_resultHome_button_clicked)

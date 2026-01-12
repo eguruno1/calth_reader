@@ -237,12 +237,21 @@ class MeasureView(QMainWindow):
         # 측정 중이라면 중지
         if hasattr(self, 'measurement_controller'):
             self.measurement_controller.stop_measurement()
-        
+
+        #프로그레스 초기화.
+        self._reset_progress_bar()
+
         super().closeEvent(event)
 
     def update_date_time(self):
         update_date_time(self)
 
+
+    def _reset_progress_bar(self):
+        """progressBar 초기화"""
+        self.progressBar_Meas.setValue(0)
+        self.progressBar_Meas.setFormat("")
+        self.progressBar_Meas.repaint()
     #####################################################
     # DB 처리
     #####################################################
@@ -254,12 +263,16 @@ class MeasureView(QMainWindow):
             session_user = get_session_context()
             operator_id = session_user["user_pk"]
 
+            current_data = self._load_current_json()
+            json_patient_id = current_data.get("patient_id")
+            print(f"[MeasureView] json_patient_id : {json_patient_id}")
+
             # TestSession 세션 진행중 처리
             test_session = TestSession(
                 session_id=uuid.uuid4(),
                 test_type_id=test_type_id,     # ✅ int
                 operator_id=operator_id,
-                patient_id=None,
+                patient_id=json_patient_id if json_patient_id else None,
                 device_serial=None,
                 cartridge_lot=None,
                 temperature=None,
@@ -369,6 +382,23 @@ class MeasureView(QMainWindow):
         finally:
             session.close()            
         
+
+    def _load_current_json(self):
+        """
+        TestInofView 에서 입력한 정보(json) 값을 다시 로드. 
+        """
+        try:
+            if not os.path.exists(self.current_json_path):
+                print("[MeasureView] current.json not found")
+                return {}
+
+            with open(self.current_json_path, "r") as f:
+                return json.load(f)
+
+        except Exception as e:
+            print(f"[MeasureView] current.json load error: {e}")
+            return {}
+
 
     #####################################################
     # Battery Status (UART 기반)

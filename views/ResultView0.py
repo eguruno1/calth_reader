@@ -1,4 +1,5 @@
 import os
+import json
 import threading
 from datetime import datetime
 
@@ -39,6 +40,8 @@ class ResultView0(QMainWindow):
         # 프로젝트 루트 디렉토리
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
+        # TestInfoView 정보를 json에서 읽는다.
+        self.current_json_path = os.path.join(project_root, 'info', 'current.json')
         
         # UI 파일 경로 설정 (대소문자 구분 없이)
         ui_filename = 'ResultView0Window.ui'
@@ -215,6 +218,19 @@ class ResultView0(QMainWindow):
     def _bind_ui(self, ts, mr, test_type, operator, patient):
         analysis = mr.result_data.get("analysis_result", {})
 
+        current_data = self._load_current_json()
+        json_test_type1 = current_data.get("test_type1")
+        json_operator_id = current_data.get("operator")
+        json_patient_id = current_data.get("patient_id")
+        
+        print(f"[ResultView0] json_test_type1 : {json_test_type1}")
+        print(f"[ResultView0] json_operator_id : {json_operator_id}")
+        print(f"[ResultView0] json_patient_id : {json_patient_id}")
+
+        print(f"[ResultView0] test_type.code : {test_type.code}")
+        print(f"[ResultView0] operator.user_id : {operator.user_id}")
+        print(f"[ResultView0] patient.patient_code : {patient.patient_code}")
+
         # 3-1 테스트 타입
         self.label_25_testItem.setText(test_type.code)
 
@@ -224,12 +240,16 @@ class ResultView0(QMainWindow):
         )
 
         # 3-3 검사자
-        self.label_26_operatorId.setText(operator.user_id)
+        # self.label_26_operatorId.setText(operator.user_id)
+        self.label_26_operatorId.setText(json_operator_id)
 
         # 3-4 환자 ID
-        self.label_21_patientId.setText(
-            patient.patient_id if patient else "-"
-        )
+        if patient:
+            self.label_21_patientId.setText(patient.patient_code)
+            print(f"[ResultView0] patient.patient_code : {patient.patient_code}")
+        else:
+            self.label_21_patientId.setText("-")
+            print("[ResultView0] patient 없음 (NULL)")
 
         # 3-5 컨트롤
         self.label_24_control.setText(
@@ -260,4 +280,20 @@ class ResultView0(QMainWindow):
         rotated_pixmap = pixmap.transformed(transform, Qt.SmoothTransformation)
 
         self.label_4_resultImage.setPixmap(rotated_pixmap)
-        self.label_4_resultImage.setScaledContents(True)        
+        self.label_4_resultImage.setScaledContents(True)     
+
+    def _load_current_json(self):
+        """
+        TestInofView 에서 입력한 정보(json) 값을 다시 로드. 
+        """
+        try:
+            if not os.path.exists(self.current_json_path):
+                print("[MeasureView] current.json not found")
+                return {}
+
+            with open(self.current_json_path, "r") as f:
+                return json.load(f)
+
+        except Exception as e:
+            print(f"[MeasureView] current.json load error: {e}")
+            return {}           

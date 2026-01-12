@@ -1035,6 +1035,9 @@ QPushButton:pressed {
     </property>
    </widget>
    <widget class="QLabel" name="label_26_operatorId">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>490</x>
@@ -1052,7 +1055,7 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>2025-01-01</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label_27">

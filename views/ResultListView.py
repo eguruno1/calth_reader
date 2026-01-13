@@ -3,7 +3,7 @@ from typing import List
 
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView,
-    QWidget, QCheckBox, QHBoxLayout
+    QWidget, QCheckBox, QHBoxLayout, QMessageBox
 )
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QColor
@@ -41,6 +41,10 @@ class ResultListView(QMainWindow):
 
         # 선택된 행 인덱스
         self.selected_rows: set[int] = set()
+        # row index -> MeasurementResult.id 매핑
+        self.row_id_map: dict[int, int] = {}
+        # Result 컬럼 폭 유지용
+        self._result_column_width: int | None = None
 
         self._load_ui()
         self._init_ui()
@@ -161,6 +165,8 @@ class ResultListView(QMainWindow):
             session.close()
 
     def _populate_table(self, results: List[MeasurementResult]):
+        self.row_id_map.clear()   # ⭐️ 매번 초기화
+
         headers = [
             "Check",              # 체크박스
             "Operator ID",
@@ -193,6 +199,9 @@ class ResultListView(QMainWindow):
         """
 
         for row, mr in enumerate(results):
+            # ⭐️ row ↔ DB id 매핑
+            self.row_id_map[row] = mr.id
+
             # ★ FIX: row 높이 (체크박스 잘림 방지)
             self.table.setRowHeight(row, 44)
             # ▶ Row 체크박스
@@ -202,7 +211,6 @@ class ResultListView(QMainWindow):
             checkbox.stateChanged.connect(
                 lambda state, r=row: self._set_row_selected(r, state == Qt.Checked)
             )
-
             container = QWidget()
             layout = QHBoxLayout(container)
             layout.addWidget(checkbox)
@@ -243,8 +251,25 @@ class ResultListView(QMainWindow):
 
             self.table.setItem(row, 4, QTableWidgetItem(result_text))
 
-        self.table.resizeColumnsToContents()
-        self.table.horizontalHeader().setStretchLastSection(True)
+        # ======================================================
+        # ★ Result 컬럼 폭 제어 (중요)
+        # ======================================================
+        header = self.table.horizontalHeader()
+        RESULT_COL = 4
+
+        if self._result_column_width is None:
+            # ▶ 최초 1회: Result 컬럼을 남은 영역 전체로 확장
+            self.table.resizeColumnsToContents()
+            header.setStretchLastSection(True)
+
+            # ▶ 레이아웃 반영 후 실제 폭 저장
+            self.table.viewport().update()
+            self._result_column_width = self.table.columnWidth(RESULT_COL)
+
+        else:
+            # ▶ 이후: 저장된 Result 폭 유지
+            header.setStretchLastSection(False)
+            self.table.setColumnWidth(RESULT_COL, self._result_column_width)
 
     # ==========================================================
     # RESULT FORMAT
@@ -419,9 +444,86 @@ class ResultListView(QMainWindow):
     def on_delete_clicked(self):
         print("DELETE:", self.selected_rows)
 
+        if not self.selected_rows:
+            QMessageBox.information(
+                self,
+                "Delete Result",
+                "삭제할 항목을 선택해주세요."
+            )
+            return
+        
+        # ▶ 삭제 확인 다이얼로그
+        reply = QMessageBox.question(
+            self,
+            "Delete Confirmation",
+            f"선택된 {len(self.selected_rows)}개의 결과를 삭제하시겠습니까?\n"
+            "이 작업은 되돌릴 수 없습니다.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply != QMessageBox.Yes:
+            return
+        
+        self._delete_result_data()
+
     def on_back_button_clicked(self):
         self.clear_selection()
         self.switch_to_result_category.emit()
+
+    # ==========================================================
+    # Data Delete
+    # ========================================================== 
+    def _delete_result_data(self):
+        """
+        선택된 row 기준 MeasurementResult DB 삭제
+        """
+        
+        session = get_db_session()
+
+        try:
+            # ▶ 선택된 row → DB id 변환
+            delete_ids = [
+                self.row_id_map[row]
+                for row in self.selected_rows
+                if row in self.row_id_map
+            ]
+
+            if not delete_ids:
+                print("[ResultListView] No valid DB ids found")
+                return
+
+            # ▶ DB 삭제
+            session.query(MeasurementResult)\
+                .filter(MeasurementResult.id.in_(delete_ids))\
+                .delete(synchronize_session=False)
+
+            session.commit()
+            print(f"[ResultListView] Deleted IDs: {delete_ids}")
+
+            QMessageBox.information(
+                self,
+                "Delete Complete",
+                f"{len(delete_ids)}개의 결과가 삭제되었습니다."
+            )
+
+        except Exception as e:
+            session.rollback()
+            print(f"[ResultListView] Delete failed: {e}")
+            QMessageBox.critical(
+                self,
+                "Delete Error",
+                f"삭제 중 오류가 발생했습니다.\n{e}"
+            )
+        finally:
+            session.close()
+
+        # ▶ UI 갱신
+        self.selected_rows.clear()
+        # 기존 선택 상태 초기화
+        self.clear_selection()
+        self.load_data()
+    
 
     # ==========================================================
     # DATE / BATTERY

@@ -1,117 +1,121 @@
 import os
+from typing import List
 
-from PyQt5.QtWidgets import QMainWindow, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
+from PyQt5.QtWidgets import (
+    QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView
+)
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 from PyQt5.QtGui import QColor
 from PyQt5 import uic
 
-from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
-                        update_battery_status, start_battery_update, stop_battery_update)
-from repositories.result_repository import patient_result_repo, calibration_result_repo, qc_result_repo
-from models.database_models import CalibrationItemTypeEnum, ControlTypeEnum
+# 공통 UI 유틸
+from views.Utils import (
+    update_date_time,
+    start_date_time_update,
+    stop_date_time_update,
+    update_battery_status,
+    start_battery_update,
+    stop_battery_update
+)
+
+# DB (ResultView0 와 동일)
+from database.connection import get_db_session
+from database.models import (
+    TestSession,
+    MeasurementResult,
+    TestType,
+    User,
+    Patient
+)
+
 
 class ResultListView(QMainWindow):
+    """
+    Result List View
+    - patient / qc 결과를 동일 구조로 표시
+    - ResultView0 와 동일한 DB 접근 구조 사용
+    """
+
     switch_to_home = pyqtSignal()
     switch_to_result_category = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.result_type = "patient"  # 기본값: patient, calibration, qc
-        self.selected_rows = set()  # 선택된 행을 추적하기 위한 세트
-        self.load_ui()
-        self.init_ui()
 
-    def load_ui(self):
-        # 프로젝트 루트 디렉토리
+        # patient | qc
+        self.mode: str = "patient"
+
+        # 선택된 행 인덱스
+        self.selected_rows: set[int] = set()
+
+        self._load_ui()
+        self._init_ui()
+
+    # ==========================================================
+    # UI LOAD
+    # ==========================================================
+    def _load_ui(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
-        
-        # UI 파일 경로 설정 (대소문자 구분 없이)
-        ui_filename = 'ResultListViewWindow.ui'
-        ui_file = os.path.join(project_root, 'ui', 'Review', ui_filename)
-        
-        # 파일 존재 여부 확인 및 로드
-        if os.path.exists(ui_file):
-            uic.loadUi(ui_file, self)
-        else:
-            raise FileNotFoundError(f"UI file not found: {ui_file}")
 
-    def init_ui(self):
-        # 뒤로 가기 버튼 연결
-        self.pushButton_ResultListBackArrow.clicked.connect(self.on_back_button_clicked)
+        ui_path = os.path.join(
+            project_root,
+            "ui", "Review", "ResultListViewWindow.ui"
+        )
 
-        # 버튼들 연결
-        self.pushButton_RListHome.clicked.connect(self.on_rlistHome_button_clicked)
-        self.pushButton_RListSend.clicked.connect(self.on_rlistSend_button_clicked)
-        self.pushButton_RListExport.clicked.connect(self.on_rlistExport_button_clicked)
-        self.pushButton_RListDelete.clicked.connect(self.on_rlistDelete_button_clicked)
+        if not os.path.exists(ui_path):
+            raise FileNotFoundError(ui_path)
 
-        # 테이블 설정 (textBrowser 대신 테이블 사용)
-        self.setup_table()
-        
-        # 다중 선택을 위한 선택된 행 집합 초기화
-        self.selected_rows = set()
+        uic.loadUi(ui_path, self)
 
-        # 초기 날짜와 시간 설정
+    def _init_ui(self):
+        # Navigation
+        self.pushButton_ResultListBackArrow.clicked.connect(
+            self.on_back_button_clicked
+        )
+
+        # Action buttons
+        self.pushButton_RListHome.clicked.connect(
+            self.on_select_all_clicked
+        )
+        self.pushButton_RListSend.clicked.connect(
+            self.on_send_clicked
+        )
+        self.pushButton_RListExport.clicked.connect(
+            self.on_export_clicked
+        )
+        self.pushButton_RListDelete.clicked.connect(
+            self.on_delete_clicked
+        )
+
+        self._setup_table()
+
         self.update_date_time()
         self.update_battery_status()
 
-    def setup_table(self):
-        """기존 textBrowser를 QTableWidget으로 교체"""
-        if hasattr(self, 'textBrowser'):
-            # textBrowser 숨기기
-            self.textBrowser.hide()
-            
-            # 새 테이블 위젯 생성 (textBrowser와 같은 위치에)
-            self.table_widget = QTableWidget(self)
-            self.table_widget.setGeometry(42, 93, 793, 483)  # textBrowser와 같은 크기
-            # 테이블 설정
-            self.table_widget.setAlternatingRowColors(True)  # 교대 색상 활성화 - 커스텀 색상 사용
-            self.table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-            self.table_widget.setSelectionMode(QAbstractItemView.NoSelection)  # Qt 기본 선택 완전히 비활성화
-            self.table_widget.verticalHeader().setVisible(False)
-            
-            # 헤더 초기 설정 - 깜빡임 방지
-            header = self.table_widget.horizontalHeader()
-            header.setStretchLastSection(False)  # 초기에는 false로 설정
-            
-            # 행 클릭 이벤트 연결 (itemSelectionChanged 대신 itemClicked 사용)
-            self.table_widget.itemClicked.connect(self.on_table_item_clicked)
-            
-            # 헤더 스타일 설정
-            self.table_widget.setStyleSheet("""
-                QTableWidget {
-                    background-color: white;
-                    gridline-color: #d0d0d0;
-                    font-family: Pretendard;
-                    font-size: 12px;
-                    selection-background-color: transparent;
-                }
-                QTableWidget::item {
-                    padding: 8px;
-                    border-bottom: 1px solid #e0e0e0;
-                }
-                QTableWidget::item:selected {
-                    background-color: transparent;
-                }
-                QHeaderView::section {
-                    background-color: #f5f5f5;
-                    padding: 8px;
-                    border: 1px solid #d0d0d0;
-                    font-weight: bold;
-                    font-family: Pretendard;
-                    font-size: 14px;
-                }
-            """)
-            
-            self.table_widget.show()
 
     def set_result_type(self, result_type: str):
-        """결과 타입 설정 및 데이터 로드"""
-        self.clear_table_selection()  # 결과 타입 변경 시 선택 초기화
+        """
+        Controller 에서 호출되는 진입점
+        patient / qc 모드에 따라 DB 조회 방식을 변경한다
+        """
+        print(f"[ResultListView] set_result_type: {result_type}")
+
+        if result_type not in ("patient", "qc"):
+            print(f"[ResultListView] Unknown result_type: {result_type}")
+            return
+
         self.result_type = result_type
+
+        # 기존 선택 상태 초기화
+        self.clear_selection()
+
+        # DB 재조회
         self.load_data()
+
+        # 타이틀 갱신
         self.update_title()
+
 
     def update_title(self):
         """타이틀 업데이트"""
@@ -127,415 +131,290 @@ class ResultListView(QMainWindow):
         for label_name in ['label_Title', 'label_title', 'label_TitleText']:
             if hasattr(self, label_name):
                 getattr(self, label_name).setText(title)
-                break
+                break    
+    
 
+    # ==========================================================
+    # TABLE
+    # ==========================================================
+    def _setup_table(self):
+        self.textBrowser.hide()
+
+        self.table = QTableWidget(self)
+        self.table.setGeometry(42, 93, 793, 483)
+
+        self.table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.verticalHeader().setVisible(False)
+
+        self.table.itemClicked.connect(self.on_item_clicked)
+
+        self.table.setStyleSheet("""
+            QTableWidget { background: white; }
+            QTableWidget::item { padding: 8px; }
+        """)      
+
+    # ==========================================================
+    # MODE
+    # ==========================================================
+    def set_mode(self, mode: str):
+        """
+        patient / qc 전환
+        """
+        self.mode = mode
+        self.clear_selection()
+        self.load_data()
+
+    # ==========================================================
+    # DATA LOAD (ResultView0 구조와 동일)
+    # ==========================================================
     def load_data(self):
-        """결과 타입에 따라 데이터 로드"""
+        session = get_db_session()
+
         try:
-            # 데이터 로드 시 선택 상태 초기화
-            self.selected_rows.clear()
-            
-            if self.result_type == "patient":
-                self.load_patient_results()
-            elif self.result_type == "calibration":
-                self.load_calibration_results()
-            elif self.result_type == "qc":
-                self.load_qc_results()
+            results: List[MeasurementResult] = (
+                session.query(MeasurementResult)
+                .order_by(MeasurementResult.measured_at.desc())
+                .all()
+            )
+
+            self._populate_table(results)
+
+        finally:
+            session.close()
+
+    def _populate_table(self, results: List[MeasurementResult]):
+        headers = [
+            "Test Item",
+            "Date",
+            "Operator ID",
+            "Patient ID",
+            "Result"
+        ]
+
+        self.table.setColumnCount(len(headers))
+        self.table.setHorizontalHeaderLabels(headers)
+        self._apply_header_style()
+        self.table.setRowCount(len(results))
+
+        for row, mr in enumerate(results):
+            # Test Item
+            test_item = (
+                mr.session.test_type.code
+                if mr.session and mr.session.test_type else ""
+            )
+
+            # Date
+            date_text = (
+                mr.measured_at.strftime("%Y-%m-%d %H:%M")
+                if mr.measured_at else ""
+            )
+
+            # Operator ID
+            operator_id = (
+                mr.session.operator.user_id
+                if mr.session and mr.session.operator else ""
+            )
+
+            # Patient Code
+            patient_code = (
+                mr.session.patient.patient_code
+                if mr.session and mr.session.patient else ""
+            )
+
+            # Result
+            result_text = self._format_result_data(mr.result_data)
+
+            #self.table.setItem(row, 0, QTableWidgetItem(test_item))
+            # Test Item (붉은색)
+            item_test = QTableWidgetItem(test_item)
+            item_test.setForeground(QColor("red"))
+            item_test.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 0, item_test)
+
+            item_date = QTableWidgetItem(date_text)
+            item_date.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 1, item_date)
+
+            item_op = QTableWidgetItem(operator_id)
+            item_op.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 2, item_op)
+
+            item_patient = QTableWidgetItem(patient_code)
+            item_patient.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 3, item_patient)
+
+            self.table.setItem(row, 4, QTableWidgetItem(result_text))
+
+        self.table.resizeColumnsToContents()
+        self.table.horizontalHeader().setStretchLastSection(True)
+
+
+    def _format_result_data(self, result_data: dict) -> str:
+        """
+        result_data(JSONB)를 Result 컬럼에 표시할 문자열로 변환
+        - 2라인 / 3라인 공통 처리
+        포맷 예)
+        {
+            "timestamp": "...",
+            "analysis_result": {
+                "mode": 2 or 3,
+                "metrics": {
+                    "lines": [
+                        { "label": "...", "confidence": ... }
+                    ]
+                },
+                "positive": true,
+                "line_count": 2 or 3
+            }
+        }
+        """
+        if not result_data:
+            return "N/A"
+
+        try:
+            analysis = result_data.get("analysis_result", {})
+            mode = analysis.get("mode")
+            positive = analysis.get("positive")
+            metrics = analysis.get("metrics", {})
+            lines = metrics.get("lines", [])
+
+            # 라인 라벨 추출
+            labels = [line.get("label") for line in lines if "label" in line]
+
+            # -------------------------
+            # 2라인 (COVID19)
+            # -------------------------
+            if mode == 2:
+                if positive:
+                    return "POSITIVE (C/T)"
+                else:
+                    return "NEGATIVE (C)"
+
+            # -------------------------
+            # 3라인 (INFLUENZA)
+            # -------------------------
+            if mode == 3:
+                if not labels:
+                    return "INVALID"
+
+                label_str = "/".join(labels)
+
+                if positive:
+                    return f"POSITIVE ({label_str})"
+                else:
+                    return f"NEGATIVE ({label_str})"
+
         except Exception as e:
-            print(f"데이터 로드 오류: {e}")
+            print(f"[ResultListView] result_data format error: {e}")
+            return "Invalid Result"
+    
 
-    def load_patient_results(self):
-        """환자 결과 데이터 로드"""
-        results = patient_result_repo.get_all()
-        self.setup_patient_table(results)
+    def _apply_header_style(self):
+        """
+        Test Item 헤더 색상 파란색 적용
+        """
+        header = self.table.horizontalHeader()
 
-    def load_calibration_results(self):
-        """교정 결과 데이터 로드"""
-        results = calibration_result_repo.get_all()
-        self.setup_calibration_table(results)
+        for col in range(self.table.columnCount()):
+            item = self.table.horizontalHeaderItem(col)
+            if not item:
+                continue
 
-    def load_qc_results(self):
-        """QC 결과 데이터 로드"""
-        results = qc_result_repo.get_all()
-        self.setup_qc_table(results)
+            if item.text() == "Test Item":
+                item.setForeground(Qt.blue)
 
-    def setup_patient_table(self, results):
-        """Patient Results 테이블 설정"""
-        if not hasattr(self, 'table_widget'):
-            return
-            
-        # 컬럼 설정
-        headers = ['Item', 'Date', 'Operator ID', 'Patient ID', 'Result', 'Lot. No.', 'Control']
-        self.table_widget.setColumnCount(len(headers))
-        self.table_widget.setHorizontalHeaderLabels(headers)
-        
-        # 헤더 설정을 먼저 하여 깜빡임 방지
-        header = self.table_widget.horizontalHeader()
-        header.setStretchLastSection(False)  # 먼저 false로 설정
-        
-        # 행 설정
-        self.table_widget.setRowCount(len(results))
-        
-        # 데이터 입력
-        for row, result in enumerate(results):
-            self.table_widget.setItem(row, 0, QTableWidgetItem(result.item))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(result.test_date.strftime('%Y-%m-%d %H:%M')))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(result.operator_id))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(result.patient_id))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(self.format_result_data(result.result_data, result.item)))
-            self.table_widget.setItem(row, 5, QTableWidgetItem(result.lot_number))
-            self.table_widget.setItem(row, 6, QTableWidgetItem(result.control or 'N/A'))
-        
-        # 컬럼 너비를 컨텐츠에 맞게 조정한 후, 마지막 컬럼만 확장
-        self.table_widget.resizeColumnsToContents()
-        header.setStretchLastSection(True)
-
-    def setup_calibration_table(self, results):
-        """Calibration Results 테이블 설정"""
-        if not hasattr(self, 'table_widget'):
-            return
-            
-        # 컬럼 설정
-        headers = ['Item', 'Date', 'Operator ID', 'Device ID', 'Result', 'Lot. No.', 'Control']
-        self.table_widget.setColumnCount(len(headers))
-        self.table_widget.setHorizontalHeaderLabels(headers)
-        
-        # 헤더 설정을 먼저 하여 깜빡임 방지
-        header = self.table_widget.horizontalHeader()
-        header.setStretchLastSection(False)  # 먼저 false로 설정
-        
-        # 행 설정
-        self.table_widget.setRowCount(len(results))
-        
-        # 데이터 입력
-        for row, result in enumerate(results):
-            self.table_widget.setItem(row, 0, QTableWidgetItem(result.item_type.value))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(result.test_date.strftime('%Y-%m-%d %H:%M')))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(result.operator_id))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(result.device_id))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(self.format_calibration_result_data(result.result_data, result.item_type)))
-            self.table_widget.setItem(row, 5, QTableWidgetItem(result.lot_number))
-            self.table_widget.setItem(row, 6, QTableWidgetItem(result.control or 'N/A'))
-        
-        # 컬럼 너비를 컨텐츠에 맞게 조정한 후, 마지막 컬럼만 확장
-        self.table_widget.resizeColumnsToContents()
-        header.setStretchLastSection(True)
-
-    def setup_qc_table(self, results):
-        """QC Results 테이블 설정"""
-        if not hasattr(self, 'table_widget'):
-            return
-            
-        # 컬럼 설정
-        headers = ['Item', 'Date', 'Operator ID', 'Control Type', 'Result', 'Lot. No.', 'Control']
-        self.table_widget.setColumnCount(len(headers))
-        self.table_widget.setHorizontalHeaderLabels(headers)
-        
-        # 헤더 설정을 먼저 하여 깜빡임 방지
-        header = self.table_widget.horizontalHeader()
-        header.setStretchLastSection(False)  # 먼저 false로 설정
-        
-        # 행 설정
-        self.table_widget.setRowCount(len(results))
-        
-        # 데이터 입력
-        for row, result in enumerate(results):
-            self.table_widget.setItem(row, 0, QTableWidgetItem(result.item))
-            self.table_widget.setItem(row, 1, QTableWidgetItem(result.test_date.strftime('%Y-%m-%d %H:%M')))
-            self.table_widget.setItem(row, 2, QTableWidgetItem(result.operator_id))
-            self.table_widget.setItem(row, 3, QTableWidgetItem(f"{result.control_type.value} Control"))
-            self.table_widget.setItem(row, 4, QTableWidgetItem(self.format_result_data(result.result_data, result.item)))
-            self.table_widget.setItem(row, 5, QTableWidgetItem(result.lot_number))
-            self.table_widget.setItem(row, 6, QTableWidgetItem(result.control or 'N/A'))
-        
-        # 컬럼 너비를 컨텐츠에 맞게 조정한 후, 마지막 컬럼만 확장
-        self.table_widget.resizeColumnsToContents()
-        header.setStretchLastSection(True)
-
-    def format_result_data(self, result_data, item):
-        """결과 데이터를 읽기 쉬운 형태로 포맷"""
-        if not result_data:
-            return "No result data"
-        
-        if item.lower() == "influenza":
-            # Influenza A/B 결과 처리
-            parts = []
-            if "influenza_a" in result_data:
-                parts.append(f"A: {result_data['influenza_a']}")
-            if "influenza_b" in result_data:
-                parts.append(f"B: {result_data['influenza_b']}")
-            return ", ".join(parts) if parts else str(result_data)
-        elif item.lower() == "covid-19":
-            # COVID-19 결과 처리
-            if "covid19" in result_data:
-                return result_data['covid19']
-            return str(result_data)
-        else:
-            # 기타 결과
-            return str(result_data)
-
-    def format_calibration_result_data(self, result_data, item_type):
-        """교정 결과 데이터를 읽기 쉬운 형태로 포맷"""
-        if not result_data:
-            return "No result data"
-        
-        if item_type == CalibrationItemTypeEnum.TYPE1:
-            # Type1은 result 값
-            if "result" in result_data:
-                result_str = result_data['result']
-                if "value" in result_data:
-                    result_str += f" ({result_data['value']})"
-                return result_str
-            return str(result_data)
-        elif item_type == CalibrationItemTypeEnum.TYPE2:
-            # Type2는 T1, T2 값
-            parts = []
-            if "t1" in result_data:
-                parts.append(f"T1: {result_data['t1']}")
-            if "t2" in result_data:
-                parts.append(f"T2: {result_data['t2']}")
-            return ", ".join(parts) if parts else str(result_data)
-        else:
-            return str(result_data)
-
-    def display_content(self, content):
-        """컨텐츠를 화면에 표시 (호환성을 위해 유지)"""
-        # 테이블 방식으로 변경되어 더 이상 사용하지 않음
-        pass
-
-    def clear_table_selection(self):
-        """테이블 선택 해제"""
-        if hasattr(self, 'table_widget') and hasattr(self, 'selected_rows'):
-            # 선택된 행들의 스타일을 기본으로 되돌리기
-            for row in self.selected_rows:
-                self.update_row_style(row, False)
-            
-            # 선택된 행 집합 초기화
-            self.selected_rows.clear()
-            print(f"테이블 선택 완전히 초기화됨")
-
-    def update_row_style(self, row, selected):
-        """행의 스타일을 업데이트 (프로그래밍 방식으로 직접 색상 설정)"""
-        if not hasattr(self, 'table_widget'):
-            return
-            
-        # 프로그래밍 방식으로 직접 색상 설정
-        if selected:
-            bg_color = QColor("#1976d2")  # 진한 파란색
-            text_color = QColor("#ff0000")  # 흰색 텍스트
-        else:
-            # 기본 행 스타일
-            if row % 2 == 0:
-                bg_color = QColor("#ffffff")  # 흰색
-            else:
-                bg_color = QColor("#f5f5f5")  # 연한 회색
-            text_color = QColor("#000000")  # 검은색 텍스트
-        
-        # 해당 행의 모든 셀에 색상 적용
-        for col in range(self.table_widget.columnCount()):
-            item = self.table_widget.item(row, col)
-            if item:
-                item.setBackground(bg_color)
-                item.setForeground(text_color)
-
-    def on_table_item_clicked(self, item):
-        """테이블 항목 클릭 시 토글 선택 처리"""
-        print(f"테이블 항목 클릭됨: 행 {item.row() + 1}, 열 {item.column() + 1}")
-        
-        if not hasattr(self, 'selected_rows'):
-            print("selected_rows 초기화")
-            self.selected_rows = set()
-            
+    # ==========================================================
+    # SELECTION
+    # ==========================================================
+    def on_item_clicked(self, item):
         row = item.row()
-        
-        # 행 선택 토글 (클릭 피드백 없이 즉시 선택 상태 변경)
         if row in self.selected_rows:
-            # 이미 선택된 행이면 선택 해제
             self.selected_rows.remove(row)
-            self.update_row_style(row, False)
-            print(f"행 {row + 1} 선택 해제됨")
+            self._set_row_style(row, False)
         else:
-            # 선택되지 않은 행이면 선택
             self.selected_rows.add(row)
-            self.update_row_style(row, True)
-            print(f"행 {row + 1} 선택됨")
-        
-        # 현재 선택된 행들의 정보 출력
-        self.print_selected_rows_info()
-        
-        # 선택 상태 업데이트 (UI에 선택된 항목 수 표시 등)
-        self.update_selection_status()
-    
-    def update_selection_status(self):
-        """선택 상태 정보 업데이트"""
-        count = len(self.selected_rows)
-        if count > 0:
-            print(f"현재 {count}개 항목이 선택되어 있습니다.")
-            # UI에 선택된 항목 수를 표시할 라벨이 있다면 업데이트
-            # 예: if hasattr(self, 'label_selection_count'):
-            #        self.label_selection_count.setText(f"선택됨: {count}개")
-        else:
-            print("선택된 항목이 없습니다.")
-    
-    def print_selected_rows_info(self):
-        """선택된 행들의 정보 출력"""
-        if not self.selected_rows:
-            print("선택된 행이 없습니다.")
-            return
-            
-        print(f"총 {len(self.selected_rows)}개 행이 선택됨:")
-        for row in sorted(self.selected_rows):
-            # 행 데이터 수집
-            row_data = []
-            for col in range(self.table_widget.columnCount()):
-                item = self.table_widget.item(row, col)
-                if item:
-                    row_data.append(item.text())
-                else:
-                    row_data.append("")
-            
-            # 결과 타입별 출력 형식
-            if self.result_type == "patient":
-                print(f"  - Row {row + 1}: {row_data[0]} | {row_data[3]} | {row_data[1]} | Result: {row_data[4]}")
-            elif self.result_type == "calibration":
-                print(f"  - Row {row + 1}: {row_data[0]} | {row_data[3]} | {row_data[1]} | Result: {row_data[4]}")
-            elif self.result_type == "qc":
-                print(f"  - Row {row + 1}: {row_data[0]} | {row_data[3]} | {row_data[1]} | Result: {row_data[4]}")
+            self._set_row_style(row, True)
+
+    def _set_row_style(self, row: int, selected: bool):
+        """
+        행 선택/해제 시 스타일 적용
+        - 선택됨  : 모든 컬럼 흰색 텍스트
+        - 선택해제 : Test Item 컬럼은 붉은색 유지
+        """
+
+        SELECT_BG = QColor("#1976d2")
+        NORMAL_BG = QColor("#ffffff")
+
+        TEST_ITEM_RED = QColor("#d32f2f")
+        NORMAL_TEXT = QColor("#000000")
+        SELECT_TEXT = QColor("#ffffff")
+
+        for c in range(self.table.columnCount()):
+            item = self.table.item(row, c)
+            if not item:
+                continue
+
+            if selected:
+                # ▶ 선택 상태
+                item.setBackground(SELECT_BG)
+                item.setForeground(SELECT_TEXT)
             else:
-                print(f"  - Row {row + 1}: {' | '.join(row_data)}")
-    
-    def get_selected_rows_data(self):
-        """선택된 행들의 데이터를 반환"""
-        if not hasattr(self, 'selected_rows') or not self.selected_rows:
-            return []
-            
-        selected_data = []
-        for row in sorted(self.selected_rows):
-            row_data = {}
-            headers = []
-            
-            # 헤더 정보 가져오기
-            for col in range(self.table_widget.columnCount()):
-                header_item = self.table_widget.horizontalHeaderItem(col)
-                if header_item:
-                    headers.append(header_item.text())
+                # ▶ 선택 해제 상태
+                item.setBackground(NORMAL_BG)
+
+                if c == 0:  # Test Item 컬럼
+                    item.setForeground(TEST_ITEM_RED)
                 else:
-                    headers.append(f"Column_{col}")
-            
-            # 행 데이터 가져오기
-            for col in range(self.table_widget.columnCount()):
-                item = self.table_widget.item(row, col)
-                value = item.text() if item else ""
-                row_data[headers[col]] = value
-            
-            selected_data.append({
-                'row_number': row,
-                'data': row_data
-            })
-        
-        return selected_data
+                    item.setForeground(NORMAL_TEXT)
 
-    def showEvent(self, event):
-        """화면이 표시될 때 호출"""
-        super().showEvent(event)
-        # 날짜/시간 및 배터리 업데이트 시작
-        QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
-        print("ResultListView가 표시되었습니다.")
-    
-    def hideEvent(self, event):
-        """화면이 숨김될 때 호출"""
-        super().hideEvent(event)
-        # 날짜/시간 및 배터리 업데이트 중지
-        stop_date_time_update(self)
-        stop_battery_update(self)
-        print("ResultListView가 숨겨졌습니다.")
-    
-    def closeEvent(self, event):
-        """화면이 닫힐 때 호출"""
-        stop_date_time_update(self)
-        stop_battery_update(self)
-        super().closeEvent(event)
 
-    def on_rlistHome_button_clicked(self):
-        """SELECT ALL 버튼 - 모든 행 선택/해제 토글"""
-        if not hasattr(self, 'table_widget') or not hasattr(self, 'selected_rows'):
-            return
-            
-        total_rows = self.table_widget.rowCount()
-        if total_rows == 0:
-            return
-        
-        # 현재 모든 행이 선택되어 있는지 확인
-        all_selected = len(self.selected_rows) == total_rows
-        
-        if all_selected:
-            # 모든 행이 선택되어 있으면 모두 해제
-            self.clear_table_selection()
-            print("모든 행 선택 해제됨")
-        else:
-            # 일부만 선택되어 있거나 아무것도 선택되지 않았으면 모든 행 선택
-            self.selected_rows.clear()
-            for row in range(total_rows):
-                self.selected_rows.add(row)
-                self.update_row_style(row, True)
-            print(f"모든 행({total_rows}개) 선택됨")
-        
-        self.update_selection_status()
+    def clear_selection(self):
+        for row in self.selected_rows:
+            self._set_row_style(row, False)
+        self.selected_rows.clear()
 
-    def on_rlistSend_button_clicked(self):
-        print("ResultListView: Send 버튼이 클릭되었습니다.")
-        selected_data = self.get_selected_rows_data()
-        
-        if not selected_data:
-            print("전송할 데이터가 선택되지 않았습니다.")
+    # ==========================================================
+    # BUTTON HANDLERS
+    # ==========================================================
+    def on_select_all_clicked(self):
+        if len(self.selected_rows) == self.table.rowCount():
+            self.clear_selection()
             return
-        
-        print(f"전송할 데이터 {len(selected_data)}개:")
-        for item in selected_data:
-            print(f"  Row {item['row_number'] + 1}: {item['data']}")
-        
-        # 여기에 실제 전송 로직을 추가할 수 있습니다
-        # self.send_data(selected_data)
 
-    def on_rlistExport_button_clicked(self):
-        print("ResultListView: Export 버튼이 클릭되었습니다.")
-        selected_data = self.get_selected_rows_data()
-        
-        if not selected_data:
-            print("내보낼 데이터가 선택되지 않았습니다.")
-            return
-        
-        print(f"내보낼 데이터 {len(selected_data)}개:")
-        for item in selected_data:
-            print(f"  Row {item['row_number'] + 1}: {item['data']}")
-        
-        # 여기에 실제 데이터 내보내기 로직을 추가할 수 있습니다
-        # self.export_data(selected_data)
+        self.selected_rows.clear()
+        for r in range(self.table.rowCount()):
+            self.selected_rows.add(r)
+            self._set_row_style(r, True)
 
-    def on_rlistDelete_button_clicked(self):
-        print("ResultListView: Delete 버튼이 클릭되었습니다.")
-        selected_data = self.get_selected_rows_data()
-        
-        if not selected_data:
-            print("삭제할 데이터가 선택되지 않았습니다.")
-            return
-        
-        print(f"삭제할 데이터 {len(selected_data)}개:")
-        for item in selected_data:
-            print(f"  Row {item['row_number'] + 1}: {item['data']}")
-        
-        # 여기에 실제 삭제 로직을 추가할 수 있습니다
-        # self.delete_data(selected_data)
+    def on_send_clicked(self):
+        print("SEND:", self.selected_rows)
+
+    def on_export_clicked(self):
+        print("EXPORT:", self.selected_rows)
+
+    def on_delete_clicked(self):
+        print("DELETE:", self.selected_rows)
 
     def on_back_button_clicked(self):
-        """뒤로가기 버튼 - Result Category View로 이동"""
-        self.clear_table_selection()  # 페이지 전환 시 선택 초기화
+        self.clear_selection()
         self.switch_to_result_category.emit()
+
+    # ==========================================================
+    # DATE / BATTERY
+    # ==========================================================
+    def showEvent(self, event):
+        super().showEvent(event)
+        start_date_time_update(self)
+        start_battery_update(self)
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        stop_date_time_update(self)
+        stop_battery_update(self)
 
     def update_date_time(self):
         update_date_time(self)
 
     def update_battery_status(self):
-        """배터리 상태 업데이트"""
         update_battery_status(self)

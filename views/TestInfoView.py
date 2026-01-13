@@ -257,6 +257,9 @@ class TestInfoView(QMainWindow):
             with open(self.current_json_path, 'r+') as f:
                 data = json.load(f)
                 
+                #"test_type0": "ReadOnly",
+                data['test_type1'] = self.selected_test_type
+
                 # 현재 로그인한 사용자 정보가 있으면 사용, 없으면 전달받은 operator 사용
                 if app_controller.user_service.is_logged_in():
                     current_user_id = app_controller.user_service.get_current_user_id()
@@ -270,9 +273,9 @@ class TestInfoView(QMainWindow):
                 f.seek(0)
                 json.dump(data, f, indent=4)
                 f.truncate()
-            print("JSON 파일이 성공적으로 업데이트되었습니다.")
+            print("[TestInfoView] JSON 파일이 성공적으로 업데이트되었습니다.")
         except Exception as e:
-            print(f"JSON 파일 업데이트 중 오류 발생: {e}")
+            print(f"[TestInfoView] JSON 파일 업데이트 중 오류 발생: {e}")
 
     def update_date_time(self):
         update_date_time(self)
@@ -283,6 +286,7 @@ class TestInfoView(QMainWindow):
     """
 
     def set_selected_test_type(self, test_type):
+        """진단 모드 세팅"""
         self.selected_test_type = test_type
         if self.label_NOTE1:
             # Simple test type display

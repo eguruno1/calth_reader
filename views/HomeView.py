@@ -59,44 +59,11 @@ class HomeView(QMainWindow):
 
         # JSON 파일 경로 설정
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
-        
-        """
-        # 배터리 상태 초기화
-        self.init_battery_status()
-        
-        # 배터리 상태 업데이트 타이머 (30초마다)
-        self.battery_timer = QTimer()
-        self.battery_timer.timeout.connect(self.update_battery_status)
-        self.battery_timer.start(1000 * 30)  # 30초
-        """
 
         #####################################################
         # Battery Status
-        #####################################################
         self.uart_model = uart_model
 
-    """ 아래 동일 함수명 중복선언 :
-    def showEvent(self, event):
-        super().showEvent(event)
-        QTimer.singleShot(100, lambda: start_date_time_update(self))
-    """
-
-    """ 아래 동일 함수명 중복선언 : Utils.py 사용
-    def update_date_time(self):
-        current_datetime = QDateTime.currentDateTime()
-        formatted_datetime = current_datetime.toString("yyyy-MM-dd  HH:mm")
-        if hasattr(self, 'label_DateNClock'):
-            self.label_DateNClock.setText(formatted_datetime)
-
-        # 기존 타이머가 있다면 중지
-        if hasattr(self, 'date_time_timer'):
-            self.date_time_timer.stop()
-
-        # 새 타이머 생성 및 시작
-        self.date_time_timer = QTimer(self)
-        self.date_time_timer.timeout.connect(self.update_date_time)
-        self.date_time_timer.start(1000)  # 1초마다 업데이트
-    """
 
     def hideEvent(self, event):
         super().hideEvent(event)
@@ -121,11 +88,21 @@ class HomeView(QMainWindow):
     def on_standard_test_button_clicked(self):
         # TestInfoView 로 이동.
         print("Standard Test 버튼이 클릭되었습니다.")
+
+        # ▶ 로그인 체크
+        if not self._require_login("StandardTest"):
+            return
+        
         self.update_json_file("StandardTest")
         self.switch_to_select.emit()
 
     def on_read_only_button_clicked(self):
         print("Read Only 버튼이 클릭되었습니다.")
+
+        # ▶ 로그인 체크
+        if not self._require_login("ReadOnly"):
+            return
+        
         self.update_json_file("ReadOnly")
         self.switch_to_select.emit()
 
@@ -162,6 +139,11 @@ class HomeView(QMainWindow):
 
     def on_review_button_clicked(self):
         print("Review 버튼이 클릭되었습니다.")
+
+        # ▶ 로그인 체크
+        if not self._require_login("Review"):
+            return
+        
         self.switch_to_resultList.emit()
 
     def on_settings_button_clicked(self):
@@ -187,23 +169,6 @@ class HomeView(QMainWindow):
     def update_date_time(self):
         update_date_time(self)
 
-    """배터리 상태 초기화
-    def init_battery_status(self): 
-        # start_battery_update(self)
-    """
-    """배터리 상태 업데이트 (Utils.py 함수 사용)
-    def update_battery_status(self):
-        update_battery_status(self)
-    """
-    """배터리 디스플레이 업데이트 (Utils.py 함수 사용)
-    def update_battery_display(self):
-        update_battery_status(self)
-    """
-    """UART 이벤트 핸들러 (옵저버 패턴)-기존 방식 사용안함.
-    def on_uart_event(self, event_type: str, data=None):
-        if event_type == 'battery_changed':
-            self.update_battery_display()
-    """
 
     # 로그인 관련 메서드들
     def init_login_status(self):
@@ -309,6 +274,36 @@ class HomeView(QMainWindow):
 
         return True
     
+    # ==========================================================
+    # LOGIN CHECK (COMMON)
+    # ==========================================================
+    def _require_login(self, target: str = "") -> bool:
+        """
+        로그인 필요 여부 체크
+        :param target: 로그인 후 이동 목적 (optional)
+        :return: True (로그인됨), False (차단됨)
+        """
+        try:
+            from controllers import app_controller
+
+            if app_controller.user_service.is_logged_in():
+                return True
+
+            # 로그인 안 된 경우 → 로그인 화면으로 이동
+            QMessageBox.information(
+                self,
+                "로그인 필요",
+                "해당 기능을 사용하려면 로그인이 필요합니다."
+            )
+            self.switch_to_login.emit(target)
+            return False
+
+        except Exception as e:
+            print(f"[HomeView] 로그인 체크 오류: {e}")
+            self.switch_to_login.emit(target)
+            return False
+
+    
     #####################################################
     # Battery Status (UART 기반)
     #####################################################
@@ -376,5 +371,3 @@ class HomeView(QMainWindow):
 
         except Exception as e:
             print(f"[HomeView] Battery UI update error: {e}")
-
-        

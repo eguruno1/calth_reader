@@ -185,10 +185,12 @@ class ResultListView(QMainWindow):
             self.table.setHorizontalHeaderItem(col, item)
 
         # ▶ 헤더 체크박스
+        """
         header_check = QTableWidgetItem()
         header_check.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
         header_check.setCheckState(Qt.Unchecked)
         self.table.setHorizontalHeaderItem(0, header_check)
+        """
 
         for row, mr in enumerate(results):
             # ★ FIX: row 높이 (체크박스 잘림 방지)

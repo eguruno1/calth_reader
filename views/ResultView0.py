@@ -64,7 +64,7 @@ class ResultView0(QMainWindow):
 
         # 버튼들 연결
         self.pushButton_ResultHome.clicked.connect(self.on_resultHome_button_clicked)
-        self.pushButton_Retest.clicked.connect(self.on_resiltRetest_button_clicked)
+        self.pushButton_Retest.clicked.connect(self.on_resultRetest_button_clicked)
         self.pushButton_ResultSend.clicked.connect(self.on_resultSend_button_clicked)
         self.pushButton_Print.clicked.connect(self.on_resultPrint_button_clicked)
         
@@ -102,10 +102,11 @@ class ResultView0(QMainWindow):
     def on_resultHome_button_clicked(self):
         print("ResultView: HOME 버튼이 클릭되었습니다." )
         self.on_retry_measurement() # 모든값 초기화
-
-        self.switch_to_home.emit()
+        # 0.5초 후 결과 화면으로 전환:json 저장후
+        QTimer.singleShot(500, lambda: self.switch_to_home.emit())
+        #self.switch_to_home.emit()
         
-    def on_resiltRetest_button_clicked(self):
+    def on_resultRetest_button_clicked(self):
         print("ResultView: RE-TEST 버튼이 클릭되었습니다.")
         self.on_retry_measurement() # 모든값 초기화
         

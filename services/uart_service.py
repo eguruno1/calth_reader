@@ -293,7 +293,8 @@ class UARTService(QObject):
             self.error_occurred.emit(error_msg)
 
     #####################################################
-    # Battery Status
+    # Battery Status + 장비내 통신 프로토콜 수신 
+    # SLOT Out : H+0, SLOT In : H+1
     #####################################################
     def _handle_received_data(self, data: dict):
         if "battery" not in data:

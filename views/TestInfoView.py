@@ -248,7 +248,7 @@ class TestInfoView(QMainWindow):
         
         # Proceed to measure view
         self.reset_widget_positions()
-        self.switch_to_measure.emit()
+        
 
     def update_json_file(self, operator, patient_id, datentime):
         """JSON 파일 업데이트 - 현재 로그인 사용자 정보 반영"""
@@ -274,6 +274,10 @@ class TestInfoView(QMainWindow):
                 json.dump(data, f, indent=4)
                 f.truncate()
             print("[TestInfoView] JSON 파일이 성공적으로 업데이트되었습니다.")
+            
+            # JSON 이 정상 업데이트되면 이동
+            self.switch_to_measure.emit()
+
         except Exception as e:
             print(f"[TestInfoView] JSON 파일 업데이트 중 오류 발생: {e}")
 

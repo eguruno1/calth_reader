@@ -52,8 +52,7 @@ class MeasureView(QMainWindow):
             uic.loadUi(ui_file, self)
         else:
             raise FileNotFoundError(f"UI file not found: {ui_file}")   
-        
-        self._load_test_info()
+
 
     def init_ui(self):
         
@@ -112,7 +111,7 @@ class MeasureView(QMainWindow):
 
             self.test_type = data.get("test_type1", "")
 
-            print(f"[MeasureView] test_type 로드: {self.test_type}")
+            print(f"[MeasureView] _load_test_info test_type 로드: {self.test_type}")
 
         except Exception as e:
             print(f"[MeasureView] JSON 로드 오류: {e}")
@@ -146,7 +145,11 @@ class MeasureView(QMainWindow):
 
     def start_measurement(self):
         """측정 시작 - 컨트롤러에 위임"""
-        print("측정 시작 요청")
+        print("[MeasureView] 측정 시작 요청")
+        print(f"[MeasureView] 0 start_measurement test_type 로드: {self.test_type}")
+        # JSON에서 설정된 정보를 기준으로 진행한다.
+        self._load_test_info()
+        print(f"[MeasureView] 1 start_measurement test_type 로드: {self.test_type}")
         # DB 진단 시작정보 저장.
         self.create_test_session(self.test_type)
 
@@ -160,7 +163,7 @@ class MeasureView(QMainWindow):
 
     def on_measurement_started(self):
         """측정 시작됨 (컨트롤러에서 알림)"""
-        print("측정이 시작되었습니다")
+        print("[MeasureView] 측정이 시작되었습니다")
         self.progressBar_Meas.setValue(0)
         self.progressBar_Meas.setFormat("측정 준비 중... - %p%")
 
@@ -173,7 +176,7 @@ class MeasureView(QMainWindow):
 
     def on_measurement_finished(self, result: dict):
         """측정 완료 (컨트롤러에서 알림)"""
-        print(f"측정 완료: {result}")
+        print(f"[MeasureView] 측정 완료: {result}")
 
         """
         측정 완료 후 DB 저장을 위한 파라미터 세팅

@@ -2,9 +2,10 @@ import os
 from typing import List
 
 from PyQt5.QtWidgets import (
-    QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView
+    QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView,
+    QWidget, QCheckBox, QHBoxLayout
 )
-from PyQt5.QtCore import pyqtSignal, QTimer, Qt
+from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QColor
 from PyQt5 import uic
 
@@ -20,13 +21,7 @@ from views.Utils import (
 
 # DB (ResultView0 와 동일)
 from database.connection import get_db_session
-from database.models import (
-    TestSession,
-    MeasurementResult,
-    TestType,
-    User,
-    Patient
-)
+from database.models import MeasurementResult
 
 
 class ResultListView(QMainWindow):
@@ -42,7 +37,6 @@ class ResultListView(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # patient | qc
         self.mode: str = "patient"
 
         # 선택된 행 인덱스
@@ -69,12 +63,10 @@ class ResultListView(QMainWindow):
         uic.loadUi(ui_path, self)
 
     def _init_ui(self):
-        # Navigation
         self.pushButton_ResultListBackArrow.clicked.connect(
             self.on_back_button_clicked
         )
 
-        # Action buttons
         self.pushButton_RListHome.clicked.connect(
             self.on_select_all_clicked
         )
@@ -131,8 +123,7 @@ class ResultListView(QMainWindow):
         for label_name in ['label_Title', 'label_title', 'label_TitleText']:
             if hasattr(self, label_name):
                 getattr(self, label_name).setText(title)
-                break    
-    
+                break           
 
     # ==========================================================
     # TABLE
@@ -144,248 +135,278 @@ class ResultListView(QMainWindow):
         self.table.setGeometry(42, 93, 793, 483)
 
         self.table.setSelectionMode(QAbstractItemView.NoSelection)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.verticalHeader().setVisible(False)
 
-        self.table.itemClicked.connect(self.on_item_clicked)
+        # ★ FIX: row 클릭 처리
+        self.table.cellClicked.connect(self.on_row_clicked)
 
         self.table.setStyleSheet("""
             QTableWidget { background: white; }
             QTableWidget::item { padding: 8px; }
-        """)      
+        """)
 
     # ==========================================================
-    # MODE
-    # ==========================================================
-    def set_mode(self, mode: str):
-        """
-        patient / qc 전환
-        """
-        self.mode = mode
-        self.clear_selection()
-        self.load_data()
-
-    # ==========================================================
-    # DATA LOAD (ResultView0 구조와 동일)
+    # DATA LOAD
     # ==========================================================
     def load_data(self):
         session = get_db_session()
-
         try:
             results: List[MeasurementResult] = (
                 session.query(MeasurementResult)
                 .order_by(MeasurementResult.measured_at.desc())
                 .all()
             )
-
             self._populate_table(results)
-
         finally:
             session.close()
 
     def _populate_table(self, results: List[MeasurementResult]):
         headers = [
-            "Test Item",
-            "Date",
+            "Check",              # 체크박스
             "Operator ID",
             "Patient ID",
+            "Test Item",
             "Result"
         ]
 
         self.table.setColumnCount(len(headers))
         self.table.setHorizontalHeaderLabels(headers)
-        self._apply_header_style()
         self.table.setRowCount(len(results))
 
+        # ▶ 헤더 텍스트 수동 설정 (색상 제어용)
+        for col, text in enumerate(headers):
+            item = QTableWidgetItem(text)
+            item.setTextAlignment(Qt.AlignCenter)
+
+            # ★ FIX: Test Item 헤더 파란색
+            if text == "Test Item":
+                item.setForeground(QColor("#1976d2"))
+
+            self.table.setHorizontalHeaderItem(col, item)
+
+        # ▶ 헤더 체크박스
+        header_check = QTableWidgetItem()
+        header_check.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+        header_check.setCheckState(Qt.Unchecked)
+        self.table.setHorizontalHeaderItem(0, header_check)
+
         for row, mr in enumerate(results):
-            # Test Item
-            test_item = (
-                mr.session.test_type.code
-                if mr.session and mr.session.test_type else ""
+            # ★ FIX: row 높이 (체크박스 잘림 방지)
+            self.table.setRowHeight(row, 44)
+            # ▶ Row 체크박스
+
+            # ▶ Row 체크박스 (가운데 정렬)
+            checkbox = QCheckBox()
+            checkbox.stateChanged.connect(
+                lambda state, r=row: self._set_row_selected(r, state == Qt.Checked)
             )
 
-            # Date
-            date_text = (
-                mr.measured_at.strftime("%Y-%m-%d %H:%M")
-                if mr.measured_at else ""
-            )
+            container = QWidget()
+            layout = QHBoxLayout(container)
+            layout.addWidget(checkbox)
+            layout.setAlignment(Qt.AlignCenter)
+            layout.setContentsMargins(0, 0, 0, 0)
 
-            # Operator ID
+            self.table.setCellWidget(row, 0, container)
+
             operator_id = (
                 mr.session.operator.user_id
                 if mr.session and mr.session.operator else ""
             )
 
-            # Patient Code
             patient_code = (
                 mr.session.patient.patient_code
                 if mr.session and mr.session.patient else ""
             )
 
-            # Result
+            test_item = (
+                mr.session.test_type.code
+                if mr.session and mr.session.test_type else ""
+            )
+
             result_text = self._format_result_data(mr.result_data)
-
-            #self.table.setItem(row, 0, QTableWidgetItem(test_item))
-            # Test Item (붉은색)
-            item_test = QTableWidgetItem(test_item)
-            item_test.setForeground(QColor("red"))
-            item_test.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 0, item_test)
-
-            item_date = QTableWidgetItem(date_text)
-            item_date.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 1, item_date)
 
             item_op = QTableWidgetItem(operator_id)
             item_op.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 2, item_op)
+            self.table.setItem(row, 1, item_op)
 
             item_patient = QTableWidgetItem(patient_code)
             item_patient.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 3, item_patient)
+            self.table.setItem(row, 2, item_patient)
+
+            item_test = QTableWidgetItem(test_item)
+            item_test.setForeground(QColor("#d32f2f"))
+            item_test.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 3, item_test)
 
             self.table.setItem(row, 4, QTableWidgetItem(result_text))
 
         self.table.resizeColumnsToContents()
         self.table.horizontalHeader().setStretchLastSection(True)
 
-
+    # ==========================================================
+    # RESULT FORMAT
+    # ==========================================================
     def _format_result_data(self, result_data: dict) -> str:
         """
-        result_data(JSONB)를 Result 컬럼에 표시할 문자열로 변환
-        - 2라인 / 3라인 공통 처리
-        포맷 예)
+        measurement_results.result_data(JSONB)를
+        Result 컬럼에 표시할 문자열로 변환한다.
+
+        실제 DB 저장 구조 기준:
         {
             "timestamp": "...",
             "analysis_result": {
                 "mode": 2 or 3,
                 "metrics": {
                     "lines": [
-                        { "label": "...", "confidence": ... }
+                        { "label": "C|T|L1|L2|L3", ... }
                     ]
                 },
-                "positive": true,
-                "line_count": 2 or 3
+                "positive": true | false,
+                "line_count": 2 | 3
             }
         }
         """
-        if not result_data:
+
+        # ----------------------------------
+        # 1. 기본 방어 로직
+        # ----------------------------------
+        if not result_data or not isinstance(result_data, dict):
             return "N/A"
 
         try:
-            analysis = result_data.get("analysis_result", {})
-            mode = analysis.get("mode")
-            positive = analysis.get("positive")
+            # ----------------------------------
+            # 2. analysis_result 추출
+            # ----------------------------------
+            analysis = result_data.get("analysis_result")
+            if not isinstance(analysis, dict):
+                return "INVALID DATA"
+
+            mode = analysis.get("mode")              # 2 or 3
+            positive = analysis.get("positive")      # True / False
+            line_count = analysis.get("line_count")  # 2 / 3
+
+            # ----------------------------------
+            # 3. metrics / lines 안전 추출
+            # ----------------------------------
             metrics = analysis.get("metrics", {})
             lines = metrics.get("lines", [])
 
-            # 라인 라벨 추출
-            labels = [line.get("label") for line in lines if "label" in line]
+            if not isinstance(lines, list):
+                lines = []
 
-            # -------------------------
-            # 2라인 (COVID19)
-            # -------------------------
+            # 라인 라벨만 추출 (label 키가 있는 경우만)
+            labels = [
+                line.get("label")
+                for line in lines
+                if isinstance(line, dict) and "label" in line
+            ]
+
+            label_str = "/".join(labels) if labels else "N/A"
+            line_cnt_str = f"{line_count}" if line_count is not None else "?"
+
+            # ----------------------------------
+            # 4. 2라인 (COVID19)
+            # ----------------------------------
             if mode == 2:
                 if positive:
-                    return "POSITIVE (C/T)"
+                    return f"POSITIVE (C/T) | Lines:{line_cnt_str}"
                 else:
-                    return "NEGATIVE (C)"
+                    return f"NEGATIVE (C) | Lines:{line_cnt_str}"
 
-            # -------------------------
-            # 3라인 (INFLUENZA)
-            # -------------------------
+            # ----------------------------------
+            # 5. 3라인 (INFLUENZA)
+            # ----------------------------------
             if mode == 3:
                 if not labels:
-                    return "INVALID"
-
-                label_str = "/".join(labels)
+                    return f"INVALID | Lines:{line_cnt_str}"
 
                 if positive:
-                    return f"POSITIVE ({label_str})"
+                    return f"POSITIVE ({label_str}) | Lines:{line_cnt_str}"
                 else:
-                    return f"NEGATIVE ({label_str})"
+                    return f"NEGATIVE ({label_str}) | Lines:{line_cnt_str}"
+
+            # ----------------------------------
+            # 6. 알 수 없는 mode
+            # ----------------------------------
+            return f"UNKNOWN MODE ({mode})"
 
         except Exception as e:
             print(f"[ResultListView] result_data format error: {e}")
             return "Invalid Result"
-    
 
-    def _apply_header_style(self):
-        """
-        Test Item 헤더 색상 파란색 적용
-        """
-        header = self.table.horizontalHeader()
-
-        for col in range(self.table.columnCount()):
-            item = self.table.horizontalHeaderItem(col)
-            if not item:
-                continue
-
-            if item.text() == "Test Item":
-                item.setForeground(Qt.blue)
 
     # ==========================================================
-    # SELECTION
+    # SELECTION / CHECKBOX
+    # ==========================================================
+    # ==========================================================
+    # ROW / CHECKBOX SYNC
     # ==========================================================
     def on_item_clicked(self, item):
         row = item.row()
-        if row in self.selected_rows:
-            self.selected_rows.remove(row)
-            self._set_row_style(row, False)
+
+        if item.column() == 0:
+            checked = item.checkState() == Qt.Checked
+            self._set_row_selected(row, checked)
+
+        elif row in self.selected_rows:
+            self._set_row_selected(row, False)
         else:
+            self._set_row_selected(row, True)
+
+    def on_row_clicked(self, row, column):
+        container = self.table.cellWidget(row, 0)
+        if not container:
+            return
+
+        checkbox = container.findChild(QCheckBox)
+        if checkbox:
+            checkbox.setChecked(not checkbox.isChecked())            
+
+    def _set_row_selected(self, row: int, selected: bool):
+        checkbox = self.table.item(row, 0)
+        if checkbox:
+            checkbox.setCheckState(Qt.Checked if selected else Qt.Unchecked)
+
+        if selected:
             self.selected_rows.add(row)
-            self._set_row_style(row, True)
+        else:
+            self.selected_rows.discard(row)
 
-    def _set_row_style(self, row: int, selected: bool):
-        """
-        행 선택/해제 시 스타일 적용
-        - 선택됨  : 모든 컬럼 흰색 텍스트
-        - 선택해제 : Test Item 컬럼은 붉은색 유지
-        """
+        self._apply_row_style(row, selected)
 
-        SELECT_BG = QColor("#1976d2")
-        NORMAL_BG = QColor("#ffffff")
-
-        TEST_ITEM_RED = QColor("#d32f2f")
-        NORMAL_TEXT = QColor("#000000")
-        SELECT_TEXT = QColor("#ffffff")
-
-        for c in range(self.table.columnCount()):
+    def _apply_row_style(self, row: int, selected: bool):
+        for c in range(1, self.table.columnCount()):
             item = self.table.item(row, c)
             if not item:
                 continue
 
             if selected:
-                # ▶ 선택 상태
-                item.setBackground(SELECT_BG)
-                item.setForeground(SELECT_TEXT)
+                item.setBackground(QColor("#1976d2"))
+                item.setForeground(QColor("white"))
             else:
-                # ▶ 선택 해제 상태
-                item.setBackground(NORMAL_BG)
-
-                if c == 0:  # Test Item 컬럼
-                    item.setForeground(TEST_ITEM_RED)
+                item.setBackground(QColor("white"))
+                if c == 3:
+                    item.setForeground(QColor("#d32f2f"))
                 else:
-                    item.setForeground(NORMAL_TEXT)
-
+                    item.setForeground(QColor("black"))
 
     def clear_selection(self):
-        for row in self.selected_rows:
-            self._set_row_style(row, False)
+        for row in list(self.selected_rows):
+            self._set_row_selected(row, False)
         self.selected_rows.clear()
 
     # ==========================================================
-    # BUTTON HANDLERS
+    # BUTTONS
     # ==========================================================
     def on_select_all_clicked(self):
-        if len(self.selected_rows) == self.table.rowCount():
-            self.clear_selection()
-            return
-
-        self.selected_rows.clear()
+        select_all = len(self.selected_rows) != self.table.rowCount()
         for r in range(self.table.rowCount()):
-            self.selected_rows.add(r)
-            self._set_row_style(r, True)
+            container = self.table.cellWidget(r, 0)
+            if container:
+                cb = container.findChild(QCheckBox)
+                if cb:
+                    cb.setChecked(select_all)
 
     def on_send_clicked(self):
         print("SEND:", self.selected_rows)

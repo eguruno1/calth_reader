@@ -51,7 +51,7 @@
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>16</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -88,7 +88,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>24</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -445,7 +445,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>14</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -469,7 +469,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>14</pointsize>
       </font>
      </property>
      <property name="styleSheet">
@@ -500,7 +500,7 @@ QLineEdit:focus {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>14</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -524,7 +524,7 @@ QLineEdit:focus {
      <property name="font">
       <font>
        <family>Courier New</family>
-       <pointsize>-1</pointsize>
+       <pointsize>14</pointsize>
       </font>
      </property>
      <property name="styleSheet">
@@ -562,7 +562,7 @@ QLineEdit:focus {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>16</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -599,7 +599,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>16</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -636,7 +636,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>14</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>

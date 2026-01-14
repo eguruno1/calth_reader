@@ -1,17 +1,14 @@
 import os
 
-from PyQt5.QtCore       import QDateTime, QTimer, QDate, QObject, QEvent
+from PyQt5.QtCore       import QDateTime, QTimer, QDate
 from PyQt5.QtGui        import QFontDatabase, QFont
-from PyQt5.QtWidgets    import QApplication, QWidget, QLabel, QPushButton
+from PyQt5.QtWidgets    import QApplication
 
 # TimeService 임포트 추가
 from services.time_service import TimeService
 
 # 글로벌 TimeService 인스턴스
 _time_service = None
-
-# ✅ 전역 이벤트 필터 (중요)
-_font_fix_filter = None
 
 def get_time_service():
     """전역 TimeService 인스턴스 반환"""
@@ -79,8 +76,6 @@ def stop_date_time_update(view):
 ################################################################################
 
 def set_app_font():
-    global _font_fix_filter
-
     # 프로젝트 루트 디렉토리 경로 (PyCalth_Qt5 폴더)
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
@@ -112,12 +107,6 @@ def set_app_font():
         else:
             print(f"fonts 폴더를 찾을 수 없습니다: {fonts_dir}")
 
-    # 🔥 여기 추가
-    # ✅ EventFilter는 반드시 참조 유지
-    app = QApplication.instance()
-    if _font_fix_filter is None:
-        _font_fix_filter = FontFixEventFilter()
-        app.installEventFilter(_font_fix_filter)
 
 ################################################################################
 # 배터리 상태 업데이트
@@ -256,29 +245,3 @@ def center_window(window):
         print(f"윈도우 중앙 배치 오류: {e}")
         # 오류 발생 시 기본 위치 사용
         window.move(100, 100)
-
-
-################################################################################
-# 전역 폰트 보정 이벤트 필터
-################################################################################
-class FontFixEventFilter(QObject):
-    def eventFilter(self, obj, event):
-        # ⭐ Show 말고 Polish 단계에서 잡아야 함
-        if event.type() in (QEvent.Polish, QEvent.PolishRequest):
-            if isinstance(obj, QWidget):
-                font = obj.font()
-
-                if font.pointSize() <= 0:
-                    size = 10
-
-                    if isinstance(obj, QPushButton):
-                        size = 12
-                    elif isinstance(obj, QLabel):
-                        size = 10
-
-                    font.setPointSize(size)
-                    obj.setFont(font)
-
-        return False
-
-

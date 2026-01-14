@@ -51,6 +51,9 @@ from views.AccountDeleteView  import AccountDeleteView
 
 from controllers import app_controller as backend_controller
 from config.config import app_config
+# 배터리 충전량 알림.
+from views.widgets.Low_battery_overlay import LowBatteryOverlayWidget
+
 
 class AppController(QMainWindow):
     def __init__(self):
@@ -71,8 +74,10 @@ class AppController(QMainWindow):
         self._setup_shortcuts()
 
         # 배터리 상태를 위해..
+        self.low_battery_overlay = LowBatteryOverlayWidget(self)    # 🔥 Low Battery 전역 위젯
         self.backend_controller = backend_controller
         self._active_uart_view = None
+        self.backend_controller.uart_model.add_observer(self)       # UART 옵저버로 UIController 자체 등록
 
     #==========================================
     # --- View 선언 ---
@@ -821,3 +826,17 @@ class AppController(QMainWindow):
             view.on_uart_event("battery_changed", battery_info)
 
 
+    def on_uart_event(self, event_type: str, data):
+        """
+        UIController 레벨에서 전역 배터리 이벤트 처리
+        """
+        if event_type != "battery_changed" or not data:
+            return
+
+        level = data.level
+
+        # 20% 이하 → Low Battery
+        if level <= 20:
+            self.low_battery_overlay.show_warning()
+        else:
+            self.low_battery_overlay.hide_warning()

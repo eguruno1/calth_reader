@@ -31,6 +31,13 @@ class TestInfoView(QMainWindow):
         self.uart_model = uart_model
         print(f"[TestInfoView] uart_model injected: {self.uart_model}")
 
+        # ★ 추가: 슬롯 체크 상태 플래그
+        self._waiting_slot_check = False
+
+        # ★ 추가: 슬롯 상태 안내 위젯 (TestInfoView 전용)
+        from .widgets.slot_status_overlay import SlotStatusOverlayWidget
+        self.slot_overlay = SlotStatusOverlayWidget(self)
+
         # JSON 파일 경로 설정
         current_dir  = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
@@ -245,9 +252,16 @@ class TestInfoView(QMainWindow):
 
         # Save test data
         self.update_json_file(operator, patient_id, current_datetime)
+
+        # ★ 추가: 슬롯 상태 확인 요청
+        print("[TestInfoView] Send slot check command: H1")
+        self._waiting_slot_check = True
+
+ 
+        app_controller.send_uart_command("H1")
         
-        # Proceed to measure view
-        self.reset_widget_positions()
+        # Proceed to measure view : 슬롯 확인후 정상이면 진행...
+        # self.reset_widget_positions()
         
 
     def update_json_file(self, operator, patient_id, datentime):
@@ -275,8 +289,8 @@ class TestInfoView(QMainWindow):
                 f.truncate()
             print("[TestInfoView] JSON 파일이 성공적으로 업데이트되었습니다.")
             
-            # JSON 이 정상 업데이트되면 이동
-            self.switch_to_measure.emit()
+            # JSON 이 정상 업데이트되면 이동 : UART H1 으로 상태 확인후 이동...
+            # self.switch_to_measure.emit()
 
         except Exception as e:
             print(f"[TestInfoView] JSON 파일 업데이트 중 오류 발생: {e}")
@@ -363,6 +377,7 @@ class TestInfoView(QMainWindow):
             f"thread={threading.current_thread().name}"
         )
 
+        # 배터리 (기존)
         if event_type == "battery_changed" and data:
             # ❗ UART RX 스레드 → UI 스레드로 전달
             QMetaObject.invokeMethod(
@@ -371,6 +386,28 @@ class TestInfoView(QMainWindow):
                 Qt.QueuedConnection,
                 Q_ARG(object, data)
             )
+
+        # ★ 추가: 슬롯 상태 응답 처리
+        elif event_type == "slot_status_changed" and self._waiting_slot_check:
+            self._waiting_slot_check = False
+
+            from models.uart_model import SlotStatus
+
+            if data == SlotStatus.OUT:
+                print("[TestInfoView] Slot OPEN → show warning")
+                QMetaObject.invokeMethod(
+                    self.slot_overlay,
+                    "show_off",
+                    Qt.QueuedConnection
+                )
+
+            elif data == SlotStatus.IN:
+                print("[TestInfoView] Slot CLOSED → move to MeasureView")
+                QMetaObject.invokeMethod(
+                    self,
+                    "_go_to_measure_view",
+                    Qt.QueuedConnection
+                )    
 
     @pyqtSlot(object)
     def _update_battery_ui(self, battery_info):
@@ -409,4 +446,10 @@ class TestInfoView(QMainWindow):
             print(f"[TestInfoView] Battery UI updated: {battery_info.level}%")
 
         except Exception as e:
-            print(f"[TestInfoView] Battery UI update error: {e}")        
+            print(f"[TestInfoView] Battery UI update error: {e}")  
+
+    @pyqtSlot()
+    def _go_to_measure_view(self):
+        """MeasureView 이동"""
+        self.reset_widget_positions()
+        self.switch_to_measure.emit()          

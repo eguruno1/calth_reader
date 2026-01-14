@@ -275,5 +275,14 @@ class ApplicationController(QObject):
         status = "연결됨" if connected else "연결 해제됨"
         self.status_changed.emit(f"UART {status}")
 
+    #####################################################
+    # UART Command Send 처리
+    ##################################################### 
+    def send_uart_command(self, command: str):
+        """
+        View → Controller → UARTService
+        """
+        return self.uart_service.send_command(command)    
+
 # 전역 컨트롤러 인스턴스
 app_controller = ApplicationController()

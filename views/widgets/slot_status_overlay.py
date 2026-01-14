@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QApplication)
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QFont
 
 
@@ -117,6 +117,7 @@ class SlotStatusOverlayWidget(QWidget):
     def show_on(self):
         self._show("SLOT Insert")
 
+    @pyqtSlot()
     def show_off(self):
         self._show("SLOT Removed")
 

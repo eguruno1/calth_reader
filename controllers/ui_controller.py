@@ -813,7 +813,7 @@ class AppController(QMainWindow):
 
 
     #==========================================
-    # --- 배터리 상태 확인을 위해 ---
+    # --- 배터리 상태 확인 및 UART 을 위해 ---
     #========================================== 
     def _set_active_uart_view(self, view):
         """
@@ -859,7 +859,7 @@ class AppController(QMainWindow):
                 self.power_status_overlay.show_on()
             else:
                 self.power_status_overlay.show_off()
-                        
+
         """ 추후 필요하면 사용
         # =========================
         # 🔌 Slot

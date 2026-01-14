@@ -404,7 +404,31 @@ class UARTService(QObject):
         except Exception as e:
             print(f"[UARTService] USB 파싱 오류 ({raw}): {e}")
         
-            
+    #####################################################
+    # UART Command Send 처리
+    #####################################################        
+    def send_command(self, command: str) -> bool:
+        """
+        UART 명령 송신 (H1, H0 등)
+        """
+        try:
+            if self._is_debug_mode or not app_config.is_uart_enabled():
+                print(f"[UARTService][DEBUG] TX: {command}")
+                return True
+
+            if not self.ser or not self.model.is_connected:
+                return False
+
+            with self._lock:
+                self.ser.write(command.encode("utf-8"))
+                self.ser.flush()
+
+            print(f"[UARTService] TX: {command}")
+            return True
+
+        except Exception as e:
+            print(f"[UARTService] TX error ({command}): {e}")
+            return False
 
 
 

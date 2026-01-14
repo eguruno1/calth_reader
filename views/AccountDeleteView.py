@@ -70,6 +70,9 @@ class AccountDeleteView(QWidget):
         self.lineEdit_password.installEventFilter(self)
 
     def _connect_signals(self):
+        self.pushButton_back.clicked.connect(
+            lambda: self.switch_to_manage_operator.emit()
+        )
         self.pushButton_delete.clicked.connect(self.on_delete_clicked)
         self.pushButton_cancel.clicked.connect(
             lambda: self.switch_to_manage_operator.emit()

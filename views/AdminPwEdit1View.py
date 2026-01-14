@@ -6,8 +6,16 @@ views.AdminPwEdit1View의 Docstring
 
 import os
 from PyQt5.QtWidgets import QWidget, QMessageBox
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import (
+    pyqtSignal,
+    QEvent,
+    QPoint,
+    QPropertyAnimation,
+    QEasingCurve
+)
 from PyQt5 import uic
+
+from views.VKeyboard import VKeyboard
 
 from database.connection import get_db_session
 from database.models import User
@@ -26,8 +34,19 @@ class AdminPwEdit1View(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        # ==============================
+        # Virtual Keyboard
+        # ==============================
+        self.vkeyboard = None
+        self.keyboard_animation = None
+        self.form_animation = None
+        self.original_frame_pos = None
+        self.current_input = None
+
         self._load_ui()
         self._connect_signals()
+        self._setup_virtual_keyboard()
 
     # ==================================================
     # UI
@@ -41,8 +60,12 @@ class AdminPwEdit1View(QWidget):
             "AdminPwEdit1ViewWindow.ui"
         )
         uic.loadUi(ui_path, self)
+
         # ID는 수정 불가
         self.lineEdit_user_id.setReadOnly(True)
+
+        # 가상키보드 이벤트 필터
+        self.lineEdit_password.installEventFilter(self)
 
     def _connect_signals(self):
         self.pushButton_back.clicked.connect(
@@ -57,7 +80,8 @@ class AdminPwEdit1View(QWidget):
         """수정 대상 ID 세팅"""
         self._current_user_id = user_id
         self.lineEdit_user_id.setText(user_id)
-        self.lineEdit_password.clear()    
+        self.lineEdit_password.clear()
+        self.current_input = None
 
     # ==================================================
     # Logic
@@ -81,6 +105,7 @@ class AdminPwEdit1View(QWidget):
                     "비밀번호가 확인되었습니다."
                 )
                 self.lineEdit_password.clear()
+                self.hide_keyboard()
                 self.switch_to_admin_pw_edit2.emit()
             else:
                 QMessageBox.warning(
@@ -102,17 +127,104 @@ class AdminPwEdit1View(QWidget):
     def _verify_admin_password(self, password: str) -> bool:
         session_user = get_session_context()
 
-        print(f"_verify_admin_password session_user: {session_user}")
-
         if not session_user:
             raise Exception("로그인 정보가 없습니다.")
 
-        # ✅ session_context 에서 user_id 만 사용
-        admin_user_id = session_user.get("user_id") or session_user.get("id")
-
+        admin_user_id = session_user.get("user_id")
         if not admin_user_id:
             raise Exception("세션 사용자 정보가 올바르지 않습니다.")
 
-        # ✅ UserService 에서 검증
         return user_service.verify_password(admin_user_id, password)
 
+    # ==================================================
+    # Virtual Keyboard
+    # ==================================================
+    def _setup_virtual_keyboard(self):
+        self.vkeyboard = VKeyboard(self)
+        self.vkeyboard.hide()
+
+        self.vkeyboard.key_pressed.connect(self._on_key_pressed)
+        self.vkeyboard.backspace_pressed.connect(self._on_backspace)
+        self.vkeyboard.enter_pressed.connect(self.hide_keyboard)
+        self.vkeyboard.hide_keyboard_signal.connect(self.hide_keyboard)
+
+    def eventFilter(self, obj, event):
+        if obj == self.lineEdit_password and event.type() == QEvent.FocusIn:
+            self.current_input = obj
+            self.show_keyboard()
+        return super().eventFilter(obj, event)
+
+    def _on_key_pressed(self, key):
+        if self.current_input:
+            self.current_input.insert(key)
+
+    def _on_backspace(self):
+        if self.current_input:
+            self.current_input.backspace()
+
+    # ==================================================
+    # Keyboard + Frame 이동
+    # ==================================================
+    def show_keyboard(self):
+        if not self.vkeyboard.isHidden():
+            return
+
+        keyboard_x = (self.width() - self.vkeyboard.width()) // 2
+        keyboard_y = self.height()
+        self.vkeyboard.move(keyboard_x, keyboard_y)
+        self.vkeyboard.show()
+
+        self.keyboard_animation = QPropertyAnimation(self.vkeyboard, b"pos")
+        self.keyboard_animation.setDuration(300)
+        self.keyboard_animation.setStartValue(QPoint(keyboard_x, self.height()))
+        self.keyboard_animation.setEndValue(
+            QPoint(keyboard_x, self.height() - self.vkeyboard.height())
+        )
+        self.keyboard_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.keyboard_animation.start()
+
+        self._move_frame_up()
+
+    def hide_keyboard(self):
+        if self.vkeyboard.isHidden():
+            return
+
+        self.keyboard_animation = QPropertyAnimation(self.vkeyboard, b"pos")
+        self.keyboard_animation.setDuration(250)
+        self.keyboard_animation.setStartValue(self.vkeyboard.pos())
+        self.keyboard_animation.setEndValue(
+            QPoint(self.vkeyboard.x(), self.height())
+        )
+        self.keyboard_animation.setEasingCurve(QEasingCurve.InCubic)
+        self.keyboard_animation.finished.connect(self.vkeyboard.hide)
+        self.keyboard_animation.start()
+
+        self._restore_frame_position()
+
+    def _move_frame_up(self):
+        if self.original_frame_pos is None:
+            self.original_frame_pos = self.frame_login.pos()
+
+        move_distance = int(self.vkeyboard.height() * 0.6)
+        target_pos = QPoint(
+            self.frame_login.x(),
+            max(30, self.frame_login.y() - move_distance)
+        )
+
+        self.form_animation = QPropertyAnimation(self.frame_login, b"pos")
+        self.form_animation.setDuration(300)
+        self.form_animation.setStartValue(self.frame_login.pos())
+        self.form_animation.setEndValue(target_pos)
+        self.form_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.form_animation.start()
+
+    def _restore_frame_position(self):
+        if not self.original_frame_pos:
+            return
+
+        self.form_animation = QPropertyAnimation(self.frame_login, b"pos")
+        self.form_animation.setDuration(300)
+        self.form_animation.setStartValue(self.frame_login.pos())
+        self.form_animation.setEndValue(self.original_frame_pos)
+        self.form_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.form_animation.start()

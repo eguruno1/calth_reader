@@ -58,7 +58,7 @@ class LowBatteryOverlayWidget(QWidget):
         label_title.setStyleSheet("color: yellow;")
         label_title.setAlignment(Qt.AlignCenter)
 
-        label_desc = QLabel("LOW BATTERY")
+        label_desc = QLabel("Low Battery")
         label_desc.setFont(QFont("Arial", 18))
         label_desc.setStyleSheet("color: white;")
         label_desc.setAlignment(Qt.AlignCenter)

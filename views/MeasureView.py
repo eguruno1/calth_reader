@@ -25,6 +25,9 @@ class MeasureView(QMainWindow):
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
+        # ✅ FIX: test_type 기본값 선언 (AttributeError 방지)
+        self.test_type = None
+
         self.load_ui()
         self.init_ui()
 
@@ -146,10 +149,16 @@ class MeasureView(QMainWindow):
     def start_measurement(self):
         """측정 시작 - 컨트롤러에 위임"""
         print("[MeasureView] 측정 시작 요청")
-        print(f"[MeasureView] 0 start_measurement test_type 로드: {self.test_type}")
+        # print(f"[MeasureView] 0 start_measurement test_type 로드: {self.test_type}")
         # JSON에서 설정된 정보를 기준으로 진행한다.
         self._load_test_info()
         print(f"[MeasureView] 1 start_measurement test_type 로드: {self.test_type}")
+        # 방어 코드
+        if not self.test_type:
+            print("[MeasureView] ERROR: test_type is empty")
+            self.mark_session_failed("test_type is empty")
+            return
+    
         # DB 진단 시작정보 저장.
         self.create_test_session(self.test_type)
 

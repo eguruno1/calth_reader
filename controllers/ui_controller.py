@@ -852,6 +852,16 @@ class AppController(QMainWindow):
                 self.low_battery_overlay.hide_warning()
 
         # =========================
+        # ⚡ Power
+        # =========================
+        elif event_type == "power_status_changed":
+            if data.name == "ON":
+                self.power_status_overlay.show_on()
+            else:
+                self.power_status_overlay.show_off()
+                        
+        """ 추후 필요하면 사용
+        # =========================
         # 🔌 Slot
         # =========================
         elif event_type == "slot_status_changed":
@@ -861,15 +871,6 @@ class AppController(QMainWindow):
                 self.slot_status_overlay.show_off()
 
         # =========================
-        # ⚡ Power
-        # =========================
-        elif event_type == "power_status_changed":
-            if data.name == "ON":
-                self.power_status_overlay.show_on()
-            else:
-                self.power_status_overlay.show_off()
-
-        # =========================
         # 🔌 USB
         # =========================
         elif event_type == "usb_status_changed":
@@ -877,5 +878,5 @@ class AppController(QMainWindow):
                 self.usb_status_overlay.show_connected()
             else:
                 self.usb_status_overlay.show_disconnected()
-
+        """
         

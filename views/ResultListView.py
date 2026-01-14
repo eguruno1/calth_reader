@@ -169,6 +169,7 @@ class ResultListView(QMainWindow):
 
         headers = [
             "Check",              # 체크박스
+            "Date",
             "Operator ID",
             "Patient ID",
             "Test Item",
@@ -219,6 +220,15 @@ class ResultListView(QMainWindow):
 
             self.table.setCellWidget(row, 0, container)
 
+            # ▶ Date
+            date_text = (
+                mr.measured_at.strftime("%Y-%m-%d %H:%M")
+                if mr.measured_at else ""
+            )
+            item_date = QTableWidgetItem(date_text)
+            item_date.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 1, item_date)
+
             operator_id = (
                 mr.session.operator.user_id
                 if mr.session and mr.session.operator else ""
@@ -238,24 +248,24 @@ class ResultListView(QMainWindow):
 
             item_op = QTableWidgetItem(operator_id)
             item_op.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 1, item_op)
+            self.table.setItem(row, 2, item_op)
 
             item_patient = QTableWidgetItem(patient_code)
             item_patient.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 2, item_patient)
+            self.table.setItem(row, 3, item_patient)
 
             item_test = QTableWidgetItem(test_item)
             item_test.setForeground(QColor("#d32f2f"))
             item_test.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 3, item_test)
+            self.table.setItem(row, 4, item_test)
 
-            self.table.setItem(row, 4, QTableWidgetItem(result_text))
+            self.table.setItem(row, 5, QTableWidgetItem(result_text))
 
         # ======================================================
         # ★ Result 컬럼 폭 제어 (중요)
         # ======================================================
         header = self.table.horizontalHeader()
-        RESULT_COL = 4
+        RESULT_COL = 5
 
         if self._result_column_width is None:
             # ▶ 최초 1회: Result 컬럼을 남은 영역 전체로 확장

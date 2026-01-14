@@ -7,6 +7,18 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 
+class SlotStatus(Enum):
+    IN = "in"
+    OUT = "out"
+
+class PowerStatus(Enum):
+    ON = "on"
+    OFF = "off"
+
+class USBStatus(Enum):
+    CONNECTED = "connected"
+    DISCONNECTED = "disconnected"
+
 class LEDState(Enum):
     """LED 상태 열거형"""
     OFF = 0
@@ -218,3 +230,16 @@ class UARTModel:
     def get_battery_info(self) -> Optional[BatteryInfo]:
         """현재 배터리 정보 반환"""
         return self.battery_info
+    
+    def update_slot_status(self, status: SlotStatus):
+        self._slot_status = status
+        self.notify_observers("slot_status_changed", status)
+
+    def update_power_status(self, status: PowerStatus):
+        self._power_status = status
+        self.notify_observers("power_status_changed", status)
+
+    def update_usb_status(self, status: USBStatus):
+        self._usb_status = status
+        self.notify_observers("usb_status_changed", status)
+

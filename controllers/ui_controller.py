@@ -53,6 +53,9 @@ from controllers import app_controller as backend_controller
 from config.config import app_config
 # 배터리 충전량 알림.
 from views.widgets.Low_battery_overlay import LowBatteryOverlayWidget
+from views.widgets.slot_status_overlay import SlotStatusOverlayWidget
+from views.widgets.power_status_overlay import PowerStatusOverlayWidget
+from views.widgets.usb_status_overlay import USBStatusOverlayWidget
 
 
 class AppController(QMainWindow):
@@ -75,9 +78,15 @@ class AppController(QMainWindow):
 
         # 배터리 상태를 위해..
         self.low_battery_overlay = LowBatteryOverlayWidget(self)    # 🔥 Low Battery 전역 위젯
+        # 🔌 System status overlays
+        self.slot_status_overlay = SlotStatusOverlayWidget(self)
+        self.power_status_overlay = PowerStatusOverlayWidget(self)
+        self.usb_status_overlay = USBStatusOverlayWidget(self)
+
         self.backend_controller = backend_controller
         self._active_uart_view = None
-        self.backend_controller.uart_model.add_observer(self)       # UART 옵저버로 UIController 자체 등록
+        # UART 옵저버로 UIController 자체 등록
+        self.backend_controller.uart_model.add_observer(self)       
 
     #==========================================
     # --- View 선언 ---
@@ -828,15 +837,45 @@ class AppController(QMainWindow):
 
     def on_uart_event(self, event_type: str, data):
         """
-        UIController 레벨에서 전역 배터리 이벤트 처리
+        UIController 레벨에서 전역 UART 이벤트 처리
         """
-        if event_type != "battery_changed" or not data:
-            return
+        print(f"[UIController] on_uart_event:{event_type}")
 
-        level = data.level
+        # =========================
+        # 🔋 Battery
+        # =========================
+        if event_type == "battery_changed":
+            level = data.level
+            if level <= 20:
+                self.low_battery_overlay.show_warning()
+            else:
+                self.low_battery_overlay.hide_warning()
 
-        # 20% 이하 → Low Battery
-        if level <= 20:
-            self.low_battery_overlay.show_warning()
-        else:
-            self.low_battery_overlay.hide_warning()
+        # =========================
+        # 🔌 Slot
+        # =========================
+        elif event_type == "slot_status_changed":
+            if data.name == "IN":
+                self.slot_status_overlay.show_on()
+            else:
+                self.slot_status_overlay.show_off()
+
+        # =========================
+        # ⚡ Power
+        # =========================
+        elif event_type == "power_status_changed":
+            if data.name == "ON":
+                self.power_status_overlay.show_on()
+            else:
+                self.power_status_overlay.show_off()
+
+        # =========================
+        # 🔌 USB
+        # =========================
+        elif event_type == "usb_status_changed":
+            if data.name == "CONNECTED":
+                self.usb_status_overlay.show_connected()
+            else:
+                self.usb_status_overlay.show_disconnected()
+
+        

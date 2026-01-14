@@ -5,7 +5,7 @@ UART Service - UART 하드웨어 제어 서비스
 import time
 import threading
 from PyQt5.QtCore import QObject, pyqtSignal
-from models.uart_model import UARTModel, LEDControl
+from models.uart_model import (UARTModel, LEDControl, SlotStatus, PowerStatus, USBStatus,)
 from config.config import app_config
 
 try:
@@ -336,12 +336,22 @@ class UARTService(QObject):
                 # 🔋 배터리 데이터 처리
                 if raw.startswith("B+"):
                     self._handle_battery_raw(raw) # 수신데이터 처리.
+                
+                elif raw.startswith("H+"):  # 슬롯
+                    self._handle_slot_raw(raw)
+
+                elif raw.startswith("P+"):  # 파워
+                    self._handle_power_raw(raw)
+
+                elif raw.startswith("U+"):  # USB
+                    self._handle_usb_raw(raw)
 
             except Exception as e:
                 print(f"[UARTService] RX loop error: {e}")
 
     def _handle_battery_raw(self, raw: str):
         """
+        배터리 정보 파싱
         수신 예:
         B+FF  → 100%
         B+95  → 95%
@@ -366,6 +376,35 @@ class UARTService(QObject):
 
         except Exception as e:
             print(f"[UARTService] 배터리 파싱 오류 ({raw}): {e}")
+
+    def _handle_slot_raw(self, raw: str):
+        try:
+            value = raw[2:]
+            status = SlotStatus.IN if value == "1" else SlotStatus.OUT
+            print(f"[UARTService] 슬롯 상태 수신: {status}")
+            self.model.update_slot_status(status)
+        except Exception as e:
+            print(f"[UARTService] 슬롯 파싱 오류 ({raw}): {e}")
+
+    def _handle_power_raw(self, raw: str):
+        try:
+            value = raw[2:]
+            status = PowerStatus.ON if value == "1" else PowerStatus.OFF
+            print(f"[UARTService] 파워 상태 수신: {status}")
+            self.model.update_power_status(status)
+        except Exception as e:
+            print(f"[UARTService] 파워 파싱 오류 ({raw}): {e}")
+
+    def _handle_usb_raw(self, raw: str):
+        try:
+            value = raw[2:]
+            status = USBStatus.CONNECTED if value == "1" else USBStatus.DISCONNECTED
+            print(f"[UARTService] USB 상태 수신: {status}")
+            self.model.update_usb_status(status)
+        except Exception as e:
+            print(f"[UARTService] USB 파싱 오류 ({raw}): {e}")
+        
+            
 
 
 

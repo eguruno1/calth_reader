@@ -7,8 +7,8 @@ PyCalthReader는 PyQt5를 사용하여 개발된 의료진단장비용 파이썬
 
 ```
 calth_reader/
-├── main.py                 # 메인 애플리케이션 진입점
-├── requirements.txt        # 패키지 의존성
+├── main.py                # 메인 애플리케이션 진입점
+├── requirements.txt       # 패키지 의존성
 ├── README.md              # 프로젝트 문서
 ├── config/                # 설정 관리
 │   ├── config.py          # 애플리케이션 설정
@@ -18,6 +18,7 @@ calth_reader/
 │   ├── application_model.py # 애플리케이션 상태 모델
 │   ├── camera_model.py    # 카메라 데이터 모델
 │   └── uart_model.py      # UART 통신 모델
+│   └── user_model.py      # 사용자 정보 모델
 ├── views/                 # MVC - View 레이어
 │   ├── Utils.py           # 뷰 유틸리티
 │   ├── SystemStatus.py    # 시스템 상태 표시
@@ -35,15 +36,20 @@ calth_reader/
 ├── controllers/           # MVC - Controller 레이어
 │   ├── __init__.py        # 컨트롤러 패키지
 │   ├── application_controller.py # 메인 애플리케이션 컨트롤러
-│   └── measurement_controller.py # 측정 프로세스 컨트롤러
+│   ├── measurement_controller.py # 측정 프로세스 컨트롤러
+│   └── ui_controller.py   # View 컨트롤러
 ├── services/              # 서비스 레이어 (하드웨어 인터페이스)
 │   ├── __init__.py        # 서비스 패키지
 │   ├── camera_service.py  # 카메라 하드웨어 제어
 │   └── uart_service.py    # UART 하드웨어 제어
 ├── ui/                    # UI 파일들
-│   └── *.ui              # Qt Designer 파일들
+│   └── *.ui               # Qt Designer 파일들
 ├── fonts/                 # 폰트 파일들
 ├── info/                  # 정보 파일들
+├── CalthReaderResult/     # 진단 킷 관련 Image, Json 생성 파일 
+├── common/                # 로그인 사용자 정보
+├── analysis/              # 촬영 이미지 분석 파일들 
+├── database/              # DataBase 관련 파일들
 └── ...
 ```
 

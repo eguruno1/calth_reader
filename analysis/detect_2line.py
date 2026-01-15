@@ -6,9 +6,7 @@ from .focus import focus_score
 
 def detect_reaction_lines_from_image(img: np.ndarray):
     """
-    2라인(C/T) 반응라인 검출 – test_3line_auto 기반 정식 이식판
-    반환:
-        line_count, boxes, metrics
+    2라인(C/T) 반응라인 검출 – 실제 검출 라인 수 기반 안정판
     """
 
     h, w = img.shape[:2]
@@ -65,30 +63,43 @@ def detect_reaction_lines_from_image(img: np.ndarray):
             if x - start > 6:
                 segments.append((start, x))
             start = None
-    if start is not None:
+    if start is not None and len(mask) - start > 6:
         segments.append((start, len(mask)))
 
     if not segments:
         return 0, [], {}
 
     # ===============================
-    # 4️⃣ 라인 정보
+    # 4️⃣ 실제 검출 라인 정보
     # ===============================
     lines = []
     for x1, x2 in segments:
         cx = (x1 + x2) // 2
         intensity = float(np.max(proj_x[x1:x2]))
-        lines.append((cx, x1, x2, intensity))
+        lines.append({
+            "cx": cx,
+            "x1": x1,
+            "x2": x2,
+            "intensity": intensity
+        })
 
-    lines.sort(key=lambda x: x[0])
+    # 좌 → 우
+    lines.sort(key=lambda x: x["cx"])
 
-    max_int = max(l[3] for l in lines)
+    max_int = max(l["intensity"] for l in lines)
 
     boxes = []
     metrics = []
 
-    for idx, (cx, x1, x2, intensity) in enumerate(lines[:2]):
+    # ⚠️ 핵심: 실제 검출된 라인 수만큼만 처리
+    for idx, l in enumerate(lines[:2]):
         label = "C" if idx == 0 else "T"
+
+        cx = l["cx"]
+        x1 = l["x1"]
+        x2 = l["x2"]
+        intensity = l["intensity"]
+
         box_w = max(x2 - x1, int(w * 0.015))
         box_x = max(0, min(w - box_w, cx - box_w // 2))
 
@@ -100,8 +111,9 @@ def detect_reaction_lines_from_image(img: np.ndarray):
             "confidence": round(intensity / (max_int + 1e-6), 3)
         })
 
-    return len(boxes), boxes, {
+    return len(metrics), boxes, {
         "focus": focus_score(img),
         "projection_mean": float(np.mean(proj_x)),
         "lines": metrics
     }
+

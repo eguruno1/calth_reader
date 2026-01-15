@@ -6,7 +6,7 @@ from .focus import focus_score
 
 def detect_reaction_3lines_from_image(img: np.ndarray):
     """
-    3라인(L1/L2/L3) 반응라인 검출 – test_3line_auto 최종판 이식
+    3라인(L1/L2/L3) 반응라인 검출 – test_3line_auto 정합 버전
     """
 
     h, w = img.shape[:2]
@@ -29,6 +29,9 @@ def detect_reaction_3lines_from_image(img: np.ndarray):
     thresh = np.mean(col_sum) + np.std(col_sum) * 0.5
     active = col_sum > thresh
 
+    # ============================================
+    # 1️⃣ segments 검출
+    # ============================================
     segments = []
     start = None
     for x in range(len(active)):
@@ -38,34 +41,80 @@ def detect_reaction_3lines_from_image(img: np.ndarray):
             if x - start > 6:
                 segments.append((start, x))
             start = None
-    if start is not None:
+
+    if start is not None and len(active) - start > 6:
         segments.append((start, len(active)))
 
     if not segments:
         return 0, [], {}
 
+    # ============================================
+    # 2️⃣ line 후보 생성
+    # ============================================
     lines = []
     for x1, x2 in segments:
         cx = (x1 + x2) // 2
         intensity = float(np.max(col_sum[x1:x2]))
-        lines.append((cx, x1, x2, intensity))
+        lines.append({
+            "cx": cx,
+            "x1": x1,
+            "x2": x2,
+            "intensity": intensity
+        })
 
-    expected = [int(w * 0.30), int(w * 0.50), int(w * 0.70)]
+    if not lines:
+        return 0, [], {}
+
+    # ============================================
+    # 3️⃣ 기대 위치 기반 매칭 (중복 방지)
+    # ============================================
+    expected = [
+        int(w * 0.30),
+        int(w * 0.50),
+        int(w * 0.70),
+    ]
+
     matched = []
+    used = set()
 
     for idx, exp_x in enumerate(expected):
-        best = min(lines, key=lambda l: abs(l[0] - exp_x))
-        matched.append((f"L{idx+1}", *best))
+        best = None
+        best_dist = 1e9
 
-    max_int = max(l[4] for l in matched)
+        for i, line in enumerate(lines):
+            if i in used:
+                continue
+            d = abs(line["cx"] - exp_x)
+            if d < best_dist:
+                best_dist = d
+                best = (i, line)
 
+        if best:
+            used.add(best[0])
+            best[1]["label"] = f"L{idx+1}"
+            matched.append(best[1])
+
+    if not matched:
+        return 0, [], {}
+
+    # ============================================
+    # 4️⃣ box + metrics 생성
+    # ============================================
     boxes = []
     metrics = []
 
     roi_center_y = (roi_y1 + roi_y2) // 2
     line_h = int((roi_y2 - roi_y1) * 0.55)
 
-    for label, cx, x1, x2, intensity in matched:
+    max_int = max(l["intensity"] for l in matched)
+
+    for line in matched:
+        cx = line["cx"]
+        x1 = line["x1"]
+        x2 = line["x2"]
+        intensity = line["intensity"]
+        label = line["label"]
+
         box_w = max(x2 - x1, int(w * 0.015))
         box_x = max(0, min(w - box_w, cx - box_w // 2))
         box_y = max(0, roi_center_y - line_h // 2)
@@ -83,3 +132,4 @@ def detect_reaction_3lines_from_image(img: np.ndarray):
         "edge_strength": float(np.mean(col_sum)),
         "lines": metrics
     }
+

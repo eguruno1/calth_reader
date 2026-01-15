@@ -205,7 +205,7 @@ class AccountDeleteView(QWidget):
 
         self.vkeyboard.key_pressed.connect(self._on_key_pressed)
         self.vkeyboard.backspace_pressed.connect(self._on_backspace)
-        self.vkeyboard.enter_pressed.connect(self.hide_keyboard)
+        self.vkeyboard.enter_pressed.connect(self.handle_enter)
         self.vkeyboard.hide_keyboard_signal.connect(self.hide_keyboard)
 
     def eventFilter(self, obj, event):
@@ -222,6 +222,11 @@ class AccountDeleteView(QWidget):
     def _on_backspace(self):
         if self.current_input:
             self.current_input.backspace()
+
+    def handle_enter(self):
+        """Enter 키 처리"""
+        self.hide_keyboard()
+        self.on_delete_clicked()        
 
     # ==================================================
     # Keyboard + Frame Movement (핵심)

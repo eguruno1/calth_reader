@@ -260,6 +260,7 @@ class AccountAddView(QWidget):
 
     def handle_enter(self):
         self.hide_keyboard()
+        self.on_create_user()
 
     def show_virtual_keyboard(self):
         if not self.vkeyboard.isHidden():

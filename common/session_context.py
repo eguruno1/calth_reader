@@ -1,5 +1,5 @@
 """
-controllers.session_context의 Docstring
+common.session_context의 Docstring
 로그인 정보를 세션에 담는다.
 CREATE = "CREATE"
 READ   = "READ"
@@ -8,7 +8,7 @@ DELETE = "DELETE"
 LOGIN  = "LOGIN"
 LOGOUT = "LOGOUT"
 """
-# controllers/session_context.py
+# common/session_context.py
 
 import uuid
 

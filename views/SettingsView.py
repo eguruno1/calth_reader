@@ -45,9 +45,10 @@ class SettingsView(QMainWindow):
         self.btn_date_time.clicked.connect(self.on_date_time_clicked)
         self.btn_manage_operator.clicked.connect(self.on_manage_operator_clicked)
         self.btn_update.clicked.connect(self.on_update_clicked)
-        self.btn_calibration_qc.clicked.connect(self.on_calibration_qc_clicked)
         self.btn_general_settings.clicked.connect(self.on_general_settings_clicked)
-        self.btn_power_management.clicked.connect(self.on_power_management_clicked)
+        # 인증을 위해 UI 삭제
+        # self.btn_calibration_qc.clicked.connect(self.on_calibration_qc_clicked)
+        # self.btn_power_management.clicked.connect(self.on_power_management_clicked)
 
         # 초기 날짜와 시간 설정
         self.update_date_time()

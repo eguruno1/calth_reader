@@ -135,7 +135,7 @@ QPushButton:pressed {
    <widget class="QPushButton" name="pushButton_QCTest">
     <property name="geometry">
      <rect>
-      <x>80</x>
+      <x>110</x>
       <y>380</y>
       <width>150</width>
       <height>80</height>
@@ -167,45 +167,10 @@ QPushButton:pressed {
      <string>QC Test</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_Calibration">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>380</y>
-      <width>150</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #505050;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-QPushButton:hover {
-    background-color: #606060;
-}
-QPushButton:pressed {
-    background-color: #404040;
-}</string>
-    </property>
-    <property name="text">
-     <string>Calibration</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButton_Review">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>320</x>
       <y>380</y>
       <width>150</width>
       <height>80</height>
@@ -240,7 +205,7 @@ QPushButton:pressed {
    <widget class="QPushButton" name="pushButton_Settings">
     <property name="geometry">
      <rect>
-      <x>590</x>
+      <x>540</x>
       <y>380</y>
       <width>150</width>
       <height>80</height>

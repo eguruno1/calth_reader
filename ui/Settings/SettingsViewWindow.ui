@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -259,7 +259,7 @@ QPushButton:pressed {
    <widget class="QPushButton" name="btn_date_time">
     <property name="geometry">
      <rect>
-      <x>127</x>
+      <x>250</x>
       <y>140</y>
       <width>250</width>
       <height>150</height>
@@ -268,7 +268,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -298,7 +298,7 @@ QPushButton:pressed {
    <widget class="QPushButton" name="btn_manage_operator">
     <property name="geometry">
      <rect>
-      <x>387</x>
+      <x>530</x>
       <y>140</y>
       <width>250</width>
       <height>150</height>
@@ -307,7 +307,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -337,8 +337,8 @@ QPushButton:pressed {
    <widget class="QPushButton" name="btn_update">
     <property name="geometry">
      <rect>
-      <x>647</x>
-      <y>140</y>
+      <x>250</x>
+      <y>330</y>
       <width>250</width>
       <height>150</height>
      </rect>
@@ -346,7 +346,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -373,49 +373,10 @@ QPushButton:pressed {
      <string>Update</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_calibration_qc">
-    <property name="geometry">
-     <rect>
-      <x>127</x>
-      <y>330</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Calibration / QC days</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_general_settings">
     <property name="geometry">
      <rect>
-      <x>387</x>
+      <x>530</x>
       <y>330</y>
       <width>250</width>
       <height>150</height>
@@ -424,7 +385,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -449,45 +410,6 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>General Settings</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_power_management">
-    <property name="geometry">
-     <rect>
-      <x>647</x>
-      <y>330</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Power Management</string>
     </property>
    </widget>
   </widget>

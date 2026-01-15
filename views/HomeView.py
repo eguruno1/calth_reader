@@ -43,7 +43,8 @@ class HomeView(QMainWindow):
         self.pushButton_ReadOnly.clicked.connect(self.on_read_only_button_clicked)
 
         self.pushButton_QCTest.clicked.connect(self.on_qc_test_button_clicked)
-        self.pushButton_Calibration.clicked.connect(self.on_calibration_button_clicked)
+        # 인증을 위해 UI에서 버튼 삭제
+        # self.pushButton_Calibration.clicked.connect(self.on_calibration_button_clicked)
         self.pushButton_Review.clicked.connect(self.on_review_button_clicked)
         self.pushButton_Settings.clicked.connect(self.on_settings_button_clicked)
         self.pushButton_Statistics.clicked.connect(self.on_statistics_button_clicked)

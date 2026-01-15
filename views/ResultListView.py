@@ -413,6 +413,8 @@ class ResultListView(QMainWindow):
         self._apply_row_style(row, selected)
 
     def _apply_row_style(self, row: int, selected: bool):
+        self.TEST_ITEM_COL = 4  # Test Item 컬럼 인덱스
+
         for c in range(1, self.table.columnCount()):
             item = self.table.item(row, c)
             if not item:
@@ -423,7 +425,7 @@ class ResultListView(QMainWindow):
                 item.setForeground(QColor("white"))
             else:
                 item.setBackground(QColor("white"))
-                if c == 3:
+                if c == self.TEST_ITEM_COL:
                     item.setForeground(QColor("#d32f2f"))
                 else:
                     item.setForeground(QColor("black"))

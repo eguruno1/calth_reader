@@ -48,7 +48,7 @@ class ResultCategoryView(QMainWindow):
         try:
             # 결과 카테고리 버튼들
             self.pushButton_PatientResults.clicked.connect(self.on_patient_results_clicked)
-            self.pushButton_CalibrationResults.clicked.connect(self.on_calibration_results_clicked)
+            # self.pushButton_CalibrationResults.clicked.connect(self.on_calibration_results_clicked)
             self.pushButton_QCResults.clicked.connect(self.on_qc_results_clicked)
             
             # 뒤로가기 버튼

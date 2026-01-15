@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -192,7 +192,7 @@ QPushButton:pressed {
      <string>000%</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignVCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="label_Title">
@@ -259,7 +259,7 @@ QPushButton:pressed {
    <widget class="QPushButton" name="pushButton_PatientResults">
     <property name="geometry">
      <rect>
-      <x>127</x>
+      <x>230</x>
       <y>225</y>
       <width>250</width>
       <height>150</height>
@@ -268,7 +268,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -295,49 +295,10 @@ QPushButton:pressed {
      <string>Patient Results</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_CalibrationResults">
-    <property name="geometry">
-     <rect>
-      <x>387</x>
-      <y>225</y>
-      <width>250</width>
-      <height>150</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>Calibration Results</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButton_QCResults">
     <property name="geometry">
      <rect>
-      <x>647</x>
+      <x>540</x>
       <y>225</y>
       <width>250</width>
       <height>150</height>
@@ -346,7 +307,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>

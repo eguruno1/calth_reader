@@ -60,6 +60,10 @@ class HomeView(QMainWindow):
         # JSON 파일 경로 설정
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
 
+        # Version
+        # info.json에서 버전 정보 읽기 및 표시
+        self.display_version()
+
         #####################################################
         # Battery Status
         self.uart_model = uart_model
@@ -303,6 +307,21 @@ class HomeView(QMainWindow):
             self.switch_to_login.emit(target)
             return False
 
+    def display_version(self):
+        version = self.get_version_from_info()
+        self.label_device_info.setText(f"Device: Ready | Version: {version}")
+
+    def get_version_from_info(self):
+        try:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            info_path = os.path.join(current_dir, '../info', 'info.json')
+            
+            with open(info_path, 'r', encoding='utf-8') as f:
+                info = json.load(f)
+            return info.get('sw_version', 'Unknown')
+        except Exception as e:
+            print(f"Error reading version from info.json: {str(e)}")
+            return "Unknown"
     
     #####################################################
     # Battery Status (UART 기반)

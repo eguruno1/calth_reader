@@ -102,7 +102,7 @@ class LoadView(QMainWindow):
             
             with open(info_path, 'r', encoding='utf-8') as f:
                 info = json.load(f)
-            return info.get('version', 'Unknown')
+            return info.get('sw_version', 'Unknown')
         except Exception as e:
             print(f"Error reading version from info.json: {str(e)}")
             return "Unknown"

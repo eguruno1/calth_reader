@@ -208,11 +208,25 @@ class MeasurementController(QObject):
         if mode is None or line_count is None:
             raise RuntimeError("분석 결과 형식이 올바르지 않습니다.")
 
+        """
         positive = (
             analysis["line_count"] >= 2
             if analysis["mode"] == 2
             else analysis["line_count"] >= 1
         )
+        """
+        
+        # -------------------------------------------------
+        # 🔧 FIX: 진단 모드별 positive 판정 기준 명확화
+        #  - mode 2 (C/T): 정확히 2라인 검출 시 positive
+        #  - mode 3 (L1/L2/L3): 정확히 3라인 검출 시 positive
+        # -------------------------------------------------
+        if analysis["mode"] == 2:
+            positive = (analysis["line_count"] == 2)
+        elif analysis["mode"] == 3:
+            positive = (analysis["line_count"] == 3)
+        else:
+            positive = False
 
         self.analysis_result = {
             "positive": positive,

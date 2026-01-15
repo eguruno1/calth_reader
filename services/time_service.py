@@ -101,16 +101,34 @@ class TimeService(QObject):
             self.error_occurred.emit(error_msg)
             return False
     
+    
     def get_custom_datetime(self) -> Optional[datetime]:
         """커스텀 날짜/시간 반환"""
         try:
-            custom_time_str = self.settings_service.get_setting("system", "custom_datetime", "")
-            if custom_time_str:
+            custom_time_str = self.settings_service.get_setting(
+                "system", "custom_datetime", ""
+            )
+            if not custom_time_str:
+                return None
+
+            # ==========================================================
+            # ✅ Python 3.7+ : datetime.fromisoformat 사용
+            # ❌ Python 3.6 : fromisoformat 미지원 → strptime fallback
+            # ==========================================================
+            try:
                 return datetime.fromisoformat(custom_time_str)
-            return None
+            except AttributeError:
+                # Python 3.6 대응
+                # isoformat 예: "2025-01-15T17:48:19"
+                return datetime.strptime(
+                    custom_time_str,
+                    "%Y-%m-%dT%H:%M:%S"
+                )
+
         except Exception as e:
             print(f"커스텀 날짜/시간 조회 실패: {e}")
             return None
+
     
     def set_custom_datetime(self, dt: datetime) -> bool:
         """커스텀 날짜/시간 설정"""

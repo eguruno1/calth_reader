@@ -134,7 +134,7 @@ class AccountIdEditView(QWidget):
 
             user.user_id = new_user_id
             session.commit()
-
+            """
             ctx = get_session_context()
             write_audit_log(
                 action     = "UPDATE",
@@ -144,7 +144,7 @@ class AccountIdEditView(QWidget):
                 old_values = {"user_id": self._current_user_id},
                 new_values = {"user_id": new_user_id},
             )
-
+            """
         except Exception:
             session.rollback()
             raise

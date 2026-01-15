@@ -141,7 +141,7 @@ class AdminPwEdit2View(QWidget):
 
             admin.password_hash = user_service.create_user_password(new_password)
             session.commit()
-
+            """
             write_audit_log(
                 action="UPDATE",
                 table_name="users",
@@ -150,7 +150,7 @@ class AdminPwEdit2View(QWidget):
                 new_values={"password_hash": "******"},
                 user_id=admin.id
             )
-
+            """
             set_session_context(
                 user_pk=admin.id,
                 user_id=admin.user_id,

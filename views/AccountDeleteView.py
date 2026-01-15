@@ -141,6 +141,7 @@ class AccountDeleteView(QWidget):
             )
 
             """Session + Audit Log Save"""
+            """
             write_audit_log(
                 action     = "DELETE",
                 table_name = "users",
@@ -154,7 +155,7 @@ class AccountDeleteView(QWidget):
                 ip_address = session_user["ip_address"],
                 user_agent = session_user["user_agent"]
             )
-
+            """
             self.user_deleted.emit()
             self.switch_to_manage_operator.emit()
 

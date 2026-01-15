@@ -154,7 +154,7 @@ class AccountPwEditView(QWidget):
             ).decode("utf-8")
 
             session.commit()
-
+            """
             ctx = get_session_context()
             write_audit_log(
                 action      = "UPDATE",
@@ -167,7 +167,7 @@ class AccountPwEditView(QWidget):
                 ip_address  = ctx["ip_address"],
                 user_agent  = ctx["user_agent"]
             )
-
+            """
         except Exception:
             session.rollback()
             raise

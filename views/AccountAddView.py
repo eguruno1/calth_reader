@@ -176,7 +176,7 @@ class AccountAddView(QWidget):
 
             session.add(user)
             session.commit()
-
+            """
             ctx = get_session_context()
             write_audit_log(
                 action     = "CREATE",
@@ -188,7 +188,7 @@ class AccountAddView(QWidget):
                     "role": user.role
                 }
             )
-
+            """
             print(f"✅ User created: {user_id}")
 
         except Exception:

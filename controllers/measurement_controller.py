@@ -228,39 +228,42 @@ class MeasurementController(QObject):
         metrics = analysis.get("metrics", {}).get("lines", [])
 
         if boxes and metrics:
+            # ▶ 박스가 있는 경우만 박스 렌더링
             result_img = draw_result_boxes(
                 self.captured_frame,
                 boxes,
                 metrics
             )
-
-            # 결과 이미지 저장
-            base, ext = os.path.splitext(self.captured_filename)
-            result_filename = base + "_result.jpg"
-            result_path = os.path.join(
-                os.path.dirname(self.captured_image_path),
-                result_filename
-            )
-
-            cv2.imwrite(result_path, result_img)
-            self.result_image_path = result_path
-
-            # ===============================
-            # 썸네일 생성
-            # ===============================
-            thumb = create_thumbnail(result_img, width=320)
-            thumb_filename = base + "_thumb.jpg"
-            thumb_path = os.path.join(
-                os.path.dirname(self.captured_image_path),
-                thumb_filename
-            )
-
-            cv2.imwrite(thumb_path, thumb)
-            self.thumbnail_path = thumb_path
-
         else:
-            self.result_image_path = None
-            self.thumbnail_path = None
+            # ▶ 반응라인이 없는 경우: 원본 이미지 그대로 사용
+            result_img = self.captured_frame.copy()
+            #self.result_image_path = None
+            #self.thumbnail_path = None
+
+
+        # 결과 이미지 저장
+        base, ext = os.path.splitext(self.captured_filename)
+        result_filename = base + "_result.jpg"
+        result_path = os.path.join(
+            os.path.dirname(self.captured_image_path),
+            result_filename
+        )
+
+        cv2.imwrite(result_path, result_img)
+        self.result_image_path = result_path
+
+        # ===============================
+        # 썸네일 생성
+        # ===============================
+        thumb = create_thumbnail(result_img, width=320)
+        thumb_filename = base + "_thumb.jpg"
+        thumb_path = os.path.join(
+            os.path.dirname(self.captured_image_path),
+            thumb_filename
+        )
+
+        cv2.imwrite(thumb_path, thumb)
+        self.thumbnail_path = thumb_path    
 
         
         # 가상의 분석 결과 생성

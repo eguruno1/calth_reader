@@ -122,6 +122,12 @@ class MeasureView(QMainWindow):
 
     def showEvent(self, event):
         super().showEvent(event)
+
+        # ==================================================
+        # 🔧 FIX: 재진입 시 진행률 UI 초기화
+        # ==================================================
+        self.progressBar_Meas.setValue(0)
+
         QTimer.singleShot(100, lambda: start_date_time_update(self))
         #QTimer.singleShot(100, lambda: start_battery_update(self))
         #QTimer.singleShot(500, self.start_measurement)  # 측정 시작

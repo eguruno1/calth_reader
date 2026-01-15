@@ -63,6 +63,7 @@ class LoginView(QWidget):
 
         # 이벤트 필터 설치
         self.user_id_input.installEventFilter(self)
+        self.user_id_input.setFocus()
         self.password_input.installEventFilter(self)
 
     # ==================================================
@@ -81,6 +82,34 @@ class LoginView(QWidget):
     def set_context(self, context: str):
         """로그인 컨텍스트 설정 (예: 'qc')"""
         self.target_context = context
+
+    # ==================================================
+    # Qt Events
+    # ==================================================
+    def showEvent(self, event):
+        """
+        화면이 실제로 표시된 이후
+        user_id_input 에 포커스 + 가상키보드 자동 표시
+        """
+        super().showEvent(event)
+
+        if not self.keyboard_auto_shown:
+            self.keyboard_auto_shown = True
+
+            # 포커스가 완전히 잡힌 이후 실행
+            QTimer.singleShot(100, self._focus_and_show_keyboard)
+
+    def _focus_and_show_keyboard(self):
+        self.user_id_input.setFocus()
+        self.current_input = self.user_id_input
+        self.show_virtual_keyboard()
+
+    def clear_form(self):
+        """폼 초기화"""
+        self.user_id_input.clear()
+        self.password_input.clear()
+        # 키보드 자동 표시 플래그 초기화
+        self.keyboard_auto_shown = False    
 
     # ==================================================
     # Virtual Keyboard
@@ -203,8 +232,9 @@ class LoginView(QWidget):
 
     def reset_login_button(self):
         self.login_button.setEnabled(True)
-        self.login_button.setText("Login")
+        self.login_button.setText("Login Ok")
 
     def go_back(self):
+        self.clear_form()
         self.hide_keyboard()
         self.switch_to_home.emit()

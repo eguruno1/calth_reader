@@ -11,7 +11,8 @@ from PyQt5.QtCore import (
     QEvent,
     QPoint,
     QPropertyAnimation,
-    QEasingCurve
+    QEasingCurve,
+    QTimer
 )
 from PyQt5 import uic
 
@@ -42,6 +43,8 @@ class AdminPwEdit1View(QWidget):
         self.keyboard_animation = None
         self.form_animation = None
         self.original_frame_pos = None
+        self.keyboard_auto_shown = False
+
         self.current_input = None
 
         self._load_ui()
@@ -68,12 +71,8 @@ class AdminPwEdit1View(QWidget):
         self.lineEdit_password.installEventFilter(self)
 
     def _connect_signals(self):
-        self.pushButton_back.clicked.connect(
-            lambda: self.switch_to_manage_operator.emit()
-        )
-        self.pushButton_cancel.clicked.connect(
-            lambda: self.switch_to_manage_operator.emit()
-        )
+        self.pushButton_back.clicked.connect(self.go_back)
+        self.pushButton_cancel.clicked.connect(self.go_back)
         self.pushButton_ok.clicked.connect(self.on_check_password)
 
     def set_user(self, user_id: str):
@@ -82,6 +81,36 @@ class AdminPwEdit1View(QWidget):
         self.lineEdit_user_id.setText(user_id)
         self.lineEdit_password.clear()
         self.current_input = None
+
+
+    # ==================================================
+    # Qt Events
+    # ==================================================
+    def showEvent(self, event):
+        """
+        화면 표시 후 자동 포커스 + 키보드 표시
+        """
+        super().showEvent(event)
+
+        if not self.keyboard_auto_shown:
+            self.keyboard_auto_shown = True
+            QTimer.singleShot(100, self._focus_and_show_keyboard)
+
+    def _focus_and_show_keyboard(self):
+        self.lineEdit_password.setFocus()
+        self.current_input = self.lineEdit_password
+        self.show_keyboard()    
+
+    def clear_form(self):
+        """폼 초기화"""
+        self.lineEdit_password.clear()
+        # 키보드 자동 표시 플래그 초기화
+        self.keyboard_auto_shown = False    
+
+    def go_back(self):
+        self.clear_form()
+        self.hide_keyboard()
+        self.switch_to_manage_operator.emit()        
 
     # ==================================================
     # Logic

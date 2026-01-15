@@ -84,9 +84,7 @@ class AccountAddView(QWidget):
     def _init_ui(self):
         self.comboBox_role.clear()
         self.comboBox_role.addItems([
-            "admin",
-            "operator",
-            "viewer"
+            "operator"
         ])
 
     def _connect_signals(self):

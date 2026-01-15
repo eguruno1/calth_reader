@@ -57,75 +57,11 @@ QPushButton:pressed {
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_RListHome">
+   <widget class="QPushButton" name="pushButton_RListSelectAll">
     <property name="geometry">
      <rect>
       <x>878</x>
-      <y>93</y>
-      <width>102</width>
-      <height>102</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>-1</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>SELECT
-ALL</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_RListSend">
-    <property name="geometry">
-     <rect>
-      <x>878</x>
-      <y>220</y>
-      <width>102</width>
-      <height>102</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset>
-      <normaloff>../image/06_Result/Result_Send.png</normaloff>../image/06_Result/Result_Send.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>102</width>
-      <height>102</height>
-     </size>
-    </property>
-    <property name="flat">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_RListExport">
-    <property name="geometry">
-     <rect>
-      <x>878</x>
-      <y>347</y>
+      <y>290</y>
       <width>102</width>
       <height>102</height>
      </rect>
@@ -155,14 +91,15 @@ QPushButton:pressed {
 }</string>
     </property>
     <property name="text">
-     <string>EXPORT</string>
+     <string>SELECT
+ALL</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_RListDelete">
     <property name="geometry">
      <rect>
       <x>878</x>
-      <y>474</y>
+      <y>450</y>
       <width>102</width>
       <height>102</height>
      </rect>
@@ -567,6 +504,32 @@ QPushButton:pressed {
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_RListHome">
+    <property name="geometry">
+     <rect>
+      <x>878</x>
+      <y>130</y>
+      <width>102</width>
+      <height>102</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../image/06_Result/Result_Home.png</normaloff>../image/06_Result/Result_Home.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>102</width>
+      <height>102</height>
+     </size>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

@@ -67,22 +67,12 @@ class ResultListView(QMainWindow):
         uic.loadUi(ui_path, self)
 
     def _init_ui(self):
-        self.pushButton_ResultListBackArrow.clicked.connect(
-            self.on_back_button_clicked
-        )
+        self.pushButton_ResultListBackArrow.clicked.connect(self.on_back_button_clicked)
 
-        self.pushButton_RListHome.clicked.connect(
-            self.on_select_all_clicked
-        )
-        self.pushButton_RListSend.clicked.connect(
-            self.on_send_clicked
-        )
-        self.pushButton_RListExport.clicked.connect(
-            self.on_export_clicked
-        )
-        self.pushButton_RListDelete.clicked.connect(
-            self.on_delete_clicked
-        )
+        self.pushButton_RListHome.clicked.connect(self.on_home_button_clicked)
+        #self.pushButton_RListSend.clicked.connect(self.on_send_clicked)
+        self.pushButton_RListSelectAll.clicked.connect(self.on_select_all_clicked)
+        self.pushButton_RListDelete.clicked.connect(self.on_delete_clicked)
 
         self._setup_table()
 
@@ -482,6 +472,10 @@ class ResultListView(QMainWindow):
     def on_back_button_clicked(self):
         self.clear_selection()
         self.switch_to_result_category.emit()
+
+    def on_home_button_clicked(self):
+        self.clear_selection()
+        self.switch_to_home.emit()    
 
     # ==========================================================
     # Data Delete

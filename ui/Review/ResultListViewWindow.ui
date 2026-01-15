@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -66,14 +66,10 @@ QPushButton:pressed {
       <height>102</height>
      </rect>
     </property>
-    <property name="text">
-     <string>SELECT
-ALL</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>11</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -93,6 +89,10 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>SELECT
+ALL</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_RListSend">
@@ -130,13 +130,10 @@ QPushButton:pressed {
       <height>102</height>
      </rect>
     </property>
-    <property name="text">
-     <string>EXPORT</string>
-    </property>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>12</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -156,6 +153,9 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #505050;
 }</string>
+    </property>
+    <property name="text">
+     <string>EXPORT</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_RListDelete">
@@ -203,28 +203,6 @@ QPushButton:pressed {
      <bool>true</bool>
     </property>
    </widget>
-   <!-- <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>42</x>
-      <y>93</y>
-      <width>793</width>
-      <height>37</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>../image/07_TestResult/TestResult_TableBar.png</pixmap>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget> -->
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
@@ -411,9 +389,9 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_Title">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>399</x>
       <y>20</y>
-      <width>180</width>
+      <width>241</width>
       <height>40</height>
      </rect>
     </property>
@@ -527,7 +505,7 @@ QPushButton:pressed {
      <string>000%</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignVCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="label_DateNClock">

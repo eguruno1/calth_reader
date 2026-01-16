@@ -64,9 +64,9 @@ class ResultView0(QMainWindow):
 
         # 버튼들 연결
         self.pushButton_ResultHome.clicked.connect(self.on_resultHome_button_clicked)
-        self.pushButton_Retest.clicked.connect(self.on_resultRetest_button_clicked)
-        self.pushButton_ResultSend.clicked.connect(self.on_resultSend_button_clicked)
-        self.pushButton_Print.clicked.connect(self.on_resultPrint_button_clicked)
+        #self.pushButton_Retest.clicked.connect(self.on_resultRetest_button_clicked)
+        #self.pushButton_ResultSend.clicked.connect(self.on_resultSend_button_clicked)
+        #self.pushButton_Print.clicked.connect(self.on_resultPrint_button_clicked)
         
         # 초기 날짜와 시간 설정
         self.update_date_time()
@@ -228,7 +228,7 @@ class ResultView0(QMainWindow):
         json_test_type1 = current_data.get("test_type1")
         json_operator_id = current_data.get("operator")
         json_patient_id = current_data.get("patient_id")
-        
+        """
         print(f"[ResultView0] json_test_type1 : {json_test_type1}")
         print(f"[ResultView0] json_operator_id : {json_operator_id}")
         print(f"[ResultView0] json_patient_id : {json_patient_id}")
@@ -236,9 +236,9 @@ class ResultView0(QMainWindow):
         print(f"[ResultView0] test_type.code : {test_type.code}")
         print(f"[ResultView0] operator.user_id : {operator.user_id}")
         print(f"[ResultView0] patient.patient_code : {patient.patient_code}")
-
+        """
         # 3-1 테스트 타입
-        self.label_25_testItem.setText(test_type.code)
+        self.label_25_testItem.setText(test_type.name)
 
         # 3-2 측정 날짜
         self.label_23_date.setText(
@@ -259,7 +259,7 @@ class ResultView0(QMainWindow):
 
         # 3-5 컨트롤
         self.label_24_control.setText(
-            "Positive" if analysis.get("positive") else "Negative"
+            "Valid" if analysis.get("positive") else "Invalid"
         )
 
         # 3-6 진단 결과
@@ -268,7 +268,7 @@ class ResultView0(QMainWindow):
         )
 
         # 3-7 썸네일 이미지
-        self._load_thumbnail(mr.thumbnail_path)
+        #self._load_thumbnail(mr.thumbnail_path)
 
     def _load_thumbnail(self, image_path: str):
         if not image_path or not os.path.exists(image_path):
@@ -285,8 +285,8 @@ class ResultView0(QMainWindow):
         transform.rotate(90)   # 시계 방향
         rotated_pixmap = pixmap.transformed(transform, Qt.SmoothTransformation)
 
-        self.label_4_resultImage.setPixmap(rotated_pixmap)
-        self.label_4_resultImage.setScaledContents(True)     
+        #self.label_4_resultImage.setPixmap(rotated_pixmap)
+        #self.label_4_resultImage.setScaledContents(True)     
 
     def _load_current_json(self):
         """
@@ -319,7 +319,7 @@ class ResultView0(QMainWindow):
         self.label_21_patientId.clear()
         self.label_24_control.clear()
         self.label_22_result.clear()
-        self.label_4_resultImage.clear()
+        #self.label_4_resultImage.clear()
 
         # 2️⃣ current.json 초기화
         self.reset_current_json()

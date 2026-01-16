@@ -230,7 +230,8 @@ class ResultListView(QMainWindow):
             )
 
             test_item = (
-                mr.session.test_type.code
+                # mr.session.test_type.code
+                mr.session.test_type.name
                 if mr.session and mr.session.test_type else ""
             )
 
@@ -336,22 +337,29 @@ class ResultListView(QMainWindow):
             # 4. 2라인 (COVID19)
             # ----------------------------------
             if mode == 2:
+                if not labels:
+                    return f"INVALID"
+                
                 if positive:
-                    return f"POSITIVE (C/T) | Lines:{line_cnt_str}"
+                    #return f"POSITIVE (C/T) | Lines:{line_cnt_str}"
+                    return f"POSITIVE"
                 else:
-                    return f"NEGATIVE (C) | Lines:{line_cnt_str}"
+                    #return f"NEGATIVE (C) | Lines:{line_cnt_str}"
+                    return f"NEGATIVE"
 
             # ----------------------------------
             # 5. 3라인 (INFLUENZA)
             # ----------------------------------
             if mode == 3:
                 if not labels:
-                    return f"INVALID | Lines:{line_cnt_str}"
+                    return f"INVALID"
 
                 if positive:
-                    return f"POSITIVE ({label_str}) | Lines:{line_cnt_str}"
+                    # return f"POSITIVE ({label_str}) | Lines:{line_cnt_str}"
+                    return f"POSITIVE"
                 else:
-                    return f"NEGATIVE ({label_str}) | Lines:{line_cnt_str}"
+                    #return f"NEGATIVE ({label_str}) | Lines:{line_cnt_str}"
+                    return f"NEGATIVE"
 
             # ----------------------------------
             # 6. 알 수 없는 mode

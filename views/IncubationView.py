@@ -3,6 +3,7 @@
 
 import sys
 import os
+import json
 import threading
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5 import uic
@@ -15,11 +16,15 @@ from config.pretest_config import PretestConfig
 class IncubationView(QMainWindow):
 
     switch_to_home = pyqtSignal()
+    switch_to_test_info_view = pyqtSignal(str)
+    switch_to_measure_view = pyqtSignal()
 
     def __init__(self, parent=None, uart_model=None):
 
         super().__init__(parent)
         
+        self.test_type = "COVID19"
+
         self.load_ui()
         self.init_ui()
 
@@ -32,6 +37,7 @@ class IncubationView(QMainWindow):
         self.uart_model = uart_model
         print(f"[IncubationView] uart_model injected: {self.uart_model}")
 
+        
 
     def load_ui(self):
         # 프로젝트 루트 디렉토리
@@ -60,6 +66,9 @@ class IncubationView(QMainWindow):
         # 초기 날짜와 시간 설정
         self.update_date_time()
 
+        self._load_test_info()
+        print(f"[IncubationView] 1 start_measurement test_type 로드: {self.test_type}")
+
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
@@ -77,10 +86,32 @@ class IncubationView(QMainWindow):
 
     def on_back_button_clicked(self):
         print("[IncubationView] on_back_button_clicked")
-        self.switch_to_home.emit()    
+        self.switch_to_test_info_view.emit(self.test_type) 
 
     def update_date_time(self):
         update_date_time(self)    
+
+
+    def _go_to_measure_view(self):
+        """MeasureView 이동"""
+        #self.reset_widget_positions()
+        self.switch_to_measure_view.emit()
+
+
+    def _load_test_info(self):
+        """
+        JSON에서 검사 정보 읽기 (Read Only)
+        """
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.test_type = data.get("test_type1", "")
+
+            print(f"[IncubationView] _load_test_info test_type 로드: {self.test_type}")
+
+        except Exception as e:
+            print(f"[IncubationView] JSON 로드 오류: {e}")
 
     #####################################################
     # Battery Status (UART 기반)

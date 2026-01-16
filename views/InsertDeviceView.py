@@ -4,6 +4,7 @@ Pre-Testing Insert Device View - Calibration 및 QC 공통 장치 삽입 화면
 """
 import sys
 import os
+import json
 import threading
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5 import uic
@@ -18,12 +19,19 @@ class InsertDeviceView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_next_step = pyqtSignal(dict)
 
+    switch_to_test_info_view = pyqtSignal(str)
+    switch_to_measure_view = pyqtSignal()
+
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         
+        self.test_type = "COVID19"
+
         # UI 파일 로드
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
+        self.current_json_path = os.path.join(project_root, 'info', 'current.json')
+
         ui_file = os.path.join(project_root, 'ui', 'Test', 'InsertDevice.ui')
         
         if os.path.exists(ui_file):
@@ -98,7 +106,8 @@ class InsertDeviceView(QMainWindow):
     def go_back(self):
         """이전 페이지로 이동"""
         print("Going back to Caution page")
-        self.switch_to_home.emit()
+        #self.switch_to_home.emit()
+        self.switch_to_test_info_view.emit(self.test_type)
         
     def go_next(self):
         """다음 페이지로 이동"""
@@ -129,7 +138,22 @@ class InsertDeviceView(QMainWindow):
         self.data = None
 
 
-#####################################################
+    def _load_test_info(self):
+        """
+        JSON에서 검사 정보 읽기 (Read Only)
+        """
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.test_type = data.get("test_type1", "")
+
+            print(f"[IncubationView] _load_test_info test_type 로드: {self.test_type}")
+
+        except Exception as e:
+            print(f"[IncubationView] JSON 로드 오류: {e}")
+
+    #####################################################
     # Battery Status (UART 기반)
     #####################################################
     def on_uart_event(self, event_type: str, data):

@@ -12,7 +12,7 @@ from common.session_context import get_session_context
 from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
 
 class HomeView(QMainWindow):
-    switch_to_select      = pyqtSignal()
+    switch_to_select      = pyqtSignal(str)  # TestInfo로 변경.
     switch_to_info        = pyqtSignal()
     switch_to_resultList  = pyqtSignal()
     switch_to_operator    = pyqtSignal()
@@ -97,32 +97,41 @@ class HomeView(QMainWindow):
         print("Standard Test 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
+        """
         if not self._require_login("StandardTest"):
             return
-        
+        """
         self.update_json_file("StandardTest")
-        self.switch_to_select.emit()
+        # ✅ 기존 switch_to_select를 재활용
+        # SelectView로 가지 않고, ui_controller에서 TestInfoView로 연결
+        self.switch_to_select.emit("COVID19")
 
     def on_read_only_button_clicked(self):
         print("Read Only 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
+        """
         if not self._require_login("ReadOnly"):
             return
-        
+        """
         self.update_json_file("ReadOnly")
-        self.switch_to_select.emit()
+        # ✅ 기존 switch_to_select를 재활용
+        # SelectView로 가지 않고, ui_controller에서 TestInfoView로 연결
+        self.switch_to_select.emit("COVID19")
 
     def on_qc_test_button_clicked(self):
         print("QC Test 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
+        """
         if not self._require_login("QCTest"):
             return
-        
+        """
         self.update_json_file("QCTest")
-        self.switch_to_select.emit()
-        
+        # ✅ 기존 switch_to_select를 재활용
+        # SelectView로 가지 않고, ui_controller에서 TestInfoView로 연결
+        self.switch_to_select.emit("COVID19")
+
         """
         try:
             from controllers import app_controller

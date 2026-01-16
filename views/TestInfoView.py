@@ -13,7 +13,8 @@ from views.VKeyboard import VKeyboard
 from controllers import app_controller
 
 class TestInfoView(QMainWindow):
-    switch_to_select  = pyqtSignal()  
+    switch_to_home    = pyqtSignal()
+    # switch_to_select  = pyqtSignal()  
     switch_to_measure = pyqtSignal()  
 
     def __init__(self, parent=None, uart_model=None):
@@ -228,7 +229,7 @@ class TestInfoView(QMainWindow):
 
     def on_back_button_clicked(self):
         self.reset_widget_positions()
-        self.switch_to_select.emit()  # SelectView로 전환 시그널 발생
+        self.switch_to_home.emit()  # SelectView로 전환 시그널 발생
 
     def on_testinfok_button_clicked(self):
         """테스트 진단 시작"""

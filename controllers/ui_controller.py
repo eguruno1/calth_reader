@@ -4,6 +4,7 @@ AppController - 전체 화면 흐름 및 뷰/시그널 관리
 """
 import os
 import sys
+import json
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QShortcut
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QKeySequence
@@ -47,6 +48,9 @@ from views.AdminPwEdit1View  import AdminPwEdit1View
 from views.AdminPwEdit2View  import AdminPwEdit2View
 from views.AccountDeleteView  import AccountDeleteView
 
+# 테스트 진행 추가 
+from views.IncubationView import IncubationView
+from views.InsertDeviceView import InsertDeviceView
 
 
 from controllers import app_controller as backend_controller
@@ -130,6 +134,10 @@ class AppController(QMainWindow):
         self.result_view0                 = ResultView0(self, uart_model=backend_controller.uart_model)
         #self.result_view1                = ResultView1(self)
 
+        # 테스트 진행 추가
+        self.incubation_view              = IncubationView(self)
+        self.insert_device_view           = InsertDeviceView(self)
+
         # 계정관련 views
         self.account_add_view             = AccountAddView(self)    # 신규 사용자 추가.
         self.account_id_edit_view         = AccountIdEditView(self) # ID 변경.
@@ -165,6 +173,10 @@ class AppController(QMainWindow):
         self.stacked_widget.addWidget(self.result_view0)
         #self.stacked_widget.addWidget(self.result_view1)
 
+        # 테스트 진행 추가
+        self.stacked_widget.addWidget(self.incubation_view)
+        self.stacked_widget.addWidget(self.insert_device_view)
+
         # 계정관련
         self.stacked_widget.addWidget(self.account_add_view)
         self.stacked_widget.addWidget(self.account_id_edit_view)
@@ -180,7 +192,8 @@ class AppController(QMainWindow):
     #==========================================
     def _connect_signals(self):
         self.load_view.finished.connect(self.switch_to_home_view)
-        self.home_view.switch_to_select.connect(self.switch_to_select_view)
+        # self.home_view.switch_to_select.connect(self.switch_to_select_view) select not used
+        self.home_view.switch_to_select.connect(self.switch_to_test_info_view)
         self.home_view.switch_to_operator.connect(self.switch_to_operator_view)
         self.home_view.switch_to_resultList.connect(self.switch_to_result_category_view)
         self.home_view.switch_to_settings.connect(self.switch_to_settings_view)
@@ -216,8 +229,10 @@ class AppController(QMainWindow):
         self.resultList_view.switch_to_result_category.connect(self.switch_to_result_category_view)
         self.select_view.switch_to_home.connect(self.switch_to_home_view)
         self.select_view.switch_to_test_info.connect(self.switch_to_test_info_view)
-        self.test_info_view.switch_to_select.connect(self.switch_to_select_view)
-        self.test_info_view.switch_to_measure.connect(self.switch_to_measure_view)
+        # self.test_info_view.switch_to_select.connect(self.switch_to_select_view)
+        # self.test_info_view.switch_to_measure.connect(self.switch_to_measure_view)
+        self.test_info_view.switch_to_home.connect(self.switch_to_home_view)
+        self.test_info_view.switch_to_measure.connect(self._on_testinfo_next_requested)#선택한 메뉴에 따라 이동처리를 위해.
         self.measure_view.switch_to_result.connect(self.switch_to_result_view)
         self.result_view0.switch_to_home.connect(self.switch_to_home_view)
         self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
@@ -225,6 +240,10 @@ class AppController(QMainWindow):
         self.calibration_view.switch_to_next_step.connect(self.on_calibration_intro_next)
         # info
         self.general_settings_view.switch_to_info.connect(self.switch_to_info_view)
+
+
+        # 테스트 진행 추가
+
 
         # 계정관련
         self.manage_operator_view.switch_to_account_add.connect(
@@ -524,7 +543,16 @@ class AppController(QMainWindow):
         """사용자 삭제"""
         self.account_delete_view.set_target_user(user_id)
         self.stacked_widget.setCurrentWidget(self.account_delete_view)    
-    
+
+
+    # 테스트 진행 추가    
+    def switch_to_incubation_view(self):
+        """incubation"""
+        self.stacked_widget.setCurrentWidget(self.incubation_view)
+
+    def switch_to_insert_device_view(self):
+        """insert device"""
+        self.stacked_widget.setCurrentWidget(self.insert_device_view)    
     
     
     #==========================================
@@ -810,6 +838,43 @@ class AppController(QMainWindow):
         if hasattr(self.qc_view, 'reset_view'):
             self.qc_view.reset_view()
         self.stacked_widget.setCurrentWidget(self.qc_view)
+
+    #==========================================
+    # --- 홈에서 Standard Test, Read Only, QC Test 분기 위해 ---
+    #==========================================
+    def _get_current_test_type1(self):
+        # 프로젝트 루트 디렉토리
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        # TestInfoView 정보를 json에서 읽는다.
+        self.current_json_path = os.path.join(project_root, 'info', 'current.json')
+
+        with open(self.current_json_path, "r") as f:
+            data = json.load(f)
+        return data.get("test_type1")
+    
+    def _on_testinfo_next_requested(self):
+        """
+        TestInfoView에서 슬롯 체크 OK 후 호출됨
+        기존 switch_to_measure를 그대로 사용
+        """
+
+        test_type = self._get_current_test_type1()
+
+        if test_type == "StandardTest":
+            # TestInfo → Incubation
+            self.switch_to_incubation_view()
+
+        elif test_type == "ReadOnly":
+            # TestInfo → InsertDevice
+            self.switch_to_insert_device_view()
+
+        elif test_type == "QCTest":
+            # TestInfo → InsertDevice (QC는 이후 Incubation 있음)
+            self.switch_to_insert_device_view()
+
+        else:
+            raise ValueError(f"Unknown test type: {test_type}")
 
 
     #==========================================

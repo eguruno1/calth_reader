@@ -73,11 +73,12 @@ class TestInfoView(QMainWindow):
         self.setup_line_edits()
 
         # label_NOTE1 찾기
+        """
         self.label_NOTE1 = self.findChild(QLabel, "label_NOTE1")
         self.label_NOTE1.setStyleSheet("Color : red") #글자색 변환
         if not self.label_NOTE1:
             print("Warning: label_NOTE1 not found")
-
+        """
         self.update_date_time()
         
         # 배터리 상태 초기화
@@ -307,12 +308,14 @@ class TestInfoView(QMainWindow):
     def set_selected_test_type(self, test_type):
         """진단 모드 세팅"""
         self.selected_test_type = test_type
+        """
         if self.label_NOTE1:
             # Simple test type display
             self.label_NOTE1.setText(f"{test_type}")
         else:
             print("Warning: Cannot set selected test type. label_NOTE1 not found.")
-
+        """
+        
     def hide_keyboard(self):
         if not self.vkeyboard.isHidden():
             self.vkeyboard.hide()

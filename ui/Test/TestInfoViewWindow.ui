@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -103,7 +103,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>133</x>
-      <y>216</y>
+      <y>243</y>
       <width>218</width>
       <height>55</height>
      </rect>
@@ -125,29 +125,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>133</x>
-      <y>283</y>
-      <width>218</width>
-      <height>55</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>../image/06_Result/Result_TitleBar.png</pixmap>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_NOTE_BG">
-    <property name="geometry">
-     <rect>
-      <x>133</x>
-      <y>350</y>
+      <y>321</y>
       <width>218</width>
       <height>55</height>
      </rect>
@@ -169,7 +147,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>360</x>
-      <y>216</y>
+      <y>243</y>
       <width>330</width>
       <height>55</height>
      </rect>
@@ -191,29 +169,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>360</x>
-      <y>283</y>
-      <width>330</width>
-      <height>55</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>../image/04_TestInfo/TestInfo_BKGData.png</pixmap>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_NOTE1_BG">
-    <property name="geometry">
-     <rect>
-      <x>360</x>
-      <y>350</y>
+      <y>321</y>
       <width>330</width>
       <height>55</height>
      </rect>
@@ -235,7 +191,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>216</y>
+      <y>243</y>
       <width>150</width>
       <height>55</height>
      </rect>
@@ -293,7 +249,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>283</y>
+      <y>321</y>
       <width>150</width>
       <height>55</height>
      </rect>
@@ -345,85 +301,6 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>PATIENT ID</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_NOTE">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>350</y>
-      <width>150</width>
-      <height>55</height>
-     </rect>
-    </property>
-    <property name="palette">
-     <palette>
-      <active>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>255</red>
-          <green>255</green>
-          <blue>255</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </active>
-      <inactive>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>255</red>
-          <green>255</green>
-          <blue>255</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </inactive>
-      <disabled>
-       <colorrole role="WindowText">
-        <brush brushstyle="SolidPattern">
-         <color alpha="255">
-          <red>120</red>
-          <green>120</green>
-          <blue>120</blue>
-         </color>
-        </brush>
-       </colorrole>
-      </disabled>
-     </palette>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>NOTE</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_NOTE1">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>350</y>
-      <width>300</width>
-      <height>55</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Influenza A&amp;B</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_DateNClock">
@@ -613,7 +490,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>283</y>
+      <y>321</y>
       <width>300</width>
       <height>55</height>
      </rect>
@@ -637,7 +514,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>216</y>
+      <y>243</y>
       <width>300</width>
       <height>55</height>
      </rect>

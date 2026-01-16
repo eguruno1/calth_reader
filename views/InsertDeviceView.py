@@ -58,84 +58,35 @@ class InsertDeviceView(QMainWindow):
         # 버튼 연결
         if hasattr(self, 'pushButton_Back'):
             self.pushButton_Back.clicked.connect(self.go_back)
-        if hasattr(self, 'pushButton_next'):
-            self.pushButton_next.clicked.connect(self.go_next)
-        
-    def set_data(self, data: dict):
-        """이전 단계에서 전달받은 데이터 설정"""
-        self.data = data
-        
-        # Pre-Testing 타입 설정 및 UI 업데이트
-        if data and 'pretest_type' in data:
-            self.pretest_type = data['pretest_type']
-        self.config = PretestConfig.get_config(self.pretest_type)
-        self.update_ui_texts()
-        self.update_kit_info()
 
-    def update_ui_texts(self):
-        """Pre-Testing 타입에 따라 UI 텍스트 업데이트"""
-        # 메인 타이틀 업데이트
-        if hasattr(self, 'label_title'):
-            self.label_title.setText(self.config.get('title', 'Insert Device'))
-        
-        # Insert 제목 업데이트
-        if hasattr(self, 'label_insert_title'):
-            self.label_insert_title.setText(self.config.get('insert_title', '📋 Insert Device'))
-        
-        # Insert 지시사항 업데이트
-        if hasattr(self, 'label_insert_instruction'):
-            self.label_insert_instruction.setText(self.config.get('insert_instruction', 'Please insert the device.'))
-        
-        # 윈도우 타이틀 업데이트
-        self.setWindowTitle(f"{self.config.get('window_title_suffix', 'Pre-Testing')} - Insert Device")
-        
-    def update_kit_info(self):
-        """현재 키트 정보를 UI에 표시"""
-        if self.data and 'current_kit' in self.data:
-            current_kit = self.data['current_kit']
-            total_kits = self.data.get('total_kits', 1)
-            kit_names = self.data.get('kit_names', [f'Kit {current_kit}'])
-            
-            if current_kit <= len(kit_names):
-                kit_name = kit_names[current_kit - 1]
-                
-                # 키트 정보 라벨이 있다면 업데이트
-                if hasattr(self, 'label_kit_info'):
-                    self.label_kit_info.setText(f"Kit {current_kit}/{total_kits}: {kit_name}")
+        if hasattr(self, 'pushButton_cancel'):
+            self.pushButton_cancel.clicked.connect(self.go_back)
 
+        if hasattr(self, 'pushButton_ok'):
+            self.pushButton_ok.clicked.connect(self.go_next)    
+        
     def go_back(self):
         """이전 페이지로 이동"""
-        print("Going back to Caution page")
+        print("Going back to Home")
         #self.switch_to_home.emit()
         self.switch_to_test_info_view.emit(self.test_type)
         
     def go_next(self):
         """다음 페이지로 이동"""
-        print("Going to Device Check page")
-        self.switch_to_next_step.emit(self.data)
+        print("Going to Measure")
+        self.switch_to_measure_view.emit()
         
     def showEvent(self, event):
         super().showEvent(event)
         # 즉시 시간과 배터리 상태 업데이트
         update_date_time(self)
-        update_battery_status(self)
-        # 그 다음 타이머 시작
-        from views.Utils import start_date_time_update, start_battery_update
-        QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
 
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        from views.Utils import stop_date_time_update, stop_battery_update
-        stop_date_time_update(self)
-        stop_battery_update(self)
-        # UI 상태 초기화
-        self.reset_ui_state()
-        
-    def reset_ui_state(self):
-        """UI 상태를 초기 상태로 리셋"""
-        # 데이터 초기화 (다음 진입 시를 위해)
-        self.data = None
+        # 배터리 상태 업데이트
+        from controllers import app_controller
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
 
 
     def _load_test_info(self):
@@ -148,10 +99,10 @@ class InsertDeviceView(QMainWindow):
 
             self.test_type = data.get("test_type1", "")
 
-            print(f"[IncubationView] _load_test_info test_type 로드: {self.test_type}")
+            print(f"[InsertDeviceView] _load_test_info test_type 로드: {self.test_type}")
 
         except Exception as e:
-            print(f"[IncubationView] JSON 로드 오류: {e}")
+            print(f"[InsertDeviceView] JSON 로드 오류: {e}")
 
     #####################################################
     # Battery Status (UART 기반)
@@ -206,10 +157,10 @@ class InsertDeviceView(QMainWindow):
                 battery_info.get_status_text()
             )
 
-            print(f"[SelectView] Battery UI updated: {battery_info.level}%")
+            print(f"[InsertDeviceView] Battery UI updated: {battery_info.level}%")
 
         except Exception as e:
-            print(f"[SelectView] Battery UI update error: {e}")  
+            print(f"[InsertDeviceView] Battery UI update error: {e}")  
 
 
 if __name__ == "__main__":

@@ -17,7 +17,6 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <!-- Header Section -->
    <widget class="QPushButton" name="pushButton_Back">
     <property name="geometry">
      <rect>
@@ -30,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -55,7 +54,7 @@ QPushButton:pressed {
      <string>← Back</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_9">
+   <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
       <x>850</x>
@@ -92,7 +91,7 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>CALIBRATION</string>
+     <string>Insert Device</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -153,16 +152,16 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string></string>
+     <string/>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_BatteryGuage">
+   <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>870</x>
       <y>20</y>
       <width>30</width>
       <height>40</height>
@@ -220,8 +219,6 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-
-   <!-- Main Content Section -->
    <widget class="QFrame" name="frame_insert_device">
     <property name="geometry">
      <rect>
@@ -244,56 +241,20 @@ QPushButton:pressed {
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    
-    <!-- Insert Device Title -->
-    <widget class="QLabel" name="label_insert_title">
-     <property name="geometry">
-      <rect>
-       <x>40</x>
-       <y>20</y>
-       <width>720</width>
-       <height>30</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Pretendard</family>
-       <pointsize>18</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QLabel {
-    font-size: 18px;
-    font-weight: bold;
-    color: #2c5aa0;
-    border: none;
-}</string>
-     </property>
-     <property name="text">
-      <string>📋 Insert Calibration Device</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-    
-    <!-- Insert Device Image -->
     <widget class="QLabel" name="label_insert_image">
      <property name="geometry">
       <rect>
-       <x>250</x>
-       <y>70</y>
-       <width>300</width>
-       <height>200</height>
+       <x>79</x>
+       <y>19</y>
+       <width>651</width>
+       <height>251</height>
       </rect>
      </property>
      <property name="text">
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>../image/insert_device_img.png</pixmap>
+      <pixmap>../image/caution_img.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -302,8 +263,6 @@ QPushButton:pressed {
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
-    
-    <!-- Insert Device Instructions -->
     <widget class="QLabel" name="label_insert_instruction">
      <property name="geometry">
       <rect>
@@ -316,7 +275,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>14</pointsize>
+       <pointsize>-1</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -333,27 +292,20 @@ QPushButton:pressed {
 }</string>
      </property>
      <property name="text">
-      <string>Please insert the calibration device into the designated slot.
-
-Ensure the device is properly aligned and fully inserted.
-The device should click into place when correctly positioned.
-
-Press "Next" when the device is properly inserted.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
+      <string>Caution. Position the device in the cartrideg in th correct direction and then insert it into the equipment</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
      </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </widget>
-
-   <!-- Navigation Buttons -->
-   <widget class="QPushButton" name="pushButton_next">
+   <widget class="QPushButton" name="pushButton_cancel">
     <property name="geometry">
      <rect>
-      <x>750</x>
+      <x>560</x>
       <y>520</y>
       <width>220</width>
       <height>50</height>
@@ -362,7 +314,7 @@ Press "Next" when the device is properly inserted.</string>
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -385,7 +337,45 @@ QPushButton:pressed {
 }</string>
     </property>
     <property name="text">
-     <string>Next →</string>
+     <string>Cancel</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_ok">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>520</y>
+      <width>220</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Pretendard</family>
+      <pointsize>-1</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 15px;
+}
+QPushButton:hover {
+    background-color: #1e3f73;
+}
+QPushButton:pressed {
+    background-color: #1a3866;
+}</string>
+    </property>
+    <property name="text">
+     <string>OK</string>
     </property>
    </widget>
   </widget>

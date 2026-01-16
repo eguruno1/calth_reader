@@ -234,6 +234,7 @@ class MeasurementResult(BaseModel):
         nullable=False
     )
 
+    select_menu = Column(String(50))
     image_path = Column(String(500))
     thumbnail_path = Column(String(500))
 

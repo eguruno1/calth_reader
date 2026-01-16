@@ -117,10 +117,12 @@ class HomeView(QMainWindow):
         print("QC Test 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
-        if not self._require_login("ReadOnly"):
+        if not self._require_login("QCTest"):
             return
         
         self.update_json_file("QCTest")
+        self.switch_to_select.emit()
+        
         """
         try:
             from controllers import app_controller

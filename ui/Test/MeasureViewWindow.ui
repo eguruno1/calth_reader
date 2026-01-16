@@ -294,7 +294,7 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>Analyze</string>
+     <string>Analyzing</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

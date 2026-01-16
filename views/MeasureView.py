@@ -180,14 +180,15 @@ class MeasureView(QMainWindow):
         """측정 시작됨 (컨트롤러에서 알림)"""
         print("[MeasureView] 측정이 시작되었습니다")
         self.progressBar_Meas.setValue(0)
-        self.progressBar_Meas.setFormat("측정 준비 중... - %p%")
+        self.progressBar_Meas.setFormat("%p%")
 
         
 
     def on_progress_updated(self, progress: int, phase_name: str):
         """진행률 업데이트 (컨트롤러에서 알림)"""
         self.progressBar_Meas.setValue(progress)
-        self.progressBar_Meas.setFormat(f"{phase_name} - %p%")
+        #self.progressBar_Meas.setFormat(f"{phase_name} - %p%")
+        self.progressBar_Meas.setFormat(f"%p%")
 
     def on_measurement_finished(self, result: dict):
         """측정 완료 (컨트롤러에서 알림)"""
@@ -236,7 +237,7 @@ class MeasureView(QMainWindow):
             self.mark_session_failed(str(e))
             return
 
-        self.progressBar_Meas.setFormat("측정 완료 - %p%")
+        self.progressBar_Meas.setFormat("%p%")
         # 1초 후 결과 화면으로 전환 : 현재 test_session_id를 파라미터로 전달 & 데이터 조회용.
         QTimer.singleShot(1000, lambda: self.switch_to_result.emit(self.test_session_id))
 

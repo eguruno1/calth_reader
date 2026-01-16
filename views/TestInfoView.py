@@ -271,7 +271,7 @@ class TestInfoView(QMainWindow):
             with open(self.current_json_path, 'r+') as f:
                 data = json.load(f)
                 
-                #"test_type0": "ReadOnly",
+                #"select_menu": "ReadOnly",
                 data['test_type1'] = self.selected_test_type
 
                 # 현재 로그인한 사용자 정보가 있으면 사용, 없으면 전달받은 operator 사용

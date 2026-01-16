@@ -326,7 +326,7 @@ class ResultView0(QMainWindow):
 
     def reset_current_json(self):
         empty = {
-            "test_type0": None,
+            "select_menu": None,
             "test_type1": None,
             "operator": None,
             "patient_id": None,

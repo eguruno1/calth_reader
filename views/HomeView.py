@@ -83,7 +83,7 @@ class HomeView(QMainWindow):
         try:
             with open(self.current_json_path, 'r+') as f:
                 data = json.load(f)
-                data['test_type0'] = button_name
+                data['select_menu'] = button_name
                 # 인증 COVID19  고정.
                 data['test_type1'] = "COVID19" 
                 f.seek(0)

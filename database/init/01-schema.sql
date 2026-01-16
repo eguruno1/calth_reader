@@ -75,6 +75,7 @@ CREATE TABLE measurement_results (
     session_id BIGINT NOT NULL REFERENCES test_sessions(id) ON DELETE CASCADE,
     measurement_type VARCHAR(50) NOT NULL,
     result_data JSONB NOT NULL, -- JSON 형태로 저장
+    select_menu VARCHAR(50) NOT NULL, --홈 선택 메뉴명
     image_path VARCHAR(500),
     thumbnail_path VARCHAR(500),
     quality_score DECIMAL(5,2) CHECK (quality_score >= 0 AND quality_score <= 100),

@@ -1,5 +1,5 @@
 {
-    "test_type0": "ReadOnly",
+    "select_menu": "ReadOnly",
     "test_type1": "COVID19",
     "test_type_nm": "COVID-19 Ag",
     "operator": "admin",

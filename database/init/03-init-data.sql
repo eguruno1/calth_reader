@@ -5,7 +5,7 @@
 
 -- 테스트 유형 기본 데이터
 INSERT INTO test_types (code, name, description, measurement_time_seconds) VALUES
-('COVID19', 'COVID-19 Test', 'SARS-CoV-2 Antigen Test', 900),
+('COVID19', 'COVID-19 Ag', 'SARS-CoV-2 Antigen Test', 900),
 ('INFLUENZA', 'Influenza Test', 'Influenza A/B Antigen Test', 600),
 ('TROPONIN', 'Troponin Test', 'Cardiac Troponin I Test', 1200),
 ('STANDARD', 'Standard Test', 'General Purpose Test', 300),
@@ -78,7 +78,14 @@ INSERT INTO notifications (type, title, message, recipient_role, expires_at, cre
 INSERT INTO patients (patient_code, birth_year, gender, notes) VALUES
 ('TEST001', 1990, 'M', 'Test patient for system validation'),
 ('TEST002', 1985, 'F', 'Test patient for system validation'),
-('DEMO001', 1975, 'M', 'Demo patient for training purposes');
+('DEMO001', 1975, 'M', 'Demo patient for training purposes'),
+('TEST003', 1981, 'F', 'Test patient for system validation'),
+('TEST004', 1982, 'M', 'Test patient for system validation'),
+('TEST005', 1983, 'F', 'Test patient for system validation'),
+('TEST006', 1984, 'M', 'Test patient for system validation'),
+('TEST007', 1986, 'F', 'Test patient for system validation'),
+('TEST008', 1987, 'M', 'Test patient for system validation'),
+('TEST009', 1988, 'F', 'Test patient for system validation'),;
 
 -- 초기 기기 상태 설정
 INSERT INTO device_status (component, status, value, unit, details, threshold_min, threshold_max) VALUES

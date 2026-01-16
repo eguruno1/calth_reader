@@ -84,6 +84,8 @@ class HomeView(QMainWindow):
             with open(self.current_json_path, 'r+') as f:
                 data = json.load(f)
                 data['test_type0'] = button_name
+                # 인증 COVID19  고정.
+                data['test_type1'] = "COVID19" 
                 f.seek(0)
                 json.dump(data, f, indent=4)
                 f.truncate()
@@ -113,6 +115,13 @@ class HomeView(QMainWindow):
 
     def on_qc_test_button_clicked(self):
         print("QC Test 버튼이 클릭되었습니다.")
+
+        # ▶ 로그인 체크
+        if not self._require_login("ReadOnly"):
+            return
+        
+        self.update_json_file("QCTest")
+        """
         try:
             from controllers import app_controller
             from models.user_model import UserRole
@@ -136,6 +145,7 @@ class HomeView(QMainWindow):
             print(f"QC Test 진입 오류: {e}")
             # 오류 시 일반 로그인 페이지로 이동
             self.switch_to_login.emit("qc")
+        """
 
     def on_calibration_button_clicked(self):
         print("Calibration 버튼이 클릭되었습니다.")

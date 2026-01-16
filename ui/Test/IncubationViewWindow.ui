@@ -17,7 +17,7 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton_MeasureBackArrow">
+   <widget class="QPushButton" name="pushButton_BackArrow">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -361,7 +361,7 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <zorder>pushButton_MeasureBackArrow</zorder>
+   <zorder>pushButton_BackArrow</zorder>
    <zorder>label_MeasureTitle</zorder>
    <zorder>label_BatteryGuage</zorder>
    <zorder>progressBar_Meas</zorder>

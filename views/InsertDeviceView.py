@@ -4,9 +4,11 @@ Pre-Testing Insert Device View - Calibration 및 QC 공통 장치 삽입 화면
 """
 import sys
 import os
+import threading
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5 import uic
-from PyQt5.QtCore import QTimer, QDateTime, pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
+from PyQt5.QtGui     import QResizeEvent, QPixmap
 from views.Utils import (center_window, update_date_time, start_date_time_update, stop_date_time_update,
                         update_battery_status, start_battery_update, stop_battery_update)
 from config.pretest_config import PretestConfig
@@ -16,7 +18,7 @@ class InsertDeviceView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_next_step = pyqtSignal(dict)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         
         # UI 파일 로드
@@ -31,6 +33,10 @@ class InsertDeviceView(QMainWindow):
         
         # 윈도우 설정
         center_window(self)
+
+        # 배터리
+        self.uart_model = uart_model
+        print(f"[InsertDeviceView] uart_model injected: {self.uart_model}")
         
         # 데이터 저장
         self.data = None
@@ -121,6 +127,65 @@ class InsertDeviceView(QMainWindow):
         """UI 상태를 초기 상태로 리셋"""
         # 데이터 초기화 (다음 진입 시를 위해)
         self.data = None
+
+
+#####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        print(f"[InsertDeviceView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[InsertDeviceView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
+        if event_type == "battery_changed" and data:
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
+
+    @pyqtSlot(object)
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[InsertDeviceView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[InsertDeviceView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[InsertDeviceView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[SelectView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[SelectView] Battery UI update error: {e}")  
 
 
 if __name__ == "__main__":

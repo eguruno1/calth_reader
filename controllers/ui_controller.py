@@ -135,8 +135,8 @@ class AppController(QMainWindow):
         #self.result_view1                = ResultView1(self)
 
         # 테스트 진행 추가
-        self.incubation_view              = IncubationView(self)
-        self.insert_device_view           = InsertDeviceView(self)
+        self.incubation_view              = IncubationView(self, uart_model=backend_controller.uart_model)
+        self.insert_device_view           = InsertDeviceView(self, uart_model=backend_controller.uart_model)
 
         # 계정관련 views
         self.account_add_view             = AccountAddView(self)    # 신규 사용자 추가.
@@ -549,10 +549,22 @@ class AppController(QMainWindow):
     def switch_to_incubation_view(self):
         """incubation"""
         self.stacked_widget.setCurrentWidget(self.incubation_view)
+        self.stacked_widget.setCurrentWidget(self.incubation_view)
+        self._set_active_uart_view(self.incubation_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.incubation_view._update_battery_ui(battery)
 
     def switch_to_insert_device_view(self):
         """insert device"""
-        self.stacked_widget.setCurrentWidget(self.insert_device_view)    
+        self.stacked_widget.setCurrentWidget(self.insert_device_view)  
+        self.stacked_widget.setCurrentWidget(self.insert_device_view)
+        self._set_active_uart_view(self.insert_device_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.insert_device_view._update_battery_ui(battery)  
     
     
     #==========================================

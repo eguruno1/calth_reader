@@ -53,6 +53,35 @@ class IncubationView(QMainWindow):
             uic.loadUi(ui_file, self)
         else:
             raise FileNotFoundError(f"UI file not found: {ui_file}")
+        
+        # ProgressBar 스타일 설정
+        progress_bar_style = """
+            QProgressBar {
+                border: 2px solid grey;
+                border-radius: 10px;
+                text-align: center;
+                color: gray;
+                font-size: 12pt;
+                font-weight: bold;
+            }
+
+            QProgressBar::chunk {
+                background-color: #4A4A6A;
+                border-radius: 8px;
+            }
+        """
+        self.progressBar.setStyleSheet(progress_bar_style)
+        
+        # ProgressBar에 숫자로 진행률 표시
+        self.progressBar.setFormat("%p%")
+        self.progressBar.setAlignment(Qt.AlignCenter)
+        
+        # ProgressBar의 텍스트 표시 활성화
+        self.progressBar.setTextVisible(True)
+
+        # 프로그레스바 초기화
+        self.progressBar.setValue(0)
+
 
     def init_ui(self):
         # 🔙 뒤로 가기 버튼 (UI objectName 불일치 대비)
@@ -69,6 +98,8 @@ class IncubationView(QMainWindow):
         self._load_test_info()
         print(f"[IncubationView] 1 start_measurement test_type 로드: {self.test_type}")
 
+        
+
     def showEvent(self, event):
         super().showEvent(event)
         QTimer.singleShot(100, lambda: start_date_time_update(self))
@@ -79,6 +110,15 @@ class IncubationView(QMainWindow):
         battery_info = model.get_battery_info()
         if battery_info:
             self._update_battery_ui(battery_info)
+
+
+        # 타이머 설정
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_progress)
+        self.timer.start(50)  # 50ms 간격으로 업데이트
+        
+        self.progress_value = 0    
+        
 
     def closeEvent(self, event):
         stop_date_time_update(self)
@@ -91,6 +131,14 @@ class IncubationView(QMainWindow):
     def update_date_time(self):
         update_date_time(self)    
 
+
+    def update_progress(self):
+        self.progress_value += 1
+        self.progressBar.setValue(self.progress_value)
+        
+        if self.progress_value >= 100:
+            self.timer.stop()
+            self.switch_to_measure_view.emit()
 
     def _go_to_measure_view(self):
         """MeasureView 이동"""

@@ -223,7 +223,7 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QProgressBar" name="progressBar_Meas">
+   <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
       <x>350</x>
@@ -364,7 +364,7 @@ QPushButton:pressed {
    <zorder>pushButton_BackArrow</zorder>
    <zorder>label_MeasureTitle</zorder>
    <zorder>label_BatteryGuage</zorder>
-   <zorder>progressBar_Meas</zorder>
+   <zorder>progressBar</zorder>
    <zorder>label_4</zorder>
    <zorder>label_6</zorder>
    <zorder>label_DateNClock</zorder>

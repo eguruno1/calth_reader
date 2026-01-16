@@ -842,7 +842,7 @@ class AppController(QMainWindow):
     #==========================================
     # --- 홈에서 Standard Test, Read Only, QC Test 분기 위해 ---
     #==========================================
-    def _get_current_test_type1(self):
+    def _get_select_menu(self):
         # 프로젝트 루트 디렉토리
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
@@ -851,7 +851,7 @@ class AppController(QMainWindow):
 
         with open(self.current_json_path, "r") as f:
             data = json.load(f)
-        return data.get("test_type1")
+        return data.get("select_menu")
     
     def _on_testinfo_next_requested(self):
         """
@@ -859,22 +859,22 @@ class AppController(QMainWindow):
         기존 switch_to_measure를 그대로 사용
         """
 
-        test_type = self._get_current_test_type1()
+        select_menu = self._get_select_menu()
 
-        if test_type == "StandardTest":
+        if select_menu == "StandardTest":
             # TestInfo → Incubation
             self.switch_to_incubation_view()
 
-        elif test_type == "ReadOnly":
+        elif select_menu == "ReadOnly":
             # TestInfo → InsertDevice
             self.switch_to_insert_device_view()
 
-        elif test_type == "QCTest":
+        elif select_menu == "QCTest":
             # TestInfo → InsertDevice (QC는 이후 Incubation 있음)
             self.switch_to_insert_device_view()
 
         else:
-            raise ValueError(f"Unknown test type: {test_type}")
+            raise ValueError(f"Unknown Select Menu: {select_menu}")
 
 
     #==========================================

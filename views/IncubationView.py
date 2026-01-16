@@ -25,6 +25,13 @@ class IncubationView(QMainWindow):
         
         self.test_type = "COVID19"
 
+        # ==============================
+        # ⏱️ Incubation Countdown 설정
+        # ==============================
+        self.incubation_total_seconds = 10 * 60  # 10분
+        self.incubation_elapsed = 0
+        self.incubation_timer = None
+
         self.load_ui()
         self.init_ui()
 
@@ -81,6 +88,8 @@ class IncubationView(QMainWindow):
 
         # 프로그레스바 초기화
         self.progressBar.setValue(0)
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(self.incubation_total_seconds)
 
 
     def init_ui(self):
@@ -112,16 +121,26 @@ class IncubationView(QMainWindow):
             self._update_battery_ui(battery_info)
 
 
-        # 타이머 설정
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_progress)
-        self.timer.start(50)  # 50ms 간격으로 업데이트
-        
-        self.progress_value = 0    
-        
+        # ==============================
+        # ⏱️ Incubation 카운트다운 시작
+        # ==============================
+        self.incubation_elapsed = 0
+
+        # 초기 표시: 10:00
+        if hasattr(self, "label_Countdown"):
+            self.label_Countdown.setText("10:00")
+
+        self.incubation_timer = QTimer(self)
+        self.incubation_timer.timeout.connect(self.update_incubation_countdown)
+        self.incubation_timer.start(1000)  # 1초   
+
 
     def closeEvent(self, event):
         stop_date_time_update(self)
+
+        if self.incubation_timer and self.incubation_timer.isActive():
+            self.incubation_timer.stop()
+
         super().closeEvent(event)
 
     def on_back_button_clicked(self):
@@ -160,6 +179,34 @@ class IncubationView(QMainWindow):
 
         except Exception as e:
             print(f"[IncubationView] JSON 로드 오류: {e}")
+
+
+    def update_incubation_countdown(self):
+        """카운트다운"""
+        self.incubation_elapsed += 1
+
+        remaining = self.incubation_total_seconds - self.incubation_elapsed
+        if remaining < 0:
+            remaining = 0
+
+        # ProgressBar 업데이트 (경과 기준)
+        self.progressBar.setValue(self.incubation_elapsed)
+
+        # MM:SS 포맷
+        minutes = remaining // 60
+        seconds = remaining % 60
+        time_text = f"{minutes:02d}:{seconds:02d}"
+
+        # QLabel 업데이트
+        if hasattr(self, "label_Countdown"):
+            self.label_Countdown.setText(time_text)
+
+        # 종료 조건
+        if self.incubation_elapsed >= self.incubation_total_seconds:
+            print("[IncubationView] Incubation 완료 → MeasureView 이동")
+            self.incubation_timer.stop()
+            self.switch_to_measure_view.emit()
+
 
     #####################################################
     # Battery Status (UART 기반)

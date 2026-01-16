@@ -239,7 +239,7 @@ QPushButton:pressed {
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label_6">
+   <widget class="QLabel" name="label_Countdown">
     <property name="geometry">
      <rect>
       <x>412</x>
@@ -366,7 +366,7 @@ QPushButton:pressed {
    <zorder>label_BatteryGuage</zorder>
    <zorder>progressBar</zorder>
    <zorder>label_4</zorder>
-   <zorder>label_6</zorder>
+   <zorder>label_Countdown</zorder>
    <zorder>label_DateNClock</zorder>
    <zorder>label_BatteryGuageTxt</zorder>
   </widget>

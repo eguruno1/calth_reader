@@ -24,9 +24,13 @@ from database.models import (
 
 class ResultView0(QMainWindow):
     switch_to_home = pyqtSignal()
+    switch_to_test_info = pyqtSignal(str)
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
+
+        self.select_menu = None
+
         self.load_ui()
         self.init_ui()
 
@@ -103,7 +107,12 @@ class ResultView0(QMainWindow):
         print("ResultView: HOME 버튼이 클릭되었습니다." )
         self.on_retry_measurement() # 모든값 초기화
         # 0.5초 후 결과 화면으로 전환:json 저장후
-        QTimer.singleShot(500, lambda: self.switch_to_home.emit())
+        QTimer.singleShot(
+            500,
+            lambda: self.switch_to_test_info.emit(
+                self.test_type.code if hasattr(self.test_type, "code") else ""
+            )
+        )
         #self.switch_to_home.emit()
         
     def on_resultRetest_button_clicked(self):
@@ -206,14 +215,14 @@ class ResultView0(QMainWindow):
                 .first()
             )
 
-            test_type = session.query(TestType).get(ts.test_type_id)
+            self.test_type = session.query(TestType).get(ts.test_type_id)
             operator = session.query(User).get(ts.operator_id)
             patient = (
                 session.query(Patient).get(ts.patient_id)
                 if ts.patient_id else None
             )
 
-            self._bind_ui(ts, mr, test_type, operator, patient)
+            self._bind_ui(ts, mr, self.test_type, operator, patient)
 
         finally:
             session.close()            

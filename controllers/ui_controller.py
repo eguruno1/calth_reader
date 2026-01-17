@@ -235,6 +235,7 @@ class AppController(QMainWindow):
         self.test_info_view.switch_to_measure.connect(self._on_testinfo_next_requested)#선택한 메뉴에 따라 이동처리를 위해.
         self.measure_view.switch_to_result.connect(self.switch_to_result_view)
         self.result_view0.switch_to_home.connect(self.switch_to_home_view)
+        self.result_view0.switch_to_test_info.connect(self.switch_to_test_info_view)#20260117
         self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
         self.calibration_view.switch_to_home.connect(self.switch_to_home_view)
         self.calibration_view.switch_to_next_step.connect(self.on_calibration_intro_next)

@@ -116,7 +116,7 @@ QPushButton:pressed {
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label_9">
+   <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
       <x>850</x>
@@ -379,7 +379,7 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_BatteryGuage">
+   <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
       <x>820</x>

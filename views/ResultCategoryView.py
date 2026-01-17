@@ -4,12 +4,16 @@ Result Category View - 결과 카테고리 선택 화면
 """
 
 import os
+import threading
+
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import pyqtSignal, QTimer, QDateTime
+from PyQt5.QtCore import pyqtSignal, QTimer, QDateTime, QMetaObject, Qt, Q_ARG, pyqtSlot
+from PyQt5.QtGui     import QPixmap
 from PyQt5 import uic
 
-from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
-                        update_battery_status, start_battery_update, stop_battery_update)
+from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,)
+
+from controllers import app_controller
 
 class ResultCategoryView(QMainWindow):
     """결과 카테고리 선택 뷰"""
@@ -20,9 +24,13 @@ class ResultCategoryView(QMainWindow):
     switch_to_calibration_results = pyqtSignal()
     switch_to_qc_results = pyqtSignal()
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         
+        # 배터리
+        self.uart_model = uart_model
+        print(f"[ResultCategoryView] uart_model injected: {self.uart_model}")
+
         # 프로젝트 루트 디렉토리
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
@@ -63,7 +71,12 @@ class ResultCategoryView(QMainWindow):
         super().showEvent(event)
         # 날짜/시간 및 배터리 업데이트 시작
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
+        
+        # 배터리 상태 업데이트
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
         print("ResultCategoryView가 표시되었습니다.")
     
     def hideEvent(self, event):
@@ -71,13 +84,13 @@ class ResultCategoryView(QMainWindow):
         super().hideEvent(event)
         # 날짜/시간 및 배터리 업데이트 중지
         stop_date_time_update(self)
-        stop_battery_update(self)
+
         print("ResultCategoryView가 숨겨졌습니다.")
     
     def closeEvent(self, event):
         """화면이 닫힐 때 호출"""
         stop_date_time_update(self)
-        stop_battery_update(self)
+
         super().closeEvent(event)
         print("ResultCategoryView가 닫혔습니다.")
     
@@ -85,9 +98,6 @@ class ResultCategoryView(QMainWindow):
         """날짜와 시간 업데이트"""
         update_date_time(self)
     
-    def update_battery_status(self):
-        """배터리 상태 업데이트"""
-        update_battery_status(self)
     
     # 버튼 이벤트 핸들러들
     def on_patient_results_clicked(self):
@@ -114,4 +124,63 @@ class ResultCategoryView(QMainWindow):
         """뷰 초기화"""
         print("ResultCategoryView 초기화")
         self.update_date_time()
-        self.update_battery_status()
+
+
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        print(f"[ResultCategoryView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[ResultCategoryView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
+        # 배터리 (기존)
+        if event_type == "battery_changed" and data:
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
+
+    @pyqtSlot(object)
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[ResultCategoryView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[ResultCategoryView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[ResultCategoryView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[ResultCategoryView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[ResultCategoryView] Battery UI update error: {e}")

@@ -125,8 +125,8 @@ class AppController(QMainWindow):
         self.general_settings_view        = GeneralSettingsView(self)
         self.power_management_view        = PowerManagementView(self)
         self.manage_operator_view         = ManageOperatorView(self)  # 계정관리
-        self.resultList_view              = ResultListView(self)
-        self.result_category_view         = ResultCategoryView(self)
+        self.resultList_view              = ResultListView(self, uart_model=backend_controller.uart_model)
+        self.result_category_view         = ResultCategoryView(self, uart_model=backend_controller.uart_model)
         self.info_view                    = InfoView(self)
         self.select_view                  = SelectView(self, uart_model=backend_controller.uart_model)
         self.test_info_view               = TestInfoView(self, uart_model=backend_controller.uart_model)
@@ -454,11 +454,21 @@ class AppController(QMainWindow):
         print("Patient Results로 전환")
         self.resultList_view.set_result_type("patient")
         self.stacked_widget.setCurrentWidget(self.resultList_view)
+        self._set_active_uart_view(self.test_info_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.test_info_view._update_battery_ui(battery)
 
     def switch_to_result_category_view(self):
         print("Result Category View로 전환")
         self.result_category_view.reset_view()
         self.stacked_widget.setCurrentWidget(self.result_category_view)
+        self._set_active_uart_view(self.test_info_view)
+        # 초기 배터리 상태
+        battery = self.backend_controller.uart_model.get_battery_info()
+        if battery:
+            self.test_info_view._update_battery_ui(battery)
 
     def switch_to_calibration_results(self):
         print("Calibration Results로 전환")

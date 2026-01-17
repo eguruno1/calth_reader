@@ -1,28 +1,24 @@
 import os
+import threading
+
 from typing import List
 
 from PyQt5.QtWidgets import (
     QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView,
     QWidget, QCheckBox, QHBoxLayout, QMessageBox
 )
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import pyqtSignal, QMetaObject, Qt, Q_ARG, pyqtSlot
+from PyQt5.QtGui import QColor, QPixmap
 from PyQt5 import uic
 
 # 공통 UI 유틸
-from views.Utils import (
-    update_date_time,
-    start_date_time_update,
-    stop_date_time_update,
-    update_battery_status,
-    start_battery_update,
-    stop_battery_update
-)
+from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update)
 
 # DB (ResultView0 와 동일)
 from database.connection import get_db_session
 from database.models import MeasurementResult
 
+from controllers import app_controller
 
 class ResultListView(QMainWindow):
     """
@@ -34,10 +30,14 @@ class ResultListView(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_result_category = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
 
         self.mode: str = "patient"
+
+        # 배터리
+        self.uart_model = uart_model
+        print(f"[ResultListView] uart_model injected: {self.uart_model}")
 
         # 선택된 행 인덱스
         self.selected_rows: set[int] = set()
@@ -77,7 +77,6 @@ class ResultListView(QMainWindow):
         self._setup_table()
 
         self.update_date_time()
-        self.update_battery_status()
 
 
     def set_result_type(self, result_type: str):
@@ -145,14 +144,41 @@ class ResultListView(QMainWindow):
     def load_data(self):
         session = get_db_session()
         try:
+            query = session.query(MeasurementResult)
+
+            # ======================================================
+            # ★ result_type 에 따른 조회 조건
+            # ======================================================
+            if self.result_type == "qc":
+                # QC 결과만 조회
+                query = query.filter(
+                    MeasurementResult.select_menu == "QCTest"
+                )
+
+            elif self.result_type == "patient":
+                # Patient 결과만 조회 (QC 제외)
+                # select_menu 가 NULL 인 기존 데이터도 포함
+                query = query.filter(
+                    (MeasurementResult.select_menu != "QCTest") |
+                    (MeasurementResult.select_menu.is_(None))
+                )
+
             results: List[MeasurementResult] = (
-                session.query(MeasurementResult)
+                query
                 .order_by(MeasurementResult.measured_at.desc())
                 .all()
             )
+
+            print(
+                f"[ResultListView] load_data result_type={self.result_type}, rows={len(results)}"
+            )
+
             self._populate_table(results)
+
         finally:
             session.close()
+
+
 
     def _populate_table(self, results: List[MeasurementResult]):
         self.row_id_map.clear()   # ⭐️ 매번 초기화
@@ -545,15 +571,75 @@ class ResultListView(QMainWindow):
     def showEvent(self, event):
         super().showEvent(event)
         start_date_time_update(self)
-        start_battery_update(self)
+
+        # 배터리 상태 업데이트
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
 
     def hideEvent(self, event):
         super().hideEvent(event)
         stop_date_time_update(self)
-        stop_battery_update(self)
 
     def update_date_time(self):
         update_date_time(self)
 
-    def update_battery_status(self):
-        update_battery_status(self)
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        print(f"[ResultListView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[ResultListView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
+        # 배터리 (기존)
+        if event_type == "battery_changed" and data:
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
+
+    @pyqtSlot(object)
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[ResultListView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[ResultListView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[ResultListView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[ResultListView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[ResultListView] Battery UI update error: {e}")        

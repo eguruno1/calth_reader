@@ -25,7 +25,8 @@ class MeasureView(QMainWindow):
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
-        # ✅ FIX: test_type 기본값 선언 (AttributeError 방지)
+        # ✅ FIX: select_menu, test_type 기본값 선언 (AttributeError 방지)
+        self.select_menu = None
         self.test_type = None
 
         self.load_ui()
@@ -112,6 +113,7 @@ class MeasureView(QMainWindow):
             with open(self.current_json_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
+            self.select_menu = data.get("select_menu", "")
             self.test_type = data.get("test_type1", "")
 
             print(f"[MeasureView] _load_test_info test_type 로드: {self.test_type}")
@@ -158,7 +160,8 @@ class MeasureView(QMainWindow):
         # print(f"[MeasureView] 0 start_measurement test_type 로드: {self.test_type}")
         # JSON에서 설정된 정보를 기준으로 진행한다.
         self._load_test_info()
-        print(f"[MeasureView] 1 start_measurement test_type 로드: {self.test_type}")
+        print(f"[MeasureView] 1 start_measurement select_menu, test_type로드: {self.select_menu}, {self.test_type}")
+
         # 방어 코드
         if not self.test_type:
             print("[MeasureView] ERROR: test_type is empty")
@@ -340,6 +343,7 @@ class MeasureView(QMainWindow):
                 image_path=self.result_image_path, #self.captured_image_path
                 thumbnail_path=self.thumbnail_path,
                 quality_score=quality_score,
+                select_menu=self.select_menu,
                 is_valid=True
             )
             session.add(result)

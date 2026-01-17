@@ -94,7 +94,7 @@ class TestInfoView(QMainWindow):
         # 이동하지 않을 위젯들의 이름 리스트
         self.static_widgets = [
             "pushButton_TestInfoBackArrow",
-            "label",
+            "label_Title",
             "label_DateNClock",
             "label_BatteryGuage",
             "label_BatteryGuageTxt"
@@ -272,6 +272,13 @@ class TestInfoView(QMainWindow):
 
             print(f"[TestInfoView] _load_select_menu select_menu 로드: {self.select_menu}")
 
+            if self.select_menu == "QCTest":
+                self.label_Title.setText("QC TEST");
+                self.label_PA.setText("QC ID");
+            else:
+                self.label_Title.setText("TEST INFO");
+                self.label_PA.setText("PATIENT ID");
+
         except Exception as e:
             print(f"[TestInfoView] JSON 로드 오류: {e}")    
         
@@ -355,6 +362,10 @@ class TestInfoView(QMainWindow):
 
     def showEvent(self, event):
         super().showEvent(event)
+
+        # ✅ [추가] HomeView에서 선택한 메뉴 기준으로 타이틀 갱신
+        self._load_select_menu()
+
         self.load_operator_from_json()  # TestInfoView가 표시될 때마다 operator 정보를 새로 로드
         
         # 시간과 배터리 상태 업데이트 시작

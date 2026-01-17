@@ -299,6 +299,15 @@ class ResultView0(QMainWindow):
 
             with open(self.current_json_path, "r") as f:
                 return json.load(f)
+            
+            self.select_menu = data.get("select_menu", "")
+
+            if self.select_menu == "QCTest":
+                self.label.setText("QC RESULT");
+                self.label_17.setText("QC ID");
+            else:
+                self.label.setText("RESULT");
+                self.label_17.setText("PATIENT ID");
 
         except Exception as e:
             print(f"[ResultView0] current.json load error: {e}")
@@ -326,8 +335,8 @@ class ResultView0(QMainWindow):
 
     def reset_current_json(self):
         empty = {
-            "select_menu": None,
-            "test_type1": None,
+            #"select_menu": None, select 유지
+            #"test_type1": None,  test_type1
             "operator": None,
             "patient_id": None,
             "datentime": None,

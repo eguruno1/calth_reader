@@ -243,13 +243,6 @@ class AppController(QMainWindow):
 
 
         # 테스트 진행 추가
-        self.incubation_view.switch_to_test_info_view.connect(
-            self.switch_to_test_info_view
-        )
-        self.incubation_view.switch_to_measure_view.connect(
-            self.switch_to_measure_view
-        )
-
         self.insert_device_view.switch_to_test_info_view.connect(
             self.switch_to_test_info_view
         )
@@ -257,6 +250,13 @@ class AppController(QMainWindow):
             # self.switch_to_measure_view
             # 인서트디바이스 뷰는 스탠다드, 리드온리, 큐시테스트 모두 사용.
             self._on_insert_device_next_requested
+        )
+
+        self.incubation_view.switch_to_test_info_view.connect(
+            self.switch_to_test_info_view
+        )
+        self.incubation_view.switch_to_measure_view.connect(
+            self.switch_to_measure_view
         )
 
         # 계정관련

@@ -10,10 +10,9 @@ from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QResizeEvent, QPixmap
-from views.Utils import (center_window, update_date_time, start_date_time_update, stop_date_time_update,
-                        update_battery_status, start_battery_update, stop_battery_update)
-from config.pretest_config import PretestConfig
+from views.Utils import (center_window, update_date_time, start_date_time_update, stop_date_time_update)
 
+from controllers import app_controller
 
 class InsertDeviceView(QMainWindow):
     switch_to_home = pyqtSignal()
@@ -26,6 +25,13 @@ class InsertDeviceView(QMainWindow):
         super().__init__(parent)
         
         self.test_type = "COVID19"
+
+        # ★ 추가: 슬롯 체크 상태 플래그
+        self._waiting_slot_check = False
+
+        # ★ 추가: 슬롯 상태 안내 위젯 (TestInfoView 전용)
+        from .widgets.slot_status_overlay import SlotStatusOverlayWidget
+        self.slot_overlay = SlotStatusOverlayWidget(self)
 
         # UI 파일 로드
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -46,14 +52,9 @@ class InsertDeviceView(QMainWindow):
         self.uart_model = uart_model
         print(f"[InsertDeviceView] uart_model injected: {self.uart_model}")
         
-        # 데이터 저장
-        self.data = None
-        self.pretest_type = PretestConfig.TYPE_CALIBRATION
-        self.config = {}
         
         # 초기 시간 및 배터리 상태 업데이트
         update_date_time(self)
-        update_battery_status(self)
         
         # 버튼 연결
         if hasattr(self, 'pushButton_Back'):
@@ -74,7 +75,15 @@ class InsertDeviceView(QMainWindow):
     def go_next(self):
         """다음 페이지로 이동"""
         print("Going to Measure")
-        self.switch_to_measure_view.emit()
+        # self.switch_to_measure_view.emit()
+
+        # ★ 추가: 슬롯 상태 확인 요청
+        print("[TestInfoView] Send slot check command: H1")
+        self._waiting_slot_check = True
+
+        app_controller.send_uart_command("H1")
+
+
         
     def showEvent(self, event):
         super().showEvent(event)
@@ -122,6 +131,32 @@ class InsertDeviceView(QMainWindow):
                 Qt.QueuedConnection,
                 Q_ARG(object, data)
             )
+        # ★ 추가: 슬롯 상태 응답 처리
+        elif event_type == "slot_status_changed" and self._waiting_slot_check:
+            """
+            슬롯 상태 확인 후
+            실제 화면 이동은 ui_controller에서 select_menu 기준으로 처리
+            """
+            
+            self._waiting_slot_check = False
+
+            from models.uart_model import SlotStatus
+
+            if data == SlotStatus.OUT:
+                print("[InsertDeviceView] Slot OPEN → show warning")
+                QMetaObject.invokeMethod(
+                    self.slot_overlay,
+                    "show_off",
+                    Qt.QueuedConnection
+                )
+
+            elif data == SlotStatus.IN:
+                print("[InsertDeviceView] Slot CLOSED → move to MeasureView")
+                QMetaObject.invokeMethod(
+                    self,
+                    "_go_to_measure_view",
+                    Qt.QueuedConnection
+                )    
 
     @pyqtSlot(object)
     def _update_battery_ui(self, battery_info):
@@ -161,6 +196,11 @@ class InsertDeviceView(QMainWindow):
 
         except Exception as e:
             print(f"[InsertDeviceView] Battery UI update error: {e}")  
+
+    @pyqtSlot()
+    def _go_to_measure_view(self):
+        """MmeasureView 이동"""
+        self.switch_to_measure_view.emit()        
 
 
 if __name__ == "__main__":

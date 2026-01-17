@@ -256,16 +256,8 @@ class TestInfoView(QMainWindow):
 
         # Save test data
         self.update_json_file(operator, patient_id, current_datetime)
-
-        # ★ 추가: 슬롯 상태 확인 요청
-        print("[TestInfoView] Send slot check command: H1")
-        self._waiting_slot_check = True
-
- 
-        app_controller.send_uart_command("H1")
-        
-        # Proceed to measure view : 슬롯 확인후 정상이면 진행...
-        # self.reset_widget_positions()
+        # Move
+        self._go_to_measure_view()
 
 
     def _load_select_menu(self):
@@ -409,33 +401,6 @@ class TestInfoView(QMainWindow):
                 Q_ARG(object, data)
             )
 
-        # ★ 추가: 슬롯 상태 응답 처리
-        elif event_type == "slot_status_changed" and self._waiting_slot_check:
-            """
-            슬롯 상태 확인 후
-            실제 화면 이동은 ui_controller에서 select_menu 기준으로 처리
-            """
-            
-            self._waiting_slot_check = False
-
-            from models.uart_model import SlotStatus
-
-            if data == SlotStatus.OUT:
-                print("[TestInfoView] Slot OPEN → show warning")
-                QMetaObject.invokeMethod(
-                    self.slot_overlay,
-                    "show_off",
-                    Qt.QueuedConnection
-                )
-
-            elif data == SlotStatus.IN:
-                print("[TestInfoView] Slot CLOSED → move to MeasureView")
-                QMetaObject.invokeMethod(
-                    self,
-                    "_go_to_measure_view",
-                    Qt.QueuedConnection
-                )    
-
     @pyqtSlot(object)
     def _update_battery_ui(self, battery_info):
         if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
@@ -475,7 +440,7 @@ class TestInfoView(QMainWindow):
         except Exception as e:
             print(f"[TestInfoView] Battery UI update error: {e}")  
 
-    @pyqtSlot()
+    
     def _go_to_measure_view(self):
         """InsertDeviceView 이동"""
         self.reset_widget_positions()

@@ -15,15 +15,17 @@ from controllers import app_controller
 class TestInfoView(QMainWindow):
     switch_to_home    = pyqtSignal()
     # switch_to_select  = pyqtSignal()  
-    switch_to_measure = pyqtSignal()  
+    switch_to_measure = pyqtSignal()
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
+
+        self.select_menu = None
+        self.selected_test_type = ""
         
         self.load_ui()
         self.init_ui()
         self.widgets_moved = False
-        self.selected_test_type = ""
         self.setup_virtual_keyboard()
         self.installEventFilter(self)
         self.keyboard_animation = None
@@ -81,8 +83,8 @@ class TestInfoView(QMainWindow):
         """
         self.update_date_time()
         
-        # 배터리 상태 초기화
-        # self.update_battery_status()
+        self._load_select_menu()
+        print(f"[TestInfoView] 1 start_measurement test_type 로드: {self.select_menu}")
 
         # centralwidget 찾기
         self.central_widget = self.centralWidget()
@@ -264,6 +266,22 @@ class TestInfoView(QMainWindow):
         
         # Proceed to measure view : 슬롯 확인후 정상이면 진행...
         # self.reset_widget_positions()
+
+
+    def _load_select_menu(self):
+        """
+        JSON에서 검사 정보 읽기 (Read Only)
+        """
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.select_menu = data.get("select_menu", "")
+
+            print(f"[TestInfoView] _load_select_menu select_menu 로드: {self.select_menu}")
+
+        except Exception as e:
+            print(f"[TestInfoView] JSON 로드 오류: {e}")    
         
 
     def update_json_file(self, operator, patient_id, datentime):
@@ -393,6 +411,11 @@ class TestInfoView(QMainWindow):
 
         # ★ 추가: 슬롯 상태 응답 처리
         elif event_type == "slot_status_changed" and self._waiting_slot_check:
+            """
+            슬롯 상태 확인 후
+            실제 화면 이동은 ui_controller에서 select_menu 기준으로 처리
+            """
+            
             self._waiting_slot_check = False
 
             from models.uart_model import SlotStatus
@@ -454,6 +477,6 @@ class TestInfoView(QMainWindow):
 
     @pyqtSlot()
     def _go_to_measure_view(self):
-        """MeasureView 이동"""
+        """InsertDeviceView 이동"""
         self.reset_widget_positions()
-        self.switch_to_measure.emit()          
+        self.switch_to_measure.emit()         

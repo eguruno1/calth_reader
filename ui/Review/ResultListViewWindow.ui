@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -69,30 +69,25 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
+     <string notr="true"/>
     </property>
     <property name="text">
-     <string>SELECT
-ALL</string>
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>../image/06_Result/selecall_button.png</normaloff>../image/06_Result/selecall_button.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>102</width>
+      <height>102</height>
+     </size>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_RListDelete">
@@ -109,7 +104,7 @@ ALL</string>
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../image/07_TestResult/TestResult_Delete.png</normaloff>../image/07_TestResult/TestResult_Delete.png</iconset>
+      <normaloff>../image/06_Result/delete_button.png</normaloff>../image/06_Result/delete_button.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -442,7 +437,7 @@ ALL</string>
      <string>000%</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="label_DateNClock">
@@ -520,7 +515,7 @@ ALL</string>
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../image/06_Result/Result_Home.png</normaloff>../image/06_Result/Result_Home.png</iconset>
+      <normaloff>../image/06_Result/home_button.png</normaloff>../image/06_Result/home_button.png</iconset>
     </property>
     <property name="iconSize">
      <size>

@@ -254,7 +254,9 @@ class AppController(QMainWindow):
             self.switch_to_test_info_view
         )
         self.insert_device_view.switch_to_measure_view.connect(
-            self.switch_to_measure_view
+            # self.switch_to_measure_view
+            # 인서트디바이스 뷰는 스탠다드, 리드온리, 큐시테스트 모두 사용.
+            self._on_insert_device_next_requested
         )
 
         # 계정관련
@@ -884,8 +886,9 @@ class AppController(QMainWindow):
         select_menu = self._get_select_menu()
 
         if select_menu == "StandardTest":
-            # TestInfo → Incubation
-            self.switch_to_incubation_view()
+            # TestInfo → InsertDevice
+            # self.switch_to_incubation_view()
+            self.switch_to_insert_device_view()
 
         elif select_menu == "ReadOnly":
             # TestInfo → InsertDevice
@@ -894,6 +897,26 @@ class AppController(QMainWindow):
         elif select_menu == "QCTest":
             # TestInfo → InsertDevice (QC는 이후 Incubation 있음)
             self.switch_to_insert_device_view()
+
+        else:
+            raise ValueError(f"Unknown Select Menu: {select_menu}")
+
+    def _on_insert_device_next_requested(self):
+        """
+        InsertDeviceView 완료 후 다음 화면 결정
+        - StandardTest / QCTest → Incubation
+        - ReadOnly → Measure
+        """
+
+        select_menu = self._get_select_menu()
+
+        if select_menu in ("StandardTest", "QCTest"):
+            # InsertDevice → Incubation
+            self.switch_to_incubation_view()
+
+        elif select_menu == "ReadOnly":
+            # InsertDevice → Measure
+            self.switch_to_measure_view()
 
         else:
             raise ValueError(f"Unknown Select Menu: {select_menu}")

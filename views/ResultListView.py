@@ -183,14 +183,24 @@ class ResultListView(QMainWindow):
     def _populate_table(self, results: List[MeasurementResult]):
         self.row_id_map.clear()   # ⭐️ 매번 초기화
 
-        headers = [
-            "Check",              # 체크박스
-            "Date",
-            "Operator ID",
-            "Patient ID",
-            "Test Item",
-            "Result"
-        ]
+        if self.result_type=='qc':
+            headers = [
+                "Check",              # 체크박스
+                "Date",
+                "Operator ID",
+                "QC ID",
+                "Test Item",
+                "Result"
+            ]    
+        else:
+            headers = [
+                "Check",              # 체크박스
+                "Date",
+                "Operator ID",
+                "Patient ID",
+                "Test Item",
+                "Result"
+            ]
 
         self.table.setColumnCount(len(headers))
         self.table.setHorizontalHeaderLabels(headers)

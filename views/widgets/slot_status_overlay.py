@@ -53,7 +53,7 @@ class SlotStatusOverlayWidget(QWidget):
         inner.setAlignment(Qt.AlignCenter)
         inner.setSpacing(16)
 
-        label_title = QLabel("⚠ Warning")
+        label_title = QLabel("⚠ Error")
         label_title.setFont(QFont("Arial", 26, QFont.Bold))
         label_title.setStyleSheet("color: yellow;")
         label_title.setAlignment(Qt.AlignCenter)

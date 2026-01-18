@@ -3,7 +3,7 @@ import os
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import QTimer, pyqtSignal, Qt
 from PyQt5 import uic
-# from controllers import app_controller
+from controllers import app_controller
 
 
 class LoadView(QMainWindow):
@@ -89,6 +89,10 @@ class LoadView(QMainWindow):
         
         if self.progress_value >= 100:
             self.timer.stop()
+            
+            # 파워스위치 조작여부 수신을 위해 P1 을 보냄.
+            app_controller.send_uart_command("P1")
+
             self.finished.emit()
 
     def display_version(self):

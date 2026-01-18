@@ -2,6 +2,9 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 
+from controllers import app_controller
+import subprocess   # 안전한 시스템 명령 실행용
+
 
 class PowerStatusOverlayWidget(QWidget):
     """
@@ -12,6 +15,8 @@ class PowerStatusOverlayWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.confirm_message = None
 
         self.setWindowFlags(
             Qt.FramelessWindowHint |
@@ -29,6 +34,7 @@ class PowerStatusOverlayWidget(QWidget):
 
         # 상태 플래그 : 위젯은 한번만 오픈
         self._is_open = False
+        self._shutdown_in_progress = False  # 🔒 중복 shutdown 방지
 
         self.hide()
         self._build_ui()
@@ -63,10 +69,18 @@ class PowerStatusOverlayWidget(QWidget):
         self.label_desc.setStyleSheet("color: white;")
         self.label_desc.setAlignment(Qt.AlignCenter)
 
-        btn_ok = QPushButton("OK")
-        btn_ok.setFixedSize(140, 48)
-        btn_ok.setFont(QFont("Arial", 16, QFont.Bold))
-        btn_ok.setStyleSheet("""
+        self.label_desc2 = QLabel("Power Ask")
+        self.label_desc2.setFont(QFont("Arial", 12))
+        self.label_desc2.setStyleSheet("color: white;")
+        self.label_desc2.setAlignment(Qt.AlignCenter)        
+
+        # =========================
+        # 버튼 생성
+        # =========================
+        self.btn_ok = QPushButton("OK")
+        self.btn_ok.setFixedSize(140, 48)
+        self.btn_ok.setFont(QFont("Arial", 16, QFont.Bold))
+        self.btn_ok.setStyleSheet("""
             QPushButton {
                 background-color: #E53935;
                 color: white;
@@ -75,20 +89,38 @@ class PowerStatusOverlayWidget(QWidget):
             QPushButton:hover { background-color: #D32F2F; }
             QPushButton:pressed { background-color: #B71C1C; }
         """)
-        btn_ok.clicked.connect(self.on_ok_clicked)
+        self.btn_ok.clicked.connect(self.on_ok_clicked)
+
+
+        self.btn_cancle = QPushButton("Cancle")
+        self.btn_cancle.setFixedSize(140, 48)
+        self.btn_cancle.setFont(QFont("Arial", 16, QFont.Bold))
+        self.btn_cancle.setStyleSheet("""
+            QPushButton {
+                background-color: #616161;
+                color: white;
+                border-radius: 10px;
+            }
+            QPushButton:hover { background-color: #424242; }
+            QPushButton:pressed { background-color: #212121; }
+        """)
+        self.btn_cancle.clicked.connect(self.on_cancle_clicked)
 
         # ==========================================
-        # 🔥 OK 버튼 중앙 정렬용 레이아웃
+        # 🔥 OK / Cancel 버튼 중앙 정렬 (같은 라인)
         # ==========================================
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(30)
         btn_layout.addStretch()
-        btn_layout.addWidget(btn_ok)
+        btn_layout.addWidget(self.btn_ok)
+        btn_layout.addWidget(self.btn_cancle)
         btn_layout.addStretch()
 
         inner.addWidget(label_title)
         inner.addWidget(self.label_desc)
+        inner.addWidget(self.label_desc2)
         inner.addSpacing(10)
-        inner.addLayout(btn_layout)   # 🔥 변경 포인트
+        inner.addLayout(btn_layout)  
 
         layout.addWidget(frame)
 
@@ -115,15 +147,23 @@ class PowerStatusOverlayWidget(QWidget):
     # 외부 제어 API
     # ======================================================
     def show_on(self):
-        self._show("Power ON")
+        self.confirm_message = ""
+        self.label_desc2.setText(self.confirm_message)
+        #self._show("Power ON")
 
     def show_off(self):
-        self._show("Power OFF")
+        self.confirm_message = (
+            "When the system shuts down, it will\n"
+            "automatically log out.\n\n"
+            "Do you want to proceed?"
+        )
+        self._show("Power Off Confirmation.\n")
 
     def _show(self, message):
         if self._is_open:
             return
         self.label_desc.setText(message)
+        self.label_desc2.setText(self.confirm_message)
         self._is_open = True
         self.show()
         self.raise_()
@@ -169,7 +209,49 @@ class PowerStatusOverlayWidget(QWidget):
     # ======================================================
     def on_ok_clicked(self):
         """
-        사용자가 경고를 확인하고 닫을 때
+        사용자가 OK 선택 → 장비 전원 종료
         """
-        print("[PowerStatusOverlay] OK clicked")
+        # 이미 shutdown 진행 중이면 무시
+        if self._shutdown_in_progress:
+            print("[PowerStatusOverlay] Shutdown already in progress → ignore")
+            return
+    
+        print("[PowerStatusOverlay] OK clicked → shutdown start")
+
+        # shutdown 시작 플래그 설정
+        self._shutdown_in_progress = True
+
+        # 버튼 즉시 비활성화 (중복 클릭 방지)
+        self.btn_ok.setEnabled(False)
+        self.btn_cancle.setEnabled(False)
+        self.btn_ok.setText("Shutting down...")
+
+        # UART로 Power OFF 신호 전송
+        app_controller.send_uart_command("P0")
+
         self.hide_warning()
+
+        # sudoers에 의해 비밀번호 없이 실행됨
+        try:
+            subprocess.Popen(
+                ["/sbin/shutdown", "-h", "now"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+        except Exception as e:
+            print(f"[PowerStatusOverlay] shutdown failed: {e}")
+
+    def on_cancle_clicked(self):
+        """
+        사용자가 경고를 확인하고 Cancle 때
+        """
+        # shutdown 시작 후 Cancel 무효
+        if self._shutdown_in_progress:
+            return
+    
+        print("[PowerStatusOverlay] Cancle clicked")
+
+        # 파워 유지 P1 을 보냄.
+        app_controller.send_uart_command("P1")
+
+        self.hide_warning()    

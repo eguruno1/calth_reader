@@ -122,7 +122,7 @@ class AdminPwEdit2View(QWidget):
     def set_user(self):
         session_user = get_session_context()
         if not session_user:
-            raise Exception("세션 사용자 정보가 없습니다.")
+            raise Exception("User not found.")
 
         self.lineEdit_user_id.setText(session_user["user_id"])
         self.lineEdit_password.clear()
@@ -137,24 +137,24 @@ class AdminPwEdit2View(QWidget):
         pw2 = self.lineEdit_password_2.text().strip()
 
         if not pw1 or not pw2:
-            QMessageBox.warning(self, "입력 오류", "새 비밀번호를 입력해주세요.")
+            QMessageBox.critical(self, "Error", "Password Invaild.")
             return
 
         if pw1 != pw2:
-            QMessageBox.warning(self, "입력 오류", "비밀번호가 일치하지 않습니다.")
+            QMessageBox.critical(self, "Error", "Password Invaild.")
             return
 
         try:
             self._update_admin_password(pw1)
-            QMessageBox.information(self, "변경 완료", "비밀번호가 변경되었습니다.")
+            QMessageBox.information(self, "Info", "Changed successfully.")
             self.hide_keyboard()
             self.password_updated.emit()
             self.switch_to_manage_operator.emit()
 
         except Exception as e:
             QMessageBox.critical(
-                self, "오류",
-                f"비밀번호 변경 중 오류가 발생했습니다.\n{str(e)}"
+                self, "Error",
+                f"An error occurred.\n{str(e)}"
             )
 
     # ==================================================

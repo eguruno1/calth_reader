@@ -121,33 +121,35 @@ class AdminPwEdit1View(QWidget):
         if not password:
             QMessageBox.warning(
                 self,
-                "입력 오류",
-                "현재 비밀번호를 입력해주세요."
+                "Error",
+                "Password Invaild"
             )
             return
 
         try:
             if self._verify_admin_password(password):
+                """
                 QMessageBox.information(
                     self,
                     "확인 완료",
                     "비밀번호가 확인되었습니다."
                 )
+                """
                 self.lineEdit_password.clear()
                 self.hide_keyboard()
                 self.switch_to_admin_pw_edit2.emit()
             else:
-                QMessageBox.warning(
+                QMessageBox.critical(
                     self,
-                    "인증 실패",
-                    "현재 비밀번호가 올바르지 않습니다."
+                    "Error",
+                    "Password Invaild."
                 )
 
         except Exception as e:
             QMessageBox.critical(
                 self,
-                "오류",
-                f"비밀번호 확인 중 오류가 발생했습니다.\n{str(e)}"
+                "Error",
+                f"An error occurred.\n{str(e)}"
             )
 
     # ==================================================
@@ -157,11 +159,11 @@ class AdminPwEdit1View(QWidget):
         session_user = get_session_context()
 
         if not session_user:
-            raise Exception("로그인 정보가 없습니다.")
+            raise Exception("User not found.")
 
         admin_user_id = session_user.get("user_id")
         if not admin_user_id:
-            raise Exception("세션 사용자 정보가 올바르지 않습니다.")
+            raise Exception("User not found.")
 
         return user_service.verify_password(admin_user_id, password)
 

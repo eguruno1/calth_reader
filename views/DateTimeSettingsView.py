@@ -117,7 +117,7 @@ class DateTimeSettingsView(QMainWindow):
         try:
             if self.radio_system_time.isChecked():
                 current_time = datetime.now()
-                mode_text = "시스템 시간"
+                mode_text = "System Time"
             elif self.radio_utc_time.isChecked():
                 offset = self.combo_utc_offset.currentData()
                 from datetime import timedelta
@@ -126,13 +126,13 @@ class DateTimeSettingsView(QMainWindow):
             elif self.radio_custom_time.isChecked():
                 qt_datetime = self.datetime_custom.dateTime()
                 current_time = datetime.fromtimestamp(qt_datetime.toSecsSinceEpoch())
-                mode_text = "커스텀 시간"
+                mode_text = "Custom Time"
             else:
                 current_time = datetime.now()
-                mode_text = "시스템 시간"
+                mode_text = "System Time"
             
             time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            self.label_current_time.setText(f"현재 시간 ({mode_text}): {time_str}")
+            self.label_current_time.setText(f"Current Time ({mode_text}): {time_str}")
             
         except Exception as e:
             print(f"시간 표시 업데이트 실패: {e}")

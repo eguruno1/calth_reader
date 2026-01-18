@@ -117,16 +117,20 @@ class AccountAddView(QWidget):
         password2 = self.password_input2.text()
         role      = self.comboBox_role.currentText()
 
-        if not user_id or not password:
-            QMessageBox.warning(self, "입력 오류", "User ID와 Password는 필수입니다.")
+        if not user_id:
+            QMessageBox.warning(self, "Warning", "Please enter your Operator ID")
+            return
+        
+        if not password:
+            QMessageBox.warning(self, "Warning", "Please enter your password.")
             return
 
         if password != password2:
-            QMessageBox.warning(self, "입력 오류", "비밀번호가 일치하지 않습니다.")
+            QMessageBox.critical(self, "Error", "Password Mismatch")
             return
 
         if self._is_duplicate_user(user_id):
-            QMessageBox.warning(self, "중복 오류", "이미 존재하는 사용자 ID입니다.")
+            QMessageBox.warning(self, "Warning", "Select duplicatie Operator ID")
             return
 
         try:
@@ -134,8 +138,8 @@ class AccountAddView(QWidget):
 
             QMessageBox.information(
                 self,
-                "등록 완료",
-                "사용자가 정상적으로 등록되었습니다."
+                "Info",
+                "It has been registered successfully."
             )
 
             self.clear_form()
@@ -145,8 +149,8 @@ class AccountAddView(QWidget):
         except Exception as e:
             QMessageBox.critical(
                 self,
-                "오류",
-                f"사용자 등록 중 오류가 발생했습니다.\n{str(e)}"
+                "Error",
+                f"An error occurred during registration.\n{str(e)}"
             )
 
     # ==================================================

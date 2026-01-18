@@ -493,17 +493,16 @@ class ResultListView(QMainWindow):
         if not self.selected_rows:
             QMessageBox.information(
                 self,
-                "Delete Result",
-                "삭제할 항목을 선택해주세요."
+                "Warning",
+                "Select the Results to Delete."
             )
             return
         
         # ▶ 삭제 확인 다이얼로그
         reply = QMessageBox.question(
             self,
-            "Delete Confirmation",
-            f"선택된 {len(self.selected_rows)}개의 결과를 삭제하시겠습니까?\n"
-            "이 작업은 되돌릴 수 없습니다.",
+            "Warning",
+            f"Selected Results will be deleted.\nPress OK to Continue",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )
@@ -553,8 +552,8 @@ class ResultListView(QMainWindow):
 
             QMessageBox.information(
                 self,
-                "Delete Complete",
-                f"{len(delete_ids)}개의 결과가 삭제되었습니다."
+                "Info",
+                f"It has been deleted"
             )
 
         except Exception as e:
@@ -562,8 +561,8 @@ class ResultListView(QMainWindow):
             print(f"[ResultListView] Delete failed: {e}")
             QMessageBox.critical(
                 self,
-                "Delete Error",
-                f"삭제 중 오류가 발생했습니다.\n{e}"
+                "Error",
+                f"Delete Error.\n{e}"
             )
         finally:
             session.close()

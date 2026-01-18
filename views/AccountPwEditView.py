@@ -129,16 +129,16 @@ class AccountPwEditView(QWidget):
         if not pw1:
             QMessageBox.warning(
                 self,
-                "입력 오류",
-                "변경할 패스워드를 입력해주세요."
+                "Warning",
+                "Please enter the password you want to change."
             )
             return
 
         if pw1 != pw2:
-            QMessageBox.warning(
+            QMessageBox.critical(
                 self,
-                "입력 오류",
-                "패스워드가 서로 일치하지 않습니다."
+                "Error",
+                "Password Invalid."
             )
             return
 
@@ -147,8 +147,8 @@ class AccountPwEditView(QWidget):
 
             QMessageBox.information(
                 self,
-                "변경 완료",
-                "비밀번호가 정상적으로 변경되었습니다."
+                "Info",
+                "Changed successfully."
             )
 
             self.user_pw_updated.emit()
@@ -157,8 +157,8 @@ class AccountPwEditView(QWidget):
         except Exception as e:
             QMessageBox.critical(
                 self,
-                "오류",
-                f"비밀번호 변경 중 오류가 발생했습니다.\n{str(e)}"
+                "Error",
+                f"An error occurred.\n{str(e)}"
             )
 
     # ==================================================
@@ -174,7 +174,7 @@ class AccountPwEditView(QWidget):
             )
 
             if not user:
-                raise Exception("사용자를 찾을 수 없습니다.")
+                raise Exception("User not found.")
 
             user.password_hash = bcrypt.hashpw(
                 new_password.encode("utf-8"),

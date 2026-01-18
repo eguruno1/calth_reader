@@ -98,7 +98,7 @@ class AdminLoginView(QWidget):
         password = self.password_input.text().strip()
         
         if not password:
-            QMessageBox.warning(self, "입력 오류", "비밀번호를 입력해주세요.")
+            QMessageBox.warning(self, "Error", "Password Invaild")
             return
         
         # 로그인 버튼 비활성화
@@ -115,7 +115,7 @@ class AdminLoginView(QWidget):
         except Exception as e:
             print(f"Admin 로그인 시도 오류: {e}")
             self.reset_login_button()
-            QMessageBox.critical(self, "오류", f"로그인 중 오류가 발생했습니다: {str(e)}")
+            QMessageBox.critical(self, "Error", f"An error occurred while logging in: {str(e)}")
     
     def reset_login_button(self):
         """로그인 버튼 상태 복원"""
@@ -146,7 +146,7 @@ class AdminLoginView(QWidget):
             self.login_success.emit(self.target or "")
         else:
             # admin이 아닌 다른 계정으로 로그인됨
-            QMessageBox.warning(self, "권한 오류", "Admin 계정만 접근 가능합니다.")
+            QMessageBox.warning(self, "Warnning", "Only Admin accounts can access.")
             try:
                 from controllers import app_controller
                 app_controller.user_service.logout()  # 다른 계정 로그아웃

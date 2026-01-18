@@ -109,7 +109,7 @@ class UpdateSettingsView(QMainWindow):
                 self._start_update(usb_version)
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(self, "Error", "Update Failed")
 
     # ==================================================
     # USB 탐색
@@ -200,7 +200,7 @@ class UpdateSettingsView(QMainWindow):
             self.load_current_versions()
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Update failed: {e}")
+            QMessageBox.critical(self, "Error", f"Update Failed: {e}")
 
     # ==================================================
     # 공통

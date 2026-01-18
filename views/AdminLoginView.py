@@ -98,7 +98,7 @@ class AdminLoginView(QWidget):
         password = self.password_input.text().strip()
         
         if not password:
-            QMessageBox.warning(self, "Error", "Password Invaild")
+            QMessageBox.critical(self, "Error", "Password Invaild")
             return
         
         # 로그인 버튼 비활성화

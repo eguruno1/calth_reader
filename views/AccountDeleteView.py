@@ -94,10 +94,10 @@ class AccountDeleteView(QWidget):
         password = self.lineEdit_password.text().strip()
 
         if not password:
-            QMessageBox.warning(
+            QMessageBox.critical(
                 self,
-                "입력 오류",
-                "비밀번호를 입력해주세요."
+                "Error",
+                "Password Invaild"
             )
             return
 
@@ -106,14 +106,14 @@ class AccountDeleteView(QWidget):
         print(f"로그인 성공: admin, 컨텍스트: {session_user}")
 
         if not session_user:
-            QMessageBox.critical(self, "오류", "로그인 정보가 없습니다.")
+            QMessageBox.critical(self, "Error", "There is no user information.")
             return
 
         if session_user.get("user_id") != "admin":
             QMessageBox.warning(
                 self,
-                "권한 오류",
-                "관리자만 사용자를 삭제 할 수 있습니다."
+                "Warning",
+                "Only administrators can delete users."
             )
             return
 
@@ -126,7 +126,7 @@ class AccountDeleteView(QWidget):
         if not success:
             QMessageBox.warning(
                 self,
-                "삭제 불가",
+                "Warning",
                 message
             )
             return
@@ -136,8 +136,8 @@ class AccountDeleteView(QWidget):
 
             QMessageBox.information(
                 self,
-                "삭제 완료",
-                "정상적으로 삭제 되었습니다."
+                "Info",
+                "Successfully deleted."
             )
 
             """Session + Audit Log Save"""
@@ -162,8 +162,8 @@ class AccountDeleteView(QWidget):
         except Exception as e:
             QMessageBox.critical(
                 self,
-                "오류",
-                f"사용자 삭제 중 오류가 발생했습니다.\n{str(e)}"
+                "Error",
+                f"An error occurred.\n{str(e)}"
             )
 
     # ==================================================
@@ -182,10 +182,10 @@ class AccountDeleteView(QWidget):
             )
 
             if not user:
-                raise Exception("사용자를 찾을 수 없습니다.")
+                raise Exception("User not found.")
 
             if user.user_id == "admin" and user.role == "admin":
-                raise Exception("관리자는 삭제할 수 없습니다.")
+                raise Exception("Administrators cannot delete.")
 
             user.is_active = False
             session.commit()

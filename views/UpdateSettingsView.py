@@ -85,22 +85,22 @@ class UpdateSettingsView(QMainWindow):
             usb_info = self._find_usb_info_json()
 
             if not usb_info:
-                QMessageBox.warning(self, "업데이트", "USB 메모리를 찾을 수 없습니다.")
+                QMessageBox.critical(self, "Error", "USB memory cannot be found.")
                 return
 
             usb_version = self._get_usb_sw_version(usb_info)
 
             if self._compare_versions(local_version, usb_version) >= 0:
-                QMessageBox.information(self, "업데이트", "최신버전 입니다.")
+                QMessageBox.information(self, "Info", "This is the latest version.")
                 return
 
             reply = QMessageBox.question(
                 self,
-                "소프트웨어 업데이트",
-                f"새 버전이 있습니다.\n\n"
-                f"현재: {local_version}\n"
+                "Software Update",
+                f"There is a new version.\n\n"
+                f"Now: {local_version}\n"
                 f"USB: {usb_version}\n\n"
-                f"업데이트 하시겠습니까?",
+                f"Would you like to update?",
                 QMessageBox.Ok | QMessageBox.Cancel,
                 QMessageBox.Cancel
             )
@@ -109,7 +109,7 @@ class UpdateSettingsView(QMainWindow):
                 self._start_update(usb_version)
 
         except Exception as e:
-            QMessageBox.critical(self, "오류", str(e))
+            QMessageBox.critical(self, "Error", str(e))
 
     # ==================================================
     # USB 탐색
@@ -153,26 +153,27 @@ class UpdateSettingsView(QMainWindow):
         # UpdateSettingsView 전용 프로그레스 다이얼로그
         # ----------------------------------------------
         self.progress_dialog = QProgressDialog(
-            "소프트웨어 업데이트 진행 중입니다...",
+            "Software update in progress...",
             None,          # Cancel 버튼 제거
             0,
             100,
             self
         )
-        self.progress_dialog.setWindowTitle("업데이트")
+        self.progress_dialog.setWindowTitle("Info")
         self.progress_dialog.setWindowModality(Qt.WindowModal)
         self.progress_dialog.setAutoClose(False)
         self.progress_dialog.setAutoReset(False)
         self.progress_dialog.show()
 
         # 2분 ≒ 120초 → 100단계 → 1.2초
-        self.update_timer.start(1200)
+        # 1분 ≒ 60초 → 100단계 → 0.6초
+        self.update_timer.start(600)
 
     def _on_update_progress(self):
         self.progress_value += 1
         self.progress_dialog.setValue(self.progress_value)
         self.progress_dialog.setLabelText(
-            f"업데이트 진행 중입니다... ({self.progress_value}%)"
+            f"Update in progress... ({self.progress_value}%)"
         )
 
         if self.progress_value >= 100:
@@ -195,11 +196,11 @@ class UpdateSettingsView(QMainWindow):
             with open(info_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
 
-            QMessageBox.information(self, "업데이트 완료", "업데이트가 완료되었습니다.")
+            QMessageBox.information(self, "Info", "The update has been completed.")
             self.load_current_versions()
 
         except Exception as e:
-            QMessageBox.critical(self, "오류", f"업데이트 실패: {e}")
+            QMessageBox.critical(self, "Error", f"Update failed: {e}")
 
     # ==================================================
     # 공통

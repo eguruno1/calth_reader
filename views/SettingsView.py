@@ -16,6 +16,7 @@ class SettingsView(QMainWindow):
     switch_to_calibration_qc_settings = pyqtSignal()  # CalibrationQCSettings 화면으로 전환
     switch_to_general_settings = pyqtSignal()  # GeneralSettings 화면으로 전환
     switch_to_power_management = pyqtSignal()  # PowerManagement 화면으로 전환
+    switch_to_info = pyqtSignal()  # Info 화면으로 전환
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -76,7 +77,8 @@ class SettingsView(QMainWindow):
     def on_general_settings_clicked(self):
         """General Settings 버튼 클릭"""
         print("General Settings가 클릭되었습니다.")
-        self.switch_to_general_settings.emit()
+        #self.switch_to_general_settings.emit()
+        self.switch_to_info.emit()
     
     def on_power_management_clicked(self):
         """Power Management 버튼 클릭"""

@@ -20,7 +20,6 @@
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <!-- 뒤로가기 버튼 -->
    <widget class="QPushButton" name="pushButton_BackArrow">
     <property name="geometry">
      <rect>
@@ -33,7 +32,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -58,8 +57,6 @@ QPushButton:pressed {
      <string>← Back</string>
     </property>
    </widget>
-   
-   <!-- 타이틀 -->
    <widget class="QLabel" name="label_Title">
     <property name="geometry">
      <rect>
@@ -72,7 +69,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>22</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -91,7 +88,6 @@ QPushButton:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   
    <widget class="QLabel" name="label_DateNClock">
     <property name="geometry">
      <rect>
@@ -152,9 +148,7 @@ QPushButton:pressed {
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
-   </widget>   
-   
-   <!-- 일반 설정 섹션 -->
+   </widget>
    <widget class="QGroupBox" name="groupBox_GeneralSettings">
     <property name="geometry">
      <rect>
@@ -167,7 +161,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>18</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -192,8 +186,6 @@ QGroupBox::title {
     <property name="title">
      <string>General Settings</string>
     </property>
-    
-    <!-- Network 설정 -->
     <widget class="QLabel" name="label_network_title">
      <property name="geometry">
       <rect>
@@ -215,7 +207,6 @@ QGroupBox::title {
       <string>Network:</string>
      </property>
     </widget>
-    
     <widget class="QLabel" name="label_network_status">
      <property name="geometry">
       <rect>
@@ -235,7 +226,6 @@ QGroupBox::title {
       <string>연결됨</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_network">
      <property name="geometry">
       <rect>
@@ -248,7 +238,7 @@ QGroupBox::title {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>12</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -273,8 +263,6 @@ QPushButton:pressed {
       <string>설정</string>
      </property>
     </widget>
-    
-    <!-- LIS Parameter 설정 -->
     <widget class="QLabel" name="label_lis_title">
      <property name="geometry">
       <rect>
@@ -296,7 +284,6 @@ QPushButton:pressed {
       <string>LIS Parameter:</string>
      </property>
     </widget>
-    
     <widget class="QLabel" name="label_lis_status">
      <property name="geometry">
       <rect>
@@ -316,7 +303,6 @@ QPushButton:pressed {
       <string>설정됨</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_lis_parameter">
      <property name="geometry">
       <rect>
@@ -329,7 +315,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>12</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -354,8 +340,6 @@ QPushButton:pressed {
       <string>설정</string>
      </property>
     </widget>
-    
-    <!-- Print 설정 -->
     <widget class="QLabel" name="label_print_title">
      <property name="geometry">
       <rect>
@@ -377,7 +361,6 @@ QPushButton:pressed {
       <string>Print:</string>
      </property>
     </widget>
-    
     <widget class="QLabel" name="label_print_status">
      <property name="geometry">
       <rect>
@@ -397,7 +380,6 @@ QPushButton:pressed {
       <string>준비됨</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_print">
      <property name="geometry">
       <rect>
@@ -410,7 +392,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>12</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -435,8 +417,6 @@ QPushButton:pressed {
       <string>설정</string>
      </property>
     </widget>
-    
-    <!-- Language 설정 -->
     <widget class="QLabel" name="label_language_title">
      <property name="geometry">
       <rect>
@@ -458,7 +438,6 @@ QPushButton:pressed {
       <string>Language:</string>
      </property>
     </widget>
-    
     <widget class="QLabel" name="label_language_current">
      <property name="geometry">
       <rect>
@@ -478,7 +457,6 @@ QPushButton:pressed {
       <string>English</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_language">
      <property name="geometry">
       <rect>
@@ -491,7 +469,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>12</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -516,8 +494,6 @@ QPushButton:pressed {
       <string>설정</string>
      </property>
     </widget>
-    
-    <!-- Unit 설정 -->
     <widget class="QLabel" name="label_unit_title">
      <property name="geometry">
       <rect>
@@ -539,7 +515,6 @@ QPushButton:pressed {
       <string>Unit:</string>
      </property>
     </widget>
-    
     <widget class="QLabel" name="label_unit_current">
      <property name="geometry">
       <rect>
@@ -559,7 +534,6 @@ QPushButton:pressed {
       <string>mg/dL</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_unit">
      <property name="geometry">
       <rect>
@@ -572,7 +546,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>12</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -597,8 +571,6 @@ QPushButton:pressed {
       <string>설정</string>
      </property>
     </widget>
-    
-    <!-- Info -->
     <widget class="QLabel" name="label_info_title">
      <property name="geometry">
       <rect>
@@ -620,7 +592,6 @@ QPushButton:pressed {
       <string>Device Info:</string>
      </property>
     </widget>
-    
     <widget class="QLabel" name="label_device_name">
      <property name="geometry">
       <rect>
@@ -640,7 +611,6 @@ QPushButton:pressed {
       <string>CalthReader v1.0</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_info">
      <property name="geometry">
       <rect>
@@ -653,7 +623,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>12</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -678,8 +648,6 @@ QPushButton:pressed {
       <string>상세정보</string>
      </property>
     </widget>
-    
-    <!-- 하단 버튼들 -->
     <widget class="QPushButton" name="btn_reset">
      <property name="geometry">
       <rect>
@@ -692,7 +660,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>14</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -717,7 +685,6 @@ QPushButton:pressed {
       <string>실행취소</string>
      </property>
     </widget>
-    
     <widget class="QPushButton" name="btn_apply">
      <property name="geometry">
       <rect>
@@ -730,7 +697,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>14</pointsize>
+       <pointsize>-1</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -756,9 +723,7 @@ QPushButton:pressed {
      </property>
     </widget>
    </widget>
-   
-   <!-- 하단 상태바 -->
-   <widget class="QWidget" name="widget_statusbar">
+   <widget class="QWidget" name="widget_statusbar" native="true">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -773,7 +738,6 @@ QPushButton:pressed {
     border-top: 2px solid #d0d0d0;
 }</string>
     </property>
-    
     <widget class="QLabel" name="label_status">
      <property name="geometry">
       <rect>
@@ -786,7 +750,7 @@ QPushButton:pressed {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>14</pointsize>
+       <pointsize>-1</pointsize>
       </font>
      </property>
      <property name="styleSheet">

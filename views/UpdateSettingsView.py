@@ -42,7 +42,7 @@ class UpdateSettingsView(QMainWindow):
         
         # 업데이트 버튼 이벤트 연결
         self.btn_software_update.clicked.connect(self.on_software_update_clicked)
-        self.btn_firmware_update.clicked.connect(self.on_firmware_update_clicked)
+        #self.btn_firmware_update.clicked.connect(self.on_firmware_update_clicked)
         
         # 초기 날짜와 시간 설정
         self.update_date_time()
@@ -56,7 +56,7 @@ class UpdateSettingsView(QMainWindow):
             
             # 펌웨어 버전 (예시)
             firmware_version = "v2.1.0"
-            self.label_firmware_version.setText(f"현재 버전: {firmware_version}")
+            #self.label_firmware_version.setText(f"현재 버전: {firmware_version}")
             
         except Exception as e:
             print(f"버전 정보 로드 실패: {e}")

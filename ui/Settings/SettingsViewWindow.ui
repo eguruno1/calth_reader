@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -54,7 +54,7 @@ QPushButton:pressed {
      <string>← Back</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_9">
+   <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
       <x>850</x>
@@ -76,9 +76,9 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>462</x>
+      <x>452</x>
       <y>20</y>
-      <width>100</width>
+      <width>131</width>
       <height>40</height>
      </rect>
     </property>
@@ -195,7 +195,7 @@ QPushButton:pressed {
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_BatteryGuage">
+   <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
       <x>820</x>
@@ -253,7 +253,7 @@ QPushButton:pressed {
      <string>55%</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="btn_date_time">
@@ -268,7 +268,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -307,7 +307,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -346,7 +346,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -385,7 +385,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -409,7 +409,7 @@ QPushButton:pressed {
 }</string>
     </property>
     <property name="text">
-     <string>General Settings</string>
+     <string>Info</string>
     </property>
    </widget>
   </widget>

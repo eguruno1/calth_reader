@@ -9,6 +9,7 @@ from views.Utils import update_date_time, start_date_time_update, stop_date_time
 
 class InfoView(QMainWindow):
     switch_to_home = pyqtSignal()
+    switch_to_settings = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -49,7 +50,8 @@ class InfoView(QMainWindow):
         super().closeEvent(event)
 
     def on_back_button_clicked(self):
-        self.switch_to_home.emit()
+        # self.switch_to_home.emit()
+        self.switch_to_settings.emit()
 
     def load_info_from_json(self):
         try:
@@ -62,7 +64,7 @@ class InfoView(QMainWindow):
             
             # name 값을 label_name에 설정
             if 'name' in info_data:
-                self.label_name.setText(info_data['name'])
+                self.label_name.setText(info_data['product_name'])
             else:
                 print("'name' key not found in info.json")
             
@@ -73,8 +75,8 @@ class InfoView(QMainWindow):
                 print("'s/w version' key not found in info.json")
 
             # f/w version 값을 label_fw_version 설정
-            if 'fw_version' in info_data:
-                self.label_fw_version.setText(info_data['fw_version'])
+            if 'model_name' in info_data:
+                self.label_fw_version.setText(info_data['model_name'])
             else:
                 print("'f/w version' key not found in info.json")    
             

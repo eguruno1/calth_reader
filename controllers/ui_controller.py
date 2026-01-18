@@ -118,13 +118,13 @@ class AppController(QMainWindow):
         self.qc_result_view        = None
         self.qc_complete_view      = None
         # 기타 views
-        self.settings_view                = SettingsView(self)
+        self.settings_view                = SettingsView(self, uart_model=backend_controller.uart_model)
         self.datetime_settings_view       = DateTimeSettingsView(self)
         self.update_settings_view         = UpdateSettingsView(self)
         self.calibration_qc_settings_view = CalibrationQCSettingsView(self)
         self.general_settings_view        = GeneralSettingsView(self)
         self.power_management_view        = PowerManagementView(self)
-        self.manage_operator_view         = ManageOperatorView(self)  # 계정관리
+        self.manage_operator_view         = ManageOperatorView(self, uart_model=backend_controller.uart_model)  # 계정관리
         self.resultList_view              = ResultListView(self, uart_model=backend_controller.uart_model)
         self.result_category_view         = ResultCategoryView(self, uart_model=backend_controller.uart_model)
         self.info_view                    = InfoView(self)

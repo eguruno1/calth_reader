@@ -1,15 +1,17 @@
 import os
+import json
+import threading
 
 from PyQt5.QtWidgets import (QMainWindow, QTableWidget, QTableWidgetItem, 
                              QHeaderView, QAbstractItemView, QDialog, QMessageBox)
-from PyQt5.QtCore import pyqtSignal, QTimer, Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
+from PyQt5.QtGui import QColor, QPixmap
 from PyQt5 import uic
 
-from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update,
-                        update_battery_status, start_battery_update, stop_battery_update)
+from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update)
 from services.user_service import user_service
 from common.session_context import get_session_context
+from controllers import app_controller
 
 class ManageOperatorView(QMainWindow):
 
@@ -22,11 +24,15 @@ class ManageOperatorView(QMainWindow):
     switch_to_account_delete  = pyqtSignal(str)  # 계정 삭제 화면  
 
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
         self.selected_rows = set()  # 선택된 행을 추적하기 위한 세트
         self.load_ui()
         self.init_ui()
+
+        # 배터리
+        self.uart_model = uart_model
+        print(f"[ManageOperatorView] uart_model injected: {self.uart_model}")
 
     def load_ui(self):
         # 프로젝트 루트 디렉토리
@@ -66,32 +72,34 @@ class ManageOperatorView(QMainWindow):
         
         # 초기 날짜와 시간 설정
         self.update_date_time()
-        self.update_battery_status()
 
         # 초기 데이터 로드
         self.load_user_data()
 
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
+
+        # 배터리 상태 업데이트
+        model = app_controller.uart_model
+        battery_info = model.get_battery_info()
+        if battery_info:
+            self._update_battery_ui(battery_info)
+
         
     def hideEvent(self, event):
         super().hideEvent(event)
 
         stop_date_time_update(self)
-        stop_battery_update(self)
 
         # 페이지 벗어날 때 선택 상태 즉시 초기화
         self.clear_table_selection()
         """
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        QTimer.singleShot(100, lambda: start_battery_update(self))
         # 화면이 표시될 때 데이터 새로고침
         QTimer.singleShot(200, self.load_user_data)
         """
         
     def closeEvent(self, event):
         stop_date_time_update(self)
-        stop_battery_update(self)
         super().closeEvent(event)    
 
     def setup_table(self):
@@ -512,6 +520,61 @@ class ManageOperatorView(QMainWindow):
     def update_date_time(self):
         update_date_time(self)
 
-    def update_battery_status(self):
-        """배터리 상태 업데이트"""
-        update_battery_status(self)
+    #####################################################
+    # Battery Status (UART 기반)
+    #####################################################
+    def on_uart_event(self, event_type: str, data):
+        print(f"[ManageOperatorView] on_uart_event: {event_type}, {data}")
+        print(
+            f"[ManageOperatorView][{self.__class__.__name__}] on_uart_event "
+            f"thread={threading.current_thread().name}"
+        )
+
+        # 배터리 (기존)
+        if event_type == "battery_changed" and data:
+            # ❗ UART RX 스레드 → UI 스레드로 전달
+            QMetaObject.invokeMethod(
+                self,
+                "_update_battery_ui",
+                Qt.QueuedConnection,
+                Q_ARG(object, data)
+            )
+
+    @pyqtSlot(object)
+    def _update_battery_ui(self, battery_info):
+        if not hasattr(self, "label_BatteryGuage") or not hasattr(self, "label_BatteryGuageTxt"):
+            return
+
+        try:
+            icon_name = battery_info.get_icon_name()
+            print(f"[ManageOperatorView] Battery UI icon_name: {icon_name}")
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+
+            icon_path = os.path.join(
+                project_root,
+                "ui", "image", "Icon",
+                icon_name
+            )
+
+            if not os.path.exists(icon_path):
+                print(f"[ManageOperatorView] Battery icon not found: {icon_path}")
+                return
+
+            pixmap = QPixmap(icon_path)
+            if pixmap.isNull():
+                print(f"[ManageOperatorView] Failed to load pixmap: {icon_path}")
+                return
+
+            self.label_BatteryGuage.setPixmap(pixmap)
+            self.label_BatteryGuage.setScaledContents(True)
+
+            self.label_BatteryGuageTxt.setText(
+                battery_info.get_status_text()
+            )
+
+            print(f"[ManageOperatorView] Battery UI updated: {battery_info.level}%")
+
+        except Exception as e:
+            print(f"[ManageOperatorView] Battery UI update error: {e}")     

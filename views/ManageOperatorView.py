@@ -334,7 +334,7 @@ class ManageOperatorView(QMainWindow):
         """선택된 사용자 가져오기"""
         selected = self.tableWidget.selectedItems()
         if not selected:
-            QMessageBox.warning(self, "알림", "사용자를 선택하세요.")
+            QMessageBox.warning(self, "warning", "Select and delete users")
             return None
 
         row = selected[0].row()
@@ -369,8 +369,8 @@ class ManageOperatorView(QMainWindow):
         if not selected_rows:
             QMessageBox.warning(
                 self,
-                "선택 필요",
-                "먼저 사용자를 선택해주세요."
+                "Warning",
+                "Select and delete users."
             )
             return
 
@@ -378,8 +378,8 @@ class ManageOperatorView(QMainWindow):
         if len(selected_rows) != 1:
             QMessageBox.warning(
                 self,
-                "선택 오류",
-                "한 명의 사용자만 선택해주세요."
+                "Warning",
+                "Select only one."
             )
             return
 
@@ -389,10 +389,10 @@ class ManageOperatorView(QMainWindow):
         user_id = selected_user.get("User ID")
 
         if not user_id:
-            QMessageBox.warning(
+            QMessageBox.critical(
                 self,
-                "오류",
-                "선택한 사용자 정보에 User ID가 없습니다."
+                "Error",
+                "The selected user information does not contain a User ID."
             )
             return
 
@@ -400,7 +400,7 @@ class ManageOperatorView(QMainWindow):
 
         user_role = selected_user.get("'Role'")
         if user_role == "admin":
-            QMessageBox.warning(self, "권한 제한", "관리자는 ID를 변경할 수 없습니다.")
+            QMessageBox.warning(self, "Warning", "Administrators cannot work.")
             return
 
 
@@ -418,16 +418,16 @@ class ManageOperatorView(QMainWindow):
         if not selected_rows:
             QMessageBox.warning(
                 self,
-                "선택 필요",
-                "먼저 사용자를 선택해주세요."
+                "Warning",
+                "Select and delete users."
             )
             return
 
         if len(selected_rows) != 1:
             QMessageBox.warning(
                 self,
-                "선택 오류",
-                "한 명의 사용자만 선택해주세요."
+                "Warning",
+                "Select only one."
             )
             return
 
@@ -435,10 +435,10 @@ class ManageOperatorView(QMainWindow):
         user_id   = user_data.get("User ID")
 
         if not user_id:
-            QMessageBox.warning(
+            QMessageBox.critical(
                 self,
-                "오류",
-                "User ID 정보를 찾을 수 없습니다."
+                "Error",
+                "The selected user information does not contain a User ID."
             )
             return
         
@@ -463,7 +463,7 @@ class ManageOperatorView(QMainWindow):
         print("DEBUG current_user:", current_user)
 
         if not current_user:
-            QMessageBox.warning(self, "오류", "로그인 정보가 없습니다.")
+            QMessageBox.warning(self, "Warning", "Please log in")
             return
 
         current_role = current_user.get("role")
@@ -471,15 +471,15 @@ class ManageOperatorView(QMainWindow):
         if current_role != "admin":
             QMessageBox.warning(
                 self,
-                "권한 없음",
-                "관리자만 사용자를 삭제 할 수 있습니다."
+                "Warning",
+                "Only administrators can delete it."
             )
             return
 
         # 2️⃣ 선택 사용자 확인
         selected_rows = self.get_selected_rows_data()
         if not selected_rows or len(selected_rows) != 1:
-            QMessageBox.warning(self, "선택 오류", "한 명의 사용자만 선택해주세요.")
+            QMessageBox.warning(self, "Warning", "Select only one.")
             return
 
         user_data        = selected_rows[0]["data"]
@@ -487,15 +487,15 @@ class ManageOperatorView(QMainWindow):
         target_user_role = user_data.get("Role")
 
         if not target_user_id:
-            QMessageBox.warning(self, "오류", "User ID를 찾을 수 없습니다.")
+            # QMessageBox.warning(self, "오류", "User ID를 찾을 수 없습니다.")
             return
 
         # 3️⃣ 관리자 삭제 방지
         if target_user_role == "admin" and target_user_id == "admin":
             QMessageBox.warning(
                 self,
-                "삭제 불가",
-                "관리자는 삭제 할 수 없습니다."
+                "Warning",
+                "Admin cannot delete."
             )
             return
 

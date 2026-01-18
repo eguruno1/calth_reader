@@ -273,7 +273,7 @@ class TestInfoView(QMainWindow):
             print(f"[TestInfoView] _load_select_menu select_menu 로드: {self.select_menu}")
 
             if self.select_menu == "QCTest":
-                self.label_Title.setText("QC TEST");
+                self.label_Title.setText("QC INFO");
                 self.label_PA.setText("QC ID");
             else:
                 self.label_Title.setText("TEST INFO");

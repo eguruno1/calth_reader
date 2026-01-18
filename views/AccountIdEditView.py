@@ -117,11 +117,11 @@ class AccountIdEditView(QWidget):
         new_user_id = self.lineEdit_change_user_id.text().strip()
 
         if not new_user_id:
-            QMessageBox.warning(self, "입력 오류", "변경할 사용자 ID를 입력해주세요.")
+            QMessageBox.warning(self, "Warning", "Please enter your Operator ID.")
             return
 
         if new_user_id == self._current_user_id:
-            QMessageBox.warning(self, "입력 오류", "기존 ID와 다른 ID를 입력해주세요.")
+            QMessageBox.warning(self, "Warning", "Select duplicate Operator ID.")
             return
 
         try:
@@ -129,8 +129,8 @@ class AccountIdEditView(QWidget):
 
             QMessageBox.information(
                 self,
-                "변경 완료",
-                "사용자 ID가 정상적으로 변경되었습니다."
+                "Info",
+                "Changed successfully."
             )
 
             self.user_id_updated.emit()
@@ -139,8 +139,8 @@ class AccountIdEditView(QWidget):
         except Exception as e:
             QMessageBox.critical(
                 self,
-                "오류",
-                f"사용자 ID 변경 중 오류가 발생했습니다.\n{str(e)}"
+                "Error",
+                f"An error occurred.\n{str(e)}"
             )
 
     # ==================================================
@@ -150,14 +150,14 @@ class AccountIdEditView(QWidget):
         session = get_db_session()
         try:
             if session.query(User).filter(User.user_id == new_user_id).first():
-                raise Exception("이미 존재하는 사용자 ID입니다.")
+                raise Exception("Select duplicate Operator ID.")
 
             user = session.query(User).filter(
                 User.user_id == self._current_user_id
             ).first()
 
             if not user:
-                raise Exception("사용자를 찾을 수 없습니다.")
+                raise Exception("User not found.")
 
             user.user_id = new_user_id
             session.commit()

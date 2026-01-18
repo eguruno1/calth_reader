@@ -85,7 +85,7 @@ class UpdateSettingsView(QMainWindow):
             usb_info = self._find_usb_info_json()
 
             if not usb_info:
-                QMessageBox.critical(self, "Error", "USB memory cannot be found.")
+                QMessageBox.critical(self, "Error", "Update File Not Found")
                 return
 
             usb_version = self._get_usb_sw_version(usb_info)

@@ -62,7 +62,7 @@ class UserService(QObject):
         로그인 (평문 → bcrypt 자동 마이그레이션 지원)
         """
         if not user_id or not password:
-            self.login_failed.emit("사용자 ID와 비밀번호를 입력해주세요.")
+            self.login_failed.emit("Please enter your user ID and password.")
             return False
 
         session: Session = get_db_session()
@@ -78,7 +78,7 @@ class UserService(QObject):
             )
 
             if not user:
-                self.login_failed.emit("존재하지 않는 사용자입니다.")
+                self.login_failed.emit("The user does not exist.")
                 return False
 
             stored_hash = user.password_hash or ""
@@ -89,7 +89,7 @@ class UserService(QObject):
             # ==================================================
             if self._is_bcrypt_hash(stored_hash):
                 if not bcrypt.checkpw(input_pw, stored_hash.encode("utf-8")):
-                    self.login_failed.emit("비밀번호가 올바르지 않습니다.")
+                    self.login_failed.emit("Password Mismatch")
                     return False
 
             # ==================================================
@@ -98,7 +98,7 @@ class UserService(QObject):
             elif len(stored_hash) == 64 and all(c in "0123456789abcdef" for c in stored_hash.lower()):
                 sha256 = hashlib.sha256(input_pw).hexdigest()
                 if sha256 != stored_hash:
-                    self.login_failed.emit("비밀번호가 올바르지 않습니다.")
+                    self.login_failed.emit("Password Mismatch")
                     return False
 
                 # 🔁 bcrypt로 업그레이드
@@ -113,7 +113,7 @@ class UserService(QObject):
             # ==================================================
             else:
                 if password != stored_hash:
-                    self.login_failed.emit("비밀번호가 올바르지 않습니다.")
+                    self.login_failed.emit("Password Mismatch")
                     return False
 
                 # 🔁 bcrypt로 업그레이드
@@ -386,7 +386,7 @@ class UserService(QObject):
             )
 
             if not admin:
-                return False, "관리자 정보를 찾을 수 없습니다."
+                return False, "Administrator information not found"
 
             now = session.execute(text("SELECT now()")).scalar()
 
@@ -409,10 +409,10 @@ class UserService(QObject):
             if admin.login_attempts >= 5:
                 admin.locked_until = now + timedelta(minutes=10)
                 session.commit()
-                return False, "5회 실패로 10분간 삭제가 제한됩니다."
+                return False, "After 5 failures, deletion is restricted for 10 minutes."
 
             session.commit()
-            return False, f"비밀번호가 올바르지 않습니다. ({admin.login_attempts}/5)"
+            return False, f"The password is incorrect. ({admin.login_attempts}/5)"
 
         finally:
             session.close()

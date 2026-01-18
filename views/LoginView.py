@@ -218,8 +218,12 @@ class LoginView(QWidget):
         user_id = self.user_id_input.text().strip()
         password = self.password_input.text().strip()
 
-        if not user_id or not password:
-            QMessageBox.warning(self, "입력 오류", "사용자 ID와 비밀번호를 모두 입력해주세요.")
+        if not user_id:
+            QMessageBox.warning(self, "Warning", "Please enter your user ID")
+            return
+        
+        if not password:
+            QMessageBox.warning(self, "Warning", "Please enter your password.")
             return
 
         self.login_button.setEnabled(False)
@@ -233,6 +237,7 @@ class LoginView(QWidget):
     def reset_login_button(self):
         self.login_button.setEnabled(True)
         self.login_button.setText("Login Ok")
+        self.go_back()
 
     def go_back(self):
         self.clear_form()

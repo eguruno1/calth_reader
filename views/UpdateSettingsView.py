@@ -3,6 +3,8 @@
 Update Settings View - 소프트웨어 및 펌웨어 업데이트 화면
 """
 import os
+import json
+
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5 import uic
@@ -49,17 +51,20 @@ class UpdateSettingsView(QMainWindow):
 
     def load_current_versions(self):
         """현재 버전 정보 로드"""
+        version = self.get_version_from_info()
+        self.label_software_version.setText(f"현재 버전: {version}")
+
+    def get_version_from_info(self):
         try:
-            # 소프트웨어 버전 (예시)
-            software_version = "v1.2.3"
-            self.label_software_version.setText(f"현재 버전: {software_version}")
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            info_path = os.path.join(current_dir, '../info', 'info.json')
             
-            # 펌웨어 버전 (예시)
-            firmware_version = "v2.1.0"
-            #self.label_firmware_version.setText(f"현재 버전: {firmware_version}")
-            
+            with open(info_path, 'r', encoding='utf-8') as f:
+                info = json.load(f)
+            return info.get('sw_version', 'Unknown')
         except Exception as e:
-            print(f"버전 정보 로드 실패: {e}")
+            print(f"Error reading version from info.json: {str(e)}")
+            return "Unknown"    
 
     def on_software_update_clicked(self):
         """소프트웨어 업데이트 버튼 클릭"""
@@ -82,26 +87,6 @@ class UpdateSettingsView(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "오류", f"소프트웨어 업데이트 중 오류가 발생했습니다: {e}")
 
-    def on_firmware_update_clicked(self):
-        """펌웨어 업데이트 버튼 클릭"""
-        try:
-            # 업데이트 확인 대화상자
-            reply = QMessageBox.question(
-                self, 
-                "펌웨어 업데이트", 
-                "펌웨어 업데이트를 진행하시겠습니까?\n업데이트 중에는 시스템을 종료하지 마세요.",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
-            )
-            
-            if reply == QMessageBox.Yes:
-                # 여기에 실제 펌웨어 업데이트 로직 구현
-                QMessageBox.information(self, "업데이트", "펌웨어 업데이트가 시작됩니다.")
-                # TODO: 실제 업데이트 로직 구현
-                print("펌웨어 업데이트 시작")
-                
-        except Exception as e:
-            QMessageBox.critical(self, "오류", f"펌웨어 업데이트 중 오류가 발생했습니다: {e}")
 
     def showEvent(self, event):
         super().showEvent(event)

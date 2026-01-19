@@ -161,7 +161,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>16</pointsize>
+      <pointsize>14</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -487,7 +487,7 @@ QPushButton:pressed {
 }</string>
     </property>
     <property name="text">
-     <string>적용</string>
+     <string>OK</string>
     </property>
    </widget>
    <widget class="QWidget" name="widget_statusbar" native="true">

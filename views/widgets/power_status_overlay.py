@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QApplication)
+from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, 
+                             QFrame, QPushButton, QApplication, QSizePolicy)
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 
@@ -72,7 +73,14 @@ class PowerStatusOverlayWidget(QWidget):
         self.label_desc2 = QLabel("Power Ask")
         self.label_desc2.setFont(QFont("Arial", 12))
         self.label_desc2.setStyleSheet("color: white;")
-        self.label_desc2.setAlignment(Qt.AlignCenter)        
+        # 멀티라인 표시
+        self.label_desc2.setWordWrap(True)
+        self.label_desc2.setAlignment(Qt.AlignCenter)
+        # 레이아웃에서 높이 자동 확장 허용
+        self.label_desc2.setSizePolicy(
+            QSizePolicy.Expanding,
+            QSizePolicy.Preferred
+        )
 
         # =========================
         # 버튼 생성
@@ -164,6 +172,9 @@ class PowerStatusOverlayWidget(QWidget):
             return
         self.label_desc.setText(message)
         self.label_desc2.setText(self.confirm_message)
+        # 텍스트 변경 후 크기 재계산
+        self.label_desc2.adjustSize()
+
         self._is_open = True
         self.show()
         self.raise_()
@@ -224,7 +235,7 @@ class PowerStatusOverlayWidget(QWidget):
         # 버튼 즉시 비활성화 (중복 클릭 방지)
         self.btn_ok.setEnabled(False)
         self.btn_cancle.setEnabled(False)
-        self.btn_ok.setText("Shutting down...")
+        #self.btn_ok.setText("Shutting down...")
 
         # UART로 Power OFF 신호 전송
         app_controller.send_uart_command("P0")

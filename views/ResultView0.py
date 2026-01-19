@@ -61,9 +61,9 @@ class ResultView0(QMainWindow):
     def init_ui(self):
         # label 찾기
         self.label_18 = self.findChild(QLabel, "label_18") #Test Item Title
-        self.label_18.setStyleSheet("Color : blue") #글자색 변환
+        #self.label_18.setStyleSheet("Color : blue") #글자색 변환
         self.label_20 = self.findChild(QLabel, "label_20") #Result
-        self.label_20.setStyleSheet("Color : blue") #글자색 변환
+        #self.label_20.setStyleSheet("Color : blue") #글자색 변환
         self.label_25_testItem = self.findChild(QLabel, "label_25_testItem") #Test Item Name
         self.label_25_testItem.setStyleSheet("Color : red") #글자색 변환
 

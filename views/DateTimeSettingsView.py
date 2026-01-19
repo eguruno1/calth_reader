@@ -170,12 +170,13 @@ class DateTimeSettingsView(QMainWindow):
                     # 설정을 다시 로드하여 동기화
                     global_time_service.settings_service.load_settings()
                 
-                QMessageBox.information(self, "성공", "시간 설정이 적용되었습니다.")
+                QMessageBox.information(self, "Info", "Time settings have been applied.")
             else:
-                QMessageBox.warning(self, "실패", "시간 설정 적용에 실패했습니다.")
+                # QMessageBox.warning(self, "Warning", "시간 설정 적용에 실패했습니다.")
+                print(f"시간 설정 적용에 실패했습니다.")
                 
         except Exception as e:
-            QMessageBox.critical(self, "오류", f"설정 적용 중 오류가 발생했습니다: {e}")
+            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
     def on_time_setting_changed(self, setting):
         """시간 설정 변경 시그널 처리"""
@@ -184,7 +185,7 @@ class DateTimeSettingsView(QMainWindow):
 
     def on_error_occurred(self, error):
         """에러 발생 시그널 처리"""
-        QMessageBox.critical(self, "오류", f"시간 서비스 오류: {error}")
+        QMessageBox.critical(self, "Error", f"An error occurred: {error}")
 
     def showEvent(self, event):
         super().showEvent(event)

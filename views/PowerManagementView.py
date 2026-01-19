@@ -84,7 +84,7 @@ class PowerManagementView(QMainWindow):
                 # 설정 적용 확인
                 reply = QMessageBox.question(
                     self, 
-                    "타임아웃 설정", 
+                    "Info", 
                     f"절전 타임아웃을 '{item}'으로 설정하시겠습니까?",
                     QMessageBox.Yes | QMessageBox.No,
                     QMessageBox.No
@@ -93,11 +93,11 @@ class PowerManagementView(QMainWindow):
                 if reply == QMessageBox.Yes:
                     # 실제 타임아웃 설정 로직
                     self.label_timeout_current.setText(item)
-                    QMessageBox.information(self, "설정 완료", f"절전 타임아웃이 '{item}'으로 설정되었습니다.")
+                    QMessageBox.information(self, "Info", f"절전 타임아웃이 '{item}'으로 설정되었습니다.")
                     print(f"절전 타임아웃 설정: {item}")
                 
         except Exception as e:
-            QMessageBox.critical(self, "오류", f"타임아웃 설정 중 오류가 발생했습니다: {e}")
+            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
     def on_shutdown_clicked(self):
         """Shutdown 버튼 클릭"""
@@ -105,7 +105,7 @@ class PowerManagementView(QMainWindow):
             # 시스템 종료 확인 대화상자
             reply = QMessageBox.question(
                 self, 
-                "시스템 종료", 
+                "Info", 
                 "시스템을 종료하시겠습니까?\n모든 작업이 저장되고 시스템이 안전하게 종료됩니다.",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No
@@ -115,7 +115,7 @@ class PowerManagementView(QMainWindow):
                 # 종료 전 마지막 확인
                 final_reply = QMessageBox.warning(
                     self, 
-                    "최종 확인", 
+                    "Warning", 
                     "정말로 시스템을 종료하시겠습니까?\n이 작업은 취소할 수 없습니다.",
                     QMessageBox.Yes | QMessageBox.No,
                     QMessageBox.No
@@ -123,7 +123,7 @@ class PowerManagementView(QMainWindow):
                 
                 if final_reply == QMessageBox.Yes:
                     # 실제 시스템 종료 로직
-                    QMessageBox.information(self, "시스템 종료", "시스템을 종료합니다.\n잠시 후 전원이 꺼집니다.")
+                    QMessageBox.information(self, "Info", "시스템을 종료합니다.\n잠시 후 전원이 꺼집니다.")
                     print("시스템 종료 요청")
                     # TODO: 실제 시스템 종료 명령 실행
                     # import os
@@ -131,7 +131,7 @@ class PowerManagementView(QMainWindow):
                     # os.system("shutdown /s /t 0")  # Windows
                 
         except Exception as e:
-            QMessageBox.critical(self, "오류", f"시스템 종료 중 오류가 발생했습니다: {e}")
+            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
     def on_reset_clicked(self):
         """실행취소 버튼 클릭 - 마지막 저장한 시점으로 돌리기"""

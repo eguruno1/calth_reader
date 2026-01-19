@@ -388,7 +388,7 @@ class AppController(QMainWindow):
 
     def toggle_debug_mode(self):
         backend_controller.toggle_debug_mode()
-        QMessageBox.information(self, '모드 변경', "모드가 변경되었습니다.\n재시작 후 적용됩니다.")
+        QMessageBox.information(self, 'Info', "The mode has been changed.\nIt will take effect after restart.")
 
     def closeEvent(self, event):
         try:
@@ -398,7 +398,7 @@ class AppController(QMainWindow):
         event.accept()
 
     def confirm_shutdown(self):
-        reply = QMessageBox.question(self, '시스템 종료', "정말로 시스템을 종료하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'Info', "Are you sure you want to \nshut down the system?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.shutdown_system()
 

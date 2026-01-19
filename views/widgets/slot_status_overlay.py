@@ -115,11 +115,12 @@ class SlotStatusOverlayWidget(QWidget):
     # 외부 제어 API
     # ======================================================
     def show_on(self):
-        self._show("SLOT Insert")
+        # self._show("Cartridge Close")
+        print("[SlotStatusOverlay] Cartridge Close.")
 
     @pyqtSlot()
     def show_off(self):
-        self._show("SLOT Removed")
+        self._show("Cartridge Open.")
 
     def _show(self, message):
         if self._is_open:

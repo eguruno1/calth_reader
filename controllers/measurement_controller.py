@@ -41,6 +41,7 @@ class MeasurementController(QObject):
         self.current_json_path = os.path.join(project_root, 'info', 'current.json')
 
         # ✅ 추가
+        self.select_menu = None
         self.test_type = None
         self.analysis_result = None
         self.captured_frame = None   # 🔥 최종 선택된 프레임
@@ -186,6 +187,7 @@ class MeasurementController(QObject):
         test_3line_auto 기반 실제 분석 Phase
         """
         current_data = self._load_current_json()
+        self.select_menu = current_data.get("select_menu")
         self.test_type = current_data.get("test_type1")
 
         print(f"[MeasurementController] test_type: {self.test_type}")
@@ -254,6 +256,9 @@ class MeasurementController(QObject):
             #self.result_image_path = None
             #self.thumbnail_path = None
 
+        # QC Test 만 파일명에 명시
+        if self.select_menu == "QCTest":
+            self.captured_filename = f"QC_{self.captured_filename}"
 
         # 결과 이미지 저장
         base, ext = os.path.splitext(self.captured_filename)

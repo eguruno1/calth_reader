@@ -30,6 +30,7 @@ class ResultView0(QMainWindow):
         super().__init__(parent)
 
         self.select_menu = None
+        self.test_type = None
 
         self.load_ui()
         self.init_ui()
@@ -68,6 +69,7 @@ class ResultView0(QMainWindow):
 
         # 버튼들 연결
         self.pushButton_ResultHome.clicked.connect(self.on_resultHome_button_clicked)
+        self.pushButton_ResultBackArrow.clicked.connect(self.on_resultHome_button_clicked)
         #self.pushButton_Retest.clicked.connect(self.on_resultRetest_button_clicked)
         #self.pushButton_ResultSend.clicked.connect(self.on_resultSend_button_clicked)
         #self.pushButton_Print.clicked.connect(self.on_resultPrint_button_clicked)
@@ -103,6 +105,7 @@ class ResultView0(QMainWindow):
         # stop_battery_update(self)
         super().closeEvent(event)
 
+    # 기존 홈 버튼을 OK 버튼으로 대체
     def on_resultHome_button_clicked(self):
         print("ResultView: HOME 버튼이 클릭되었습니다." )
         self.on_retry_measurement() # 모든값 초기화
@@ -343,20 +346,31 @@ class ResultView0(QMainWindow):
         self.reset_current_json()
 
     def reset_current_json(self):
-        empty = {
-            #"select_menu": None, select 유지
-            #"test_type1": None,  test_type1
-            "operator": None,
-            "patient_id": None,
-            "datentime": None,
-            "control": None,
-            "resultb": None,
-            "resulta": None
-        }
-         
-        print("[ResultView0] current.json reset")
-        
-        self.update_json_file(empty)
+        try:
+            # 1️⃣ 기존 current.json 읽기
+            with open(self.current_json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # 2️⃣ 유지해야 할 값은 그대로 둔다
+            # data["select_menu"]
+            # data["test_type1"]
+            # data["operator"]
+
+            # 3️⃣ 1회성 값만 초기화
+            data["patient_id"] = None
+            data["datentime"] = None
+            data["control"] = None
+            data["resultb"] = None
+            data["resulta"] = None
+
+            print("[ResultView0] current.json partial reset (keep select_menu, test_type1, operator)")
+
+            # 4️⃣ JSON 저장
+            self.update_json_file(data)
+
+        except Exception as e:
+            print(f"[ResultView0] current.json reset 중 오류 발생: {e}")
+
        
     def update_json_file(self, empty):
         try:

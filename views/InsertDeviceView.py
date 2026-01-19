@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QResizeEvent, QPixmap
-from views.Utils import (center_window, update_date_time, start_date_time_update, stop_date_time_update)
+from views.Utils import (center_window, update_date_time)
 
 from controllers import app_controller
 

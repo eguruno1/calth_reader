@@ -4,13 +4,17 @@ import threading
 from datetime import datetime
 
 from PyQt5.QtWidgets import QMainWindow, QLineEdit, QWidget, QLabel, QMessageBox
-from PyQt5.QtCore    import (pyqtSignal, QPoint, QRect, QEvent, QPropertyAnimation, QEasingCurve, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot)
+from PyQt5.QtCore    import (pyqtSignal, QPoint, QRect, QEvent, QPropertyAnimation, 
+                             QEasingCurve, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot)
 from PyQt5.QtGui     import QResizeEvent, QPixmap
 from PyQt5           import uic
 
 from views.Utils     import (set_current_date, update_date_time, start_date_time_update, stop_date_time_update)
 from views.VKeyboard import VKeyboard
 from controllers import app_controller
+
+from database.connection import get_db_session
+from database.models import Patient
 
 class TestInfoView(QMainWindow):
     switch_to_home    = pyqtSignal()
@@ -237,7 +241,15 @@ class TestInfoView(QMainWindow):
     def on_testinfok_button_clicked(self):
         """테스트 진단 시작"""
         operator = self.lineEdit_Operator.text() if self.lineEdit_Operator else ""
-        patient_id = self.lineEdit_PatientID.text() if self.lineEdit_PatientID else ""
+        # patient_id = self.lineEdit_PatientID.text() if self.lineEdit_PatientID else ""
+        patient_code = self.lineEdit_PatientID.text().strip()
+
+        try:
+            patient_id = self.get_or_create_patient_id(patient_code)
+        except Exception as e:
+            QMessageBox.critical(self, "DB Error", str(e))
+            return
+
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Create test data dictionary
@@ -249,9 +261,15 @@ class TestInfoView(QMainWindow):
         }
 
         # Validate data
-        if not patient_id or not operator:
-            QMessageBox.warning(self, "Validation Error", 
-                              "Please fill in all required fields (Patient ID, Operator)")
+        if not operator:
+            QMessageBox.warning(self, "Error", 
+                              "Please fill in all required fields Patient ID")
+            return
+        
+        # Validate data
+        if not patient_id:
+            QMessageBox.warning(self, "Error", 
+                              "Please fill in all required fields Patient ID")
             return
 
         # Save test data
@@ -381,6 +399,7 @@ class TestInfoView(QMainWindow):
 
         # TestInfoView가 표시될 때 lineEdit_PatientID에 포커스 설정
         if self.lineEdit_PatientID:
+            self.lineEdit_PatientID.clear()
             self.lineEdit_PatientID.setFocus()
             self.show_virtual_keyboard(self.lineEdit_PatientID)
         else:
@@ -391,6 +410,41 @@ class TestInfoView(QMainWindow):
         stop_date_time_update(self)
         # stop_battery_update(self)
         super().closeEvent(event)
+
+    #####################################################
+    # patient 등록여부 확인
+    #####################################################
+    def get_or_create_patient_id(self, patient_code: str) -> int:
+        session = get_db_session()
+        try:
+            patient = (
+                session.query(Patient)
+                .filter(Patient.patient_code == patient_code)
+                .first()
+            )
+
+            if patient:
+                return patient.id
+
+            # 없으면 신규 등록
+            patient = Patient(
+                patient_code=patient_code,
+                birth_year=None,
+                gender='U',
+                notes=None
+            )
+            session.add(patient)
+            session.commit()
+            session.refresh(patient)
+
+            return patient.id
+
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+    
 
     #####################################################
     # Battery Status (UART 기반)

@@ -231,6 +231,15 @@ class AccountPwEditView(QWidget):
             self.current_input.backspace()
 
     def handle_enter(self):
+        """
+        엔터키는 입력으로 처리하지 않고
+        확인 동작만 수행하도록 한다
+        """
+        # 엔터키가 QLineEdit에 입력되지 않도록
+        if self.current_input:
+            # 입력 완료로 간주 → 포커스 유지
+            self.current_input.clearFocus()
+            
         """Enter 키 처리"""
         self.hide_keyboard()
         self.on_save_clicked()        

@@ -327,7 +327,12 @@ class ResultListView(QMainWindow):
                     ]
                 },
                 "positive": true | false,
-                "line_count": 2 | 3
+                "line_count": 2 | 3,
+                --아래 추가--
+                "valid": True / False,
+                "result": "POS" / "NEG" / "N/A",
+                "control_detected": True / False,
+                "test_detected": True / False
             }
         }
         """
@@ -349,6 +354,7 @@ class ResultListView(QMainWindow):
             mode = analysis.get("mode")              # 2 or 3
             positive = analysis.get("positive")      # True / False
             line_count = analysis.get("line_count")  # 2 / 3
+            test_result = analysis.get("result")  # 2 / 3
 
             # ----------------------------------
             # 3. metrics / lines 안전 추출
@@ -373,6 +379,13 @@ class ResultListView(QMainWindow):
             # 4. 2라인 (COVID19)
             # ----------------------------------
             if mode == 2:
+                if test_result == "POS":
+                    return f"POSITIVE"
+                elif test_result == "NEG":
+                    return f"NEGATIVE"
+                else:
+                    return f"N/A"
+                """
                 if not labels:
                     return f"INVALID"
                 
@@ -382,7 +395,7 @@ class ResultListView(QMainWindow):
                 else:
                     #return f"NEGATIVE (C) | Lines:{line_cnt_str}"
                     return f"NEGATIVE"
-
+                """
             # ----------------------------------
             # 5. 3라인 (INFLUENZA)
             # ----------------------------------

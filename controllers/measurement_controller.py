@@ -223,18 +223,73 @@ class MeasurementController(QObject):
         #  - mode 2 (C/T): 정확히 2라인 검출 시 positive
         #  - mode 3 (L1/L2/L3): 정확히 3라인 검출 시 positive
         # -------------------------------------------------
+
+        # -------------------------------------------------
+        # [C/T 라인 기반 진단 판정 - mode 2 전용]
+        # -------------------------------------------------
+        # detect_2line.py 결과 기준:
+        #  - metrics["lines"] 에 label="C", "T" 포함
+        #  - 좌측 = C, 우측 = T
+        # -------------------------------------------------
+
+        control_detected = False
+        test_detected = False
+        valid = False
+        result = ""
+
         if analysis["mode"] == 2:
-            positive = (analysis["line_count"] == 2)
+            # positive = (analysis["line_count"] == 2)
+            # metrics 내부 구조 방어적 접근
+            line_metrics = analysis.get("metrics", {}).get("lines", [])
+
+            for line in line_metrics:
+                label = line.get("label")
+                if label == "C":
+                    control_detected = True
+                elif label == "T":
+                    test_detected = True
+
+            # -------------------------------------------------
+            # Valid / Result 판정 규칙
+            # -------------------------------------------------
+            # C 미검출 → Invalid (무조건 N/A)
+            # C 검출 + T 미검출 → Valid NEG
+            # C 검출 + T 검출 → Valid POS
+            # -------------------------------------------------
+
+            valid = control_detected
+
+            if not valid:
+                result = "N/A"
+            else:
+                result = "POS" if test_detected else "NEG"
+
+            # -------------------------------------------------
+            # 기존 positive 필드 유지 (하위 호환)
+            # -------------------------------------------------
+            positive = (valid and test_detected)
+
+            
         elif analysis["mode"] == 3:
             positive = (analysis["line_count"] == 3)
         else:
             positive = False
 
+        # -------------------------------------------------
+        # 최종 분석 결과 구조 (View/DB/JSON 공통 사용)
+        # -------------------------------------------------
         self.analysis_result = {
+            # 🔹 기존 필드 (유지)
             "positive": positive,
             "mode": mode,
             "line_count": line_count,
             "metrics": metrics,
+
+            # 🔸 신규 명확 판정 필드
+            "control_detected": control_detected,
+            "test_detected": test_detected,
+            "valid": valid,
+            "result": result
         }
 
         # ===============================

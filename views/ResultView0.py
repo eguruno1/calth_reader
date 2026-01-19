@@ -236,6 +236,11 @@ class ResultView0(QMainWindow):
     def _bind_ui(self, ts, mr, test_type, operator, patient):
         analysis = mr.result_data.get("analysis_result", {})
 
+        valid = analysis.get("valid", False)
+        final_result = analysis.get("result", "N/A")
+        control_detected = analysis.get("control_detected", False)
+        test_detected = analysis.get("test_detected", False)
+
         current_data = self._load_current_json()
         json_test_type1 = current_data.get("test_type1")
         json_operator_id = current_data.get("operator")
@@ -270,15 +275,43 @@ class ResultView0(QMainWindow):
             print("[ResultView0] patient 없음 (NULL)")
 
         # 3-5 컨트롤
+        # -------------------------------------------------
+        # Valid / Invalid 표시
+        # -------------------------------------------------
+        if valid:
+            self.label_24_control.setText("VALID")
+            #self.label_24_control.setStyleSheet("color: green;")
+        else:
+            self.label_24_control.setText("INVALID")
+            #self.label_24_control.setStyleSheet("color: red;")
+        """
         self.label_24_control.setText(
             "Valid" if analysis.get("positive") else "Invalid"
         )
+        """
 
         # 3-6 진단 결과
+        # -------------------------------------------------
+        # 최종 결과 표시
+        # -------------------------------------------------
+        self.label_22_result.setText(final_result)
+        """
+        if final_result == "POS":
+            self.label_22_result.setText("POSITIVE")
+            #self.label_22_result.setStyleSheet("color: red; font-weight: bold;")
+        elif final_result == "NEG":
+            self.label_22_result.setText("NEGATIVE")
+            #self.label_22_result.setStyleSheet("color: blue; font-weight: bold;")
+        else:  # "N/A"
+            self.label_22_result.setText("N/A")
+            #self.label_22_result.setStyleSheet("color: gray;")
+        """
+            
+        """
         self.label_22_result.setText(
             "POS" if analysis.get("positive") else "NEG"
         )
-
+        """
         # 3-7 썸네일 이미지
         #self._load_thumbnail(mr.thumbnail_path)
 

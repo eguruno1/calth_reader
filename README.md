@@ -362,12 +362,17 @@ pip install -r requirements.txt
 
 ### 2. 애플리케이션 실행
 ```bash
-python main.py
+python3 main.py
 ```
 
 ### 3. 구조 테스트 (PyQt5 없이)
 ```bash
-python test_structure.py
+python3 test_structure.py
+```
+
+### 4. Docker 실행
+```bash
+sudo systemctl restart docker
 ```
 
 ## 개발자 가이드

@@ -374,7 +374,7 @@
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>-1</pointsize>
+       <pointsize>14</pointsize>
       </font>
      </property>
      <property name="styleSheet">

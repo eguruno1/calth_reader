@@ -416,7 +416,7 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>813</x>
       <y>30</y>
       <width>150</width>
       <height>40</height>
@@ -461,11 +461,14 @@ QPushButton:pressed {
     </property>
     <property name="font">
      <font>
-      <family>Pretendard</family>
-      <pointsize>18</pointsize>
+      <family>.AppleSystemUIFont</family>
+      <pointsize>14</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="text">
+     <string>Checking</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

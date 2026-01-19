@@ -222,6 +222,8 @@ class PowerStatusOverlayWidget(QWidget):
         """
         사용자가 OK 선택 → 장비 전원 종료
         """
+        self._is_open = True
+
         # 이미 shutdown 진행 중이면 무시
         if self._shutdown_in_progress:
             print("[PowerStatusOverlay] Shutdown already in progress → ignore")
@@ -264,5 +266,5 @@ class PowerStatusOverlayWidget(QWidget):
 
         # 파워 유지 P1 을 보냄.
         app_controller.send_uart_command("P1")
-
+        self._is_open = False
         self.hide_warning()    

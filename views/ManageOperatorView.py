@@ -58,7 +58,7 @@ class ManageOperatorView(QMainWindow):
         self.pushButton_EditID.clicked.connect(self.on_edit_id_button_clicked)
         self.pushButton_EditPW.clicked.connect(self.on_edit_pw_button_clicked)
         self.pushButton_DeleteID.clicked.connect(self.on_delete_id_button_clicked)
-        self.pushButton_AutoLogout.clicked.connect(self.on_auto_logout_button_clicked)
+        #self.pushButton_AutoLogout.clicked.connect(self.on_auto_logout_button_clicked)
 
         # 테이블 설정 (textBrowser 대신 테이블 사용)
         self.setup_table()
@@ -370,7 +370,7 @@ class ManageOperatorView(QMainWindow):
             QMessageBox.warning(
                 self,
                 "Warning",
-                "Select and delete users."
+                "Select and edit users."
             )
             return
 
@@ -419,7 +419,7 @@ class ManageOperatorView(QMainWindow):
             QMessageBox.warning(
                 self,
                 "Warning",
-                "Select and delete users."
+                "Select and edit users."
             )
             return
 

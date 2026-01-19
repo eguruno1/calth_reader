@@ -29,7 +29,7 @@
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>14</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -61,7 +61,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>850</x>
-      <y>93</y>
+      <y>139</y>
       <width>150</width>
       <height>80</height>
      </rect>
@@ -69,7 +69,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>14</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -98,7 +98,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>850</x>
-      <y>194</y>
+      <y>240</y>
       <width>150</width>
       <height>80</height>
      </rect>
@@ -106,7 +106,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>14</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -135,7 +135,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>850</x>
-      <y>295</y>
+      <y>341</y>
       <width>150</width>
       <height>80</height>
      </rect>
@@ -143,7 +143,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>14</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -172,7 +172,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>850</x>
-      <y>396</y>
+      <y>442</y>
       <width>150</width>
       <height>80</height>
      </rect>
@@ -180,7 +180,7 @@ QPushButton:pressed {
     <property name="font">
      <font>
       <family>Pretendard</family>
-      <pointsize>14</pointsize>
+      <pointsize>-1</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -203,44 +203,6 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>DELETE ID</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_AutoLogout">
-    <property name="geometry">
-     <rect>
-      <x>850</x>
-      <y>496</y>
-      <width>150</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>14</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #606060;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #707070;
-}
-QPushButton:pressed {
-    background-color: #505050;
-}</string>
-    </property>
-    <property name="text">
-     <string>AUTO
-LOGOUT</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_BatteryGuage">

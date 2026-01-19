@@ -323,9 +323,14 @@ class UARTService(QObject):
 
     def _rx_loop(self):
         print("[UARTService] RX loop started")
+        print(f"[UARTService] RX loop ser={self.ser}")
 
         while self._rx_running:
             try:
+                if not self.ser:
+                    time.sleep(0.2)
+                    continue   # ✅ ser None이면 대기
+
                 line = self.ser.readline()   # blocking
                 if not line:
                     continue
@@ -348,6 +353,7 @@ class UARTService(QObject):
 
             except Exception as e:
                 print(f"[UARTService] RX loop error: {e}")
+                time.sleep(0.5)
 
     def _handle_battery_raw(self, raw: str):
         """
@@ -429,6 +435,16 @@ class UARTService(QObject):
         except Exception as e:
             print(f"[UARTService] TX error ({command}): {e}")
             return False
+
+    #####################################################
+    # UART Command Send 처리
+    ##################################################### 
+    def open(self):
+        print(f"[UARTService] UART open requested")
+
+    def close(self):
+        print(f"[UARTService] UART close requested")
+
 
 
 

@@ -105,7 +105,7 @@ class BatteryInfo:
     def get_status_text(self) -> str:
         """배터리 상태 텍스트 반환"""
         if self.is_charging:
-            return f"충전중 {self.level}%"
+            return f"{self.level}%"
         else:
             return f"{self.level}%"
 

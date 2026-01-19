@@ -75,7 +75,7 @@ CREATE TABLE measurement_results (
     session_id BIGINT NOT NULL REFERENCES test_sessions(id) ON DELETE CASCADE,
     measurement_type VARCHAR(50) NOT NULL,
     result_data JSONB NOT NULL, -- JSON 형태로 저장
-    select_menu VARCHAR(50) NOT NULL, --홈 선택 메뉴명
+    select_menu VARCHAR(50), --홈 선택 메뉴명
     image_path VARCHAR(500),
     thumbnail_path VARCHAR(500),
     quality_score DECIMAL(5,2) CHECK (quality_score >= 0 AND quality_score <= 100),
@@ -87,6 +87,8 @@ CREATE TABLE measurement_results (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+--ALTER TABLE public.measurement_results ADD select_menu varchar(50) NULL;
+
 
 -- 6. 시스템 로그 테이블 (개선된 버전)
 CREATE TABLE system_logs (

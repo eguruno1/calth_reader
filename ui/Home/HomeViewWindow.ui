@@ -508,34 +508,10 @@ QPushButton:pressed {
      </font>
     </property>
     <property name="text">
-     <string>Device: Ready | Version: 1.0.0</string>
+     <string>ALLSIGNAL DL</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_connection_status">
-    <property name="geometry">
-     <rect>
-      <x>600</x>
-      <y>520</y>
-      <width>350</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard</family>
-      <pointsize>14</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Camera: Connected | UART: Connected</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
   </widget>

@@ -331,7 +331,8 @@ class HomeView(QMainWindow):
 
     def display_version(self):
         version = self.get_version_from_info()
-        self.label_device_info.setText(f"Device: Ready | Version: {version}")
+        #self.label_device_info.setText(f"Device: Ready | Version: {version}")
+        self.label_device_info.setText(f"ALLSIGNAL DL")
 
     def get_version_from_info(self):
         try:

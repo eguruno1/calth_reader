@@ -227,6 +227,7 @@ class AppController(QMainWindow):
         self.general_settings_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.power_management_view.switch_to_settings.connect(self.switch_to_settings_view)
         self.manage_operator_view.switch_to_settings.connect(self.switch_to_settings_view)
+        self.manage_operator_view.switch_to_home.connect(self.switch_to_home_view)#로그아웃시 홈으로.
         self.resultList_view.switch_to_home.connect(self.switch_to_home_view)
         self.resultList_view.switch_to_result_category.connect(self.switch_to_result_category_view)
         self.select_view.switch_to_home.connect(self.switch_to_home_view)

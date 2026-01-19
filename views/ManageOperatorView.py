@@ -511,10 +511,10 @@ class ManageOperatorView(QMainWindow):
             if app_controller.user_service.is_logged_in():
                 # 로그아웃 후 로그인 화면으로 이동
                 app_controller.user_service.logout()
-                self.switch_to_home.emit("")
+                self.switch_to_home.emit()
             else:
                 # 로그인 화면으로 이동
-                self.switch_to_home.emit("")
+                self.switch_to_home.emit()
         except Exception as e:
             print(f"로그인/로그아웃 처리 오류: {e}")
             #self.switch_to_home.emit()  # 오류 시 기존 동작

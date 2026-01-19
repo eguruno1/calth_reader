@@ -65,7 +65,7 @@ class UpdateSettingsView(QMainWindow):
     # ==================================================
     def load_current_versions(self):
         version = self._get_local_sw_version()
-        self.label_software_version.setText(f"현재 버전: {version}")
+        self.label_software_version.setText(f"Version: {version}")
 
     def _get_local_sw_version(self):
         try:

@@ -97,10 +97,10 @@ class HomeView(QMainWindow):
         print("Standard Test 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
-        """
+        """"""
         if not self._require_login("StandardTest"):
             return
-        """
+        
         self.update_json_file("StandardTest")
         # ✅ 기존 switch_to_select를 재활용
         # SelectView로 가지 않고, ui_controller에서 TestInfoView로 연결
@@ -110,10 +110,10 @@ class HomeView(QMainWindow):
         print("Read Only 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
-        """
+        """"""
         if not self._require_login("ReadOnly"):
             return
-        """
+        
         self.update_json_file("ReadOnly")
         # ✅ 기존 switch_to_select를 재활용
         # SelectView로 가지 않고, ui_controller에서 TestInfoView로 연결
@@ -123,10 +123,10 @@ class HomeView(QMainWindow):
         print("QC Test 버튼이 클릭되었습니다.")
 
         # ▶ 로그인 체크
-        """
+        """"""
         if not self._require_login("QCTest"):
             return
-        """
+        
         self.update_json_file("QCTest")
         # ✅ 기존 switch_to_select를 재활용
         # SelectView로 가지 않고, ui_controller에서 TestInfoView로 연결

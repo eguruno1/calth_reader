@@ -208,7 +208,7 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_BatteryGuage">
     <property name="geometry">
      <rect>
-      <x>921</x>
+      <x>1029</x>
       <y>20</y>
       <width>80</width>
       <height>40</height>
@@ -471,7 +471,7 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_BatteryGuageTxt">
     <property name="geometry">
      <rect>
-      <x>922</x>
+      <x>1030</x>
       <y>20</y>
       <width>81</width>
       <height>40</height>

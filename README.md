@@ -260,6 +260,47 @@ https://forums.developer.nvidia.com/t/hello-how-can-i-change-the-nvidia-boot-log
 
   #########################################
 
+  -- 폰트 이슈 해결 --
+  sudo nano /etc/systemd/system/load-pretendard-fonts.service
+    ############## 서비스파일 내용 ##############
+    [Unit]
+    Description=Load Pretendard fonts
+    Before=PyCalth.service
+
+    [Service]
+    Type=onshot
+    ExecStart=/usr/bin/fc-cache -f /usr/share/fonts/pretendard/
+
+    [Install]
+    WantedBy=multi-user.target
+
+
+  sudo nano /etc/systemd/system/PyCalth.service
+    ############## 서비스파일 내용 ##############
+    [Unit]
+    Description=Calth Reader Main Script
+    Requires=load-pretendard-fonts.service
+    After=load-pretendard-fonts.service graphical.target
+
+    [Service]
+    Type=simple
+    Environment=XDG_RUNTIME_DIR=/run/user/1000
+    Environment=PYTHONUNBUFFERED=1
+    Environment=XAUTHORITY=/home/calth/.Xauthority
+    Environment=DISPLAY=:0
+    ExecStartPre=/bin/sleep 4
+    ExecStart=/usr/bin/python3 /home/calth/calth_reader/main.py
+    WorkingDirectory=/home/calth/calth_reader
+    StandardOutput=journal
+    StandardError=journal
+    Restart=always
+    RestartSec=15
+    User=calth
+    Group=calth
+
+    [Install]
+    WantedBy=graphical.target
+
  6. systemd 재적용
 ```bash
   sudo systemctl daemon-reexec

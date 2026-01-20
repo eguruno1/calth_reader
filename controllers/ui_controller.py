@@ -971,7 +971,9 @@ class AppController(QMainWindow):
         if event_type == "battery_changed":
             level = data.level
             if level <= 20:
-                self.low_battery_overlay.show_warning()
+                #self.low_battery_overlay.show_warning()
+                # 배터리 로우는 당분간 오픈안함....
+                self.low_battery_overlay.hide_warning()
             else:
                 self.low_battery_overlay.hide_warning()
 

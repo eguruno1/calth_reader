@@ -40,6 +40,12 @@ class PowerStatusOverlayWidget(QWidget):
         self.hide()
         self._build_ui()
 
+        # 카운트 다운 변수
+        self._countdown_timer = QTimer(self)
+        self._countdown_timer.timeout.connect(self._on_countdown_tick)
+        self._countdown_sec = 0
+
+
     # ======================================================
     # UI 구성
     # ======================================================
@@ -168,6 +174,11 @@ class PowerStatusOverlayWidget(QWidget):
         self._show("Power Off Confirmation.\n")
 
     def _show(self, message):
+        # shutdown 진행 중에는 재오픈 금지
+        if self._shutdown_in_progress:
+            print("[PowerStatusOverlay] shutdown in progress → ignore show")
+            return
+        
         if self._is_open:
             return
         self.label_desc.setText(message)
@@ -235,14 +246,24 @@ class PowerStatusOverlayWidget(QWidget):
         self._shutdown_in_progress = True
 
         # 버튼 즉시 비활성화 (중복 클릭 방지)
-        self.btn_ok.setEnabled(False)
-        self.btn_cancle.setEnabled(False)
+        #self.btn_ok.setEnabled(False)
+        #self.btn_cancle.setEnabled(False)
         #self.btn_ok.setText("Shutting down...")
+
+        # 🔥 버튼 숨김
+        self.btn_ok.hide()
+        self.btn_cancle.hide()
+
+        # 🔥 20초 카운트 시작
+        self._countdown_sec = 20
+        self.label_desc.setText("Shutting down...")
+        self._update_countdown_text()
+        self._countdown_timer.start(1000)
 
         # UART로 Power OFF 신호 전송
         app_controller.send_uart_command("P0")
-
-        self.hide_warning()
+        # → 위젯 유지
+        #self.hide_warning()
 
         # sudoers에 의해 비밀번호 없이 실행됨
         try:
@@ -268,3 +289,32 @@ class PowerStatusOverlayWidget(QWidget):
         app_controller.send_uart_command("P1")
         self._is_open = False
         self.hide_warning()    
+
+    # 카운트 표시용
+    def _update_countdown_text(self):
+        self.label_desc2.setText(
+            f"The system will shut down in\n\n{self._countdown_sec} seconds."
+        )
+        self.label_desc2.adjustSize()
+
+    # 타이머 tick 처리
+    def _on_countdown_tick(self):
+        self._countdown_sec -= 1
+
+        if self._countdown_sec <= 0:
+            self._countdown_timer.stop()
+            print("[PowerStatusOverlay] Countdown finished → system shutdown")
+
+            try:
+                subprocess.Popen(
+                    ["/sbin/shutdown", "-h", "now"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            except Exception as e:
+                print(f"[PowerStatusOverlay] shutdown failed: {e}")
+            return
+
+        self._update_countdown_text()
+    
+    

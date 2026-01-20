@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QWidget, QCheckBox, QHBoxLayout, QMessageBox
 )
 from PyQt5.QtCore import pyqtSignal, QMetaObject, Qt, Q_ARG, pyqtSlot
-from PyQt5.QtGui import QColor, QPixmap
+from PyQt5.QtGui import QColor, QPixmap, QFont
 from PyQt5 import uic
 
 # 공통 UI 유틸
@@ -133,6 +133,16 @@ class ResultListView(QMainWindow):
         # ★ FIX: row 클릭 처리
         self.table.cellClicked.connect(self.on_row_clicked)
 
+        # -------------------------------------------------
+        # ★ 헤더 폰트 크기 설정 (16)
+        # -------------------------------------------------
+        header_font = QFont()
+        header_font.setPointSize(14)
+        header_font.setBold(True)   # 헤더 가독성 ↑ (선택사항)
+
+        self.table.horizontalHeader().setFont(header_font)
+        # -------------------------------------------------
+
         self.table.setStyleSheet("""
             QTableWidget { background: white; }
             QTableWidget::item { padding: 8px; }
@@ -206,6 +216,10 @@ class ResultListView(QMainWindow):
         self.table.setHorizontalHeaderLabels(headers)
         self.table.setRowCount(len(results))
 
+        # _populate_table() 상단 또는 for row 루프 전에
+        item_font = QFont()
+        item_font.setPointSize(12)
+
         # ▶ 헤더 텍스트 수동 설정 (색상 제어용)
         for col, text in enumerate(headers):
             item = QTableWidgetItem(text)
@@ -252,6 +266,7 @@ class ResultListView(QMainWindow):
                 if mr.measured_at else ""
             )
             item_date = QTableWidgetItem(date_text)
+            item_date.setFont(item_font)
             item_date.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row, 1, item_date)
 
@@ -274,24 +289,63 @@ class ResultListView(QMainWindow):
             result_text = self._format_result_data(mr.result_data)
 
             item_op = QTableWidgetItem(operator_id)
+            item_op.setFont(item_font)
             item_op.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row, 2, item_op)
 
             item_patient = QTableWidgetItem(patient_code)
+            item_patient.setFont(item_font)
             item_patient.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row, 3, item_patient)
 
             item_test = QTableWidgetItem(test_item)
+            item_test.setFont(item_font)
             item_test.setForeground(QColor("#d32f2f"))
             item_test.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row, 4, item_test)
 
-            self.table.setItem(row, 5, QTableWidgetItem(result_text))
+            item_result = QTableWidgetItem(result_text)
+            item_result.setFont(item_font)
+            self.table.setItem(row, 5, item_result)
 
         # ======================================================
         # ★ Result 컬럼 폭 제어 (중요)
         # ======================================================
         header = self.table.horizontalHeader()
+
+        # 0: Check
+        self.table.setColumnWidth(0, 70)
+        """
+        # 1: Date
+        self.table.setColumnWidth(1, 200)
+
+        # 2: Operator ID
+        self.table.setColumnWidth(2, 160)
+
+        # 3: Patient ID / QC ID
+        self.table.setColumnWidth(3, 180)
+
+        # 4: Test Item (내용 길이 고려)
+        self.table.resizeColumnToContents(4)
+        self.table.setColumnWidth(
+            4,
+            max(self.table.columnWidth(4), 200)
+        )
+        """
+        # 5: Result → 남은 영역 전체 사용
+        RESULT_COL = 5
+
+        if self._result_column_width is None:
+            self.table.resizeColumnsToContents()
+            header.setStretchLastSection(True)
+
+            self.table.viewport().update()
+            self._result_column_width = self.table.columnWidth(RESULT_COL)
+        else:
+            header.setStretchLastSection(False)
+            self.table.setColumnWidth(RESULT_COL, self._result_column_width)
+            
+        """
         RESULT_COL = 5
 
         if self._result_column_width is None:
@@ -307,7 +361,7 @@ class ResultListView(QMainWindow):
             # ▶ 이후: 저장된 Result 폭 유지
             header.setStretchLastSection(False)
             self.table.setColumnWidth(RESULT_COL, self._result_column_width)
-
+        """
     # ==========================================================
     # RESULT FORMAT
     # ==========================================================

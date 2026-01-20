@@ -5,7 +5,7 @@ import threading
 from PyQt5.QtWidgets import (QMainWindow, QTableWidget, QTableWidgetItem, 
                              QHeaderView, QAbstractItemView, QDialog, QMessageBox)
 from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
-from PyQt5.QtGui import QColor, QPixmap
+from PyQt5.QtGui import QColor, QPixmap, QFont
 from PyQt5 import uic
 
 from views.Utils import (update_date_time, start_date_time_update, stop_date_time_update)
@@ -124,6 +124,16 @@ class ManageOperatorView(QMainWindow):
 
         self.table_widget.itemClicked.connect(self.on_table_item_clicked)
 
+        # -------------------------------------------------
+        # ★ 헤더 폰트 크기 설정 (16)
+        # -------------------------------------------------
+        header_font = QFont()
+        header_font.setPointSize(14)
+        header_font.setBold(True)   # 헤더 가독성 ↑ (선택사항)
+
+        self.table_widget.horizontalHeader().setFont(header_font)
+        # -------------------------------------------------
+
         self.table_widget.setStyleSheet("""
             QTableWidget {
                 background-color: white;
@@ -179,16 +189,53 @@ class ManageOperatorView(QMainWindow):
         
         # 행 설정
         self.table_widget.setRowCount(len(users))
+
+        item_font = QFont()
+        item_font.setPointSize(12)
         
         # 데이터 입력
         for row, user in enumerate(users):
+
+            """
             self.table_widget.setItem(row, 0, QTableWidgetItem(user.get("id", "")))
             self.table_widget.setItem(row, 1, QTableWidgetItem(user.get("name", "N/A")))
             self.table_widget.setItem(row, 2, QTableWidgetItem(user.get("role", "Operator")))
+            """
 
+            item_user_id = QTableWidgetItem(user.get("id", ""))
+            item_user_id.setFont(item_font)
+            item_user_id.setTextAlignment(Qt.AlignCenter)
+            self.table_widget.setItem(row, 0, item_user_id)
+
+            item_user_name = QTableWidgetItem(user.get("name", "N/A"))
+            item_user_name.setFont(item_font)
+            item_user_name.setTextAlignment(Qt.AlignCenter)
+            self.table_widget.setItem(row, 1, item_user_name)
+
+            item_role = QTableWidgetItem(user.get("role", "Operator"))
+            item_role.setFont(item_font)
+            item_role.setTextAlignment(Qt.AlignCenter)
+            self.table_widget.setItem(row, 2, item_role)
+
+            
             created_at = user.get("created_at")
             last_login = user.get("last_login")
 
+            item_created_at = QTableWidgetItem(created_at.strftime('%Y-%m-%d %H:%M') if created_at else "N/A")
+            item_created_at.setFont(item_font)
+            item_created_at.setTextAlignment(Qt.AlignCenter)
+            self.table_widget.setItem(row, 3, item_created_at)
+
+            item_last_login = QTableWidgetItem(last_login.strftime('%Y-%m-%d %H:%M') if last_login else "Never")
+            item_last_login.setFont(item_font)
+            item_last_login.setTextAlignment(Qt.AlignCenter)
+            self.table_widget.setItem(row, 4, item_last_login)
+
+            item_active = QTableWidgetItem("Active" if user.get("is_active", True) else "Inactive")
+            item_active.setFont(item_font)
+            item_active.setTextAlignment(Qt.AlignCenter)
+            self.table_widget.setItem(row, 5, item_active)
+            """
             self.table_widget.setItem(
                 row, 3,
                 QTableWidgetItem(created_at.strftime('%Y-%m-%d %H:%M') if created_at else "N/A")
@@ -203,7 +250,7 @@ class ManageOperatorView(QMainWindow):
                 row, 5,
                 QTableWidgetItem("Active" if user.get("is_active", True) else "Inactive")
             ) # End for
-        
+            """
         # 컬럼 너비를 컨텐츠에 맞게 조정한 후, 마지막 컬럼만 확장
         self.table_widget.resizeColumnsToContents()
         header.setStretchLastSection(True)

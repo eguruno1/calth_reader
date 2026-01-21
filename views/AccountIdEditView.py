@@ -141,6 +141,11 @@ class AccountIdEditView(QWidget):
         if new_user_id == self._current_user_id:
             QMessageBox.warning(self, "Warning", "Select duplicate Operator ID.")
             return
+        
+        # 선택한 아이디가 관리자면 수정불가.
+        if self._current_user_id == "admin":
+            QMessageBox.warning(self, "Warning", "Admin cannot be changed.")
+            return
 
         try:
             self._update_user_id(new_user_id)

@@ -445,8 +445,8 @@ class ManageOperatorView(QMainWindow):
 
         print(f"ID 편집할 사용자: {selected_user}")
 
-        user_role = selected_user.get("'Role'")
-        if user_role == "admin":
+        user_role = selected_user.get("Role")
+        if user_id == "admin" or user_role == "admin":
             QMessageBox.warning(self, "Warning", "Administrators cannot work.")
             return
 

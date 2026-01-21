@@ -358,12 +358,12 @@ QRadioButton::indicator:checked {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>30</pointsize>
+       <pointsize>26</pointsize>
       </font>
      </property>
      <property name="styleSheet">
       <string notr="true">QDateTimeEdit {
-    font-size: 30px;
+    font-size: 26px;
     border: 2px solid #d0d0d0;
     border-radius: 5px;
     padding: 5px 10px;

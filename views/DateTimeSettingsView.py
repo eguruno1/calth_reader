@@ -47,6 +47,24 @@ class DateTimeSettingsView(QMainWindow):
         
         # 커스텀 날짜/시간 편집기에 현재 시간 설정
         self.datetime_custom.setDateTime(QDateTime.currentDateTime())
+        # QDateTimeEdit 우측 업/다운 버튼 폭 확장
+        self.datetime_custom.setStyleSheet("""
+            QDateTimeEdit::up-button {
+                width: 40px;          /* ← 원하는 좌우 폭 */
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+            }
+
+            QDateTimeEdit::down-button {
+                width: 40px;          /* ← 원하는 좌우 폭 */
+                subcontrol-origin: border;
+                subcontrol-position: bottom right;
+            }
+
+            QDateTimeEdit {
+                padding-right: 40px;  /* 버튼 영역만큼 텍스트 영역 확보 */
+            }
+        """)
         
         # 뒤로 가기 버튼 연결
         self.pushButton_BackArrow.clicked.connect(self.on_back_button_clicked)

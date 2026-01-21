@@ -23,6 +23,8 @@ from database.models import User
 from common.session_context import get_session_context
 from services.user_service import user_service
 
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
+
 
 class AdminPwEdit1View(QWidget):
     """
@@ -50,6 +52,9 @@ class AdminPwEdit1View(QWidget):
         self._load_ui()
         self._connect_signals()
         self._setup_virtual_keyboard()
+
+        # 날짜와 시간 표시
+        self.update_date_time()
 
     # ==================================================
     # UI
@@ -92,10 +97,17 @@ class AdminPwEdit1View(QWidget):
         """
         super().showEvent(event)
 
+        # 날짜/시간 시작
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+
         if not self.keyboard_auto_shown:
             self.keyboard_auto_shown = True
             QTimer.singleShot(100, self._focus_and_show_keyboard)
 
+    def closeEvent(self, event):
+        stop_date_time_update(self)
+        super().closeEvent(event)  
+    
     def _focus_and_show_keyboard(self):
         self.lineEdit_password.setFocus()
         self.current_input = self.lineEdit_password
@@ -110,7 +122,13 @@ class AdminPwEdit1View(QWidget):
     def go_back(self):
         self.clear_form()
         self.hide_keyboard()
-        self.switch_to_manage_operator.emit()        
+        self.switch_to_manage_operator.emit()      
+
+    # ==================================================
+    # Time
+    # ==================================================
+    def update_date_time(self):
+        update_date_time(self)         
 
     # ==================================================
     # Logic
@@ -199,9 +217,9 @@ class AdminPwEdit1View(QWidget):
         확인 동작만 수행하도록 한다
         """
         # 엔터키가 QLineEdit에 입력되지 않도록
-        if self.current_input:
+        if self.lineEdit_password:
             # 입력 완료로 간주 → 포커스 유지
-            self.current_input.clearFocus()
+            self.lineEdit_password.clearFocus()
             
         """Enter 키 처리"""
         self.hide_keyboard()

@@ -156,7 +156,7 @@ class UserService(QObject):
 
         except Exception as e:
             session.rollback()
-            self.login_failed.emit(f"로그인 오류: {str(e)}")
+            self.login_failed.emit(f"Error: {str(e)}")
             return False
 
         finally:

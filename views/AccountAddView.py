@@ -25,6 +25,8 @@ from database.models import User
 from database.audit_logger import write_audit_log
 from common.session_context import get_session_context
 
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
+
 
 class AccountAddView(QWidget):
     """
@@ -52,6 +54,9 @@ class AccountAddView(QWidget):
         self._init_ui()
         self._connect_signals()
         self.setup_virtual_keyboard()
+
+        # 날짜와 시간 표시
+        self.update_date_time()
 
     # ==================================================
     # UI
@@ -82,10 +87,13 @@ class AccountAddView(QWidget):
         self.cancel_button   = self.pushButton_cancel
 
     def _init_ui(self):
+        """
         self.comboBox_role.clear()
         self.comboBox_role.addItems([
             "operator"
         ])
+        """
+        print(f"[AccountAddView] _init_ui: Load")
 
     def _connect_signals(self):
         self.pushButton_save.clicked.connect(self.on_create_user)
@@ -109,13 +117,20 @@ class AccountAddView(QWidget):
         self.switch_to_manage_operator.emit()
 
     # ==================================================
+    # Time
+    # ==================================================
+    def update_date_time(self):
+        update_date_time(self)    
+
+    # ==================================================
     # Create User
     # ==================================================
     def on_create_user(self):
         user_id   = self.user_id_input.text().strip()
         password  = self.password_input.text()
         password2 = self.password_input2.text()
-        role      = self.comboBox_role.currentText()
+        #role      = self.comboBox_role.currentText()
+        role = "operator"
 
         if not user_id:
             QMessageBox.warning(self, "Warning", "Please enter your Operator ID")
@@ -215,6 +230,13 @@ class AccountAddView(QWidget):
         super().showEvent(event)
         QTimer.singleShot(100, self._focus_and_show_keyboard)
 
+        # 날짜/시간 시작
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+
+    def closeEvent(self, event):
+        stop_date_time_update(self)
+        super().closeEvent(event)    
+
     def _focus_and_show_keyboard(self):
         self.user_id_input.setFocus()
         self.current_input = self.user_id_input
@@ -266,9 +288,9 @@ class AccountAddView(QWidget):
         확인 동작만 수행하도록 한다
         """
         # 엔터키가 QLineEdit에 입력되지 않도록
-        if self.current_input:
+        if self.password_input2:
             # 입력 완료로 간주 → 포커스 유지
-            self.current_input.clearFocus()
+            self.password_input2.clearFocus()
 
         self.hide_keyboard()
         self.on_create_user()

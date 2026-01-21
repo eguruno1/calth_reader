@@ -547,7 +547,7 @@ QLineEdit:focus {
       <enum>QLineEdit::Normal</enum>
      </property>
      <property name="placeholderText">
-      <string>Enter your password</string>
+      <string>Enter New User ID</string>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButton_save">

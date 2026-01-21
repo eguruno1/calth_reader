@@ -349,21 +349,21 @@ QRadioButton::indicator:checked {
      </property>
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>120</y>
-       <width>200</width>
-       <height>35</height>
+       <x>420</x>
+       <y>31</y>
+       <width>421</width>
+       <height>131</height>
       </rect>
      </property>
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>14</pointsize>
+       <pointsize>30</pointsize>
       </font>
      </property>
      <property name="styleSheet">
       <string notr="true">QDateTimeEdit {
-    font-size: 14px;
+    font-size: 30px;
     border: 2px solid #d0d0d0;
     border-radius: 5px;
     padding: 5px 10px;
@@ -420,9 +420,9 @@ QGroupBox::title {
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>40</y>
+       <y>38</y>
        <width>804</width>
-       <height>50</height>
+       <height>61</height>
       </rect>
      </property>
      <property name="font">
@@ -505,31 +505,6 @@ QPushButton:pressed {
     border-top: 2px solid #d0d0d0;
 }</string>
     </property>
-    <widget class="QLabel" name="label_status">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>15</y>
-       <width>400</width>
-       <height>30</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>Pretendard</family>
-       <pointsize>14</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QLabel {
-    font-size: 14px;
-    color: #666666;
-}</string>
-     </property>
-     <property name="text">
-      <string>Ready to configure date and time settings</string>
-     </property>
-    </widget>
    </widget>
   </widget>
  </widget>

@@ -10,6 +10,7 @@ from PyQt5.QtCore import (
     pyqtSignal,
     QEvent,
     QPoint,
+    QTimer,
     QPropertyAnimation,
     QEasingCurve
 )
@@ -23,6 +24,7 @@ from database.audit_logger import write_audit_log
 from common.session_context import get_session_context
 from services.user_service import user_service
 
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
 
 class AccountDeleteView(QWidget):
     """
@@ -49,6 +51,9 @@ class AccountDeleteView(QWidget):
         self._load_ui()
         self._connect_signals()
         self._setup_virtual_keyboard()
+
+        # 날짜와 시간 표시
+        self.update_date_time()
 
     # ==================================================
     # UI
@@ -77,6 +82,24 @@ class AccountDeleteView(QWidget):
         self.pushButton_cancel.clicked.connect(
             lambda: self.switch_to_manage_operator.emit()
         )
+
+    # ==================================================
+    # Time
+    # ==================================================
+    def update_date_time(self):
+        update_date_time(self)    
+
+    def showEvent(self, event):
+        """화면 표시 시 자동 포커스"""
+        super().showEvent(event)
+        #QTimer.singleShot(100, self._focus_and_show_keyboard)
+
+        # 날짜/시간 시작
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+
+    def closeEvent(self, event):
+        stop_date_time_update(self)
+        super().closeEvent(event)    
 
     # ==================================================
     # Public
@@ -229,9 +252,9 @@ class AccountDeleteView(QWidget):
         확인 동작만 수행하도록 한다
         """
         # 엔터키가 QLineEdit에 입력되지 않도록
-        if self.current_input:
+        if self.lineEdit_password:
             # 입력 완료로 간주 → 포커스 유지
-            self.current_input.clearFocus()
+            self.lineEdit_password.clearFocus()
             
         """Enter 키 처리"""
         self.hide_keyboard()

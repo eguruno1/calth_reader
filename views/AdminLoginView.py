@@ -157,7 +157,7 @@ class AdminLoginView(QWidget):
     
     def on_login_failed(self, error_message: str):
         """로그인 실패 처리"""
-        QMessageBox.warning(self, "로그인 실패", error_message)
+        QMessageBox.warning(self, "Error", error_message)
         self.password_input.clear()
         self.password_input.setFocus()
     
@@ -334,6 +334,11 @@ class AdminLoginView(QWidget):
 
     def handle_enter(self):
         """Enter 키 처리"""
+        # 엔터키가 QLineEdit에 입력되지 않도록
+        if self.password_input:
+            # 입력 완료로 간주 → 포커스 유지
+            self.password_input.clearFocus()
+
         self.hide_keyboard()
         self.attempt_login()
 

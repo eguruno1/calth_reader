@@ -547,7 +547,7 @@ QLineEdit:focus {
       <enum>QLineEdit::Password</enum>
      </property>
      <property name="placeholderText">
-      <string>Enter your password</string>
+      <string>Enter New Password</string>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButton_ok">
@@ -562,7 +562,7 @@ QLineEdit:focus {
      <property name="font">
       <font>
        <family>Pretendard</family>
-       <pointsize>14</pointsize>
+       <pointsize>16</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -646,7 +646,7 @@ QLineEdit:focus {
       <enum>QLineEdit::Password</enum>
      </property>
      <property name="placeholderText">
-      <string>Enter your password</string>
+      <string>Re-enter New Password</string>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButton_cancel">

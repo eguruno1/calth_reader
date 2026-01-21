@@ -318,8 +318,8 @@ class HomeView(QMainWindow):
             # 로그인 안 된 경우 → 로그인 화면으로 이동
             QMessageBox.information(
                 self,
-                "로그인 필요",
-                "해당 기능을 사용하려면 로그인이 필요합니다."
+                "Warning",
+                "Please log in"
             )
             self.switch_to_login.emit(target)
             return False

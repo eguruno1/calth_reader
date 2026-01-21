@@ -22,6 +22,8 @@ from database.models import User
 from database.audit_logger import write_audit_log
 from common.session_context import get_session_context
 
+from views.Utils     import (update_date_time, start_date_time_update, stop_date_time_update)
+
 
 class AccountIdEditView(QWidget):
     """
@@ -49,6 +51,9 @@ class AccountIdEditView(QWidget):
         self._load_ui()
         self._connect_signals()
         self._setup_virtual_keyboard()
+
+        # 날짜와 시간 표시
+        self.update_date_time()
 
     # ==================================================
     # UI
@@ -80,9 +85,16 @@ class AccountIdEditView(QWidget):
         """
         super().showEvent(event)
 
+        # 날짜/시간 시작
+        QTimer.singleShot(100, lambda: start_date_time_update(self))
+
         if not self.keyboard_auto_shown:
             self.keyboard_auto_shown = True
             QTimer.singleShot(100, self._focus_and_show_keyboard)
+
+    def closeEvent(self, event):
+        stop_date_time_update(self)
+        super().closeEvent(event)          
 
     def _focus_and_show_keyboard(self):
         self.lineEdit_change_user_id.setFocus()
@@ -99,6 +111,12 @@ class AccountIdEditView(QWidget):
         self.clear_form()
         self.hide_keyboard()
         self.switch_to_manage_operator.emit()
+
+    # ==================================================
+    # Time
+    # ==================================================
+    def update_date_time(self):
+        update_date_time(self)    
     
     # ==================================================
     # Public
@@ -211,9 +229,9 @@ class AccountIdEditView(QWidget):
         확인 동작만 수행하도록 한다
         """
         # 엔터키가 QLineEdit에 입력되지 않도록
-        if self.current_input:
+        if self.lineEdit_change_user_id:
             # 입력 완료로 간주 → 포커스 유지
-            self.current_input.clearFocus()
+            self.lineEdit_change_user_id.clearFocus()
             
         """Enter 키 처리"""
         self.hide_keyboard()

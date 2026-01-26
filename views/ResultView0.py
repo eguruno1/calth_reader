@@ -25,12 +25,14 @@ from database.models import (
 class ResultView0(QMainWindow):
     switch_to_home = pyqtSignal()
     switch_to_test_info = pyqtSignal(str)
+    switch_to_incubation = pyqtSignal()
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
 
         self.select_menu = None
         self.test_type = None
+        self.auto_test = False
 
         self.load_ui()
         self.init_ui()
@@ -92,7 +94,9 @@ class ResultView0(QMainWindow):
             self.load_result_data()
 
         QTimer.singleShot(100, lambda: start_date_time_update(self))
-        # QTimer.singleShot(100, lambda: start_battery_update(self))
+        
+        # ✅ Auto Test 여부 확인
+        QTimer.singleShot(3000, self._check_auto_test_flow)
 
         # 배터리 상태 업데이트
         model = app_controller.uart_model
@@ -342,7 +346,7 @@ class ResultView0(QMainWindow):
                 print("[ResultView0] current.json not found")
                 return {}
 
-            with open(self.current_json_path, "r") as f:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
                 return json.load(f)
             
             self.select_menu = data.get("select_menu", "")
@@ -390,7 +394,9 @@ class ResultView0(QMainWindow):
             # data["operator"]
 
             # 3️⃣ 1회성 값만 초기화
-            data["patient_id"] = None
+            if self.auto_test == False:
+                data["patient_id"] = None # Auto Mode 는 계속 유지.
+            
             data["datentime"] = None
             data["control"] = None
             data["resultb"] = None
@@ -414,3 +420,87 @@ class ResultView0(QMainWindow):
                 f.truncate()
         except Exception as e:
             print(f"[ResultView0] JSON 파일 업데이트 중 오류 발생: {e}")        
+
+
+    # -------------------------------------------------
+    # Auto Test Mode
+    # -------------------------------------------------
+    def _check_auto_test_flow(self):
+        """
+        Auto Test 흐름 판단 함수
+        ResultView0 진입 후 Auto Test 여부 판단
+        - Standard Test : 아무 것도 하지 않음
+        - Auto Test : 10초 중단 확인 Overlay 표시
+        """
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.auto_test = data.get("auto_test", False)
+
+            if not data.get("auto_test", False):
+                # Standard Test → 기존 동작 유지
+                return
+            
+            print("[ResultView0] Auto Test mode detected")
+
+            # Auto Test 반복 카운트 증가
+            data["auto_test_cycle"] = data.get("auto_test_cycle", 0) + 1
+
+            with open(self.current_json_path, "w") as f:
+                json.dump(data, f, indent=4)
+
+            # ✅ Auto Test 중지 확인 위젯 표시
+            self._show_auto_test_overlay()
+
+        except Exception as e:
+            print(f"[ResultView0] Auto Test flow error: {e}")
+
+    def _show_auto_test_overlay(self):
+        """
+        Overlay 표시
+        Auto Test 중지 여부 확인 Overlay
+        - 10초 대기
+        - OK 클릭 시 Auto Test 종료
+        - 타임아웃 시 다음 사이클 진행
+        """
+        from views.widgets.auto_test_overlay import AutoTestOverlayWidget
+
+        self.auto_test_overlay = AutoTestOverlayWidget(parent=self)
+
+        # OK 클릭 → Auto Test 종료
+        self.auto_test_overlay.signal_stop.connect(self._stop_auto_test)
+
+        # 타임아웃 → 다음 사이클
+        self.auto_test_overlay.signal_timeout.connect(self._go_next_auto_cycle)
+
+        self.auto_test_overlay.show()
+
+    def _stop_auto_test(self):
+        """
+        Auto Test 중지 → HomeView로 이동
+        """
+        print("[ResultView0] Auto Test stopped by user")
+
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                data["auto_test"] = False
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+        except:
+            pass
+
+        self.switch_to_home.emit()
+    
+    def _go_next_auto_cycle(self):
+        """
+        Auto Test 다음 사이클
+        ResultView0 → IncubationView
+        """
+        print("[ResultView0] Auto Test next cycle")
+
+        self.switch_to_incubation.emit()
+    
+        

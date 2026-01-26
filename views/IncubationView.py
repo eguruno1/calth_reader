@@ -5,7 +5,7 @@ import sys
 import os
 import json
 import threading
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QResizeEvent, QPixmap
@@ -24,11 +24,13 @@ class IncubationView(QMainWindow):
         super().__init__(parent)
         
         self.test_type = "COVID19"
+        self.auto_test = False
 
         # ==============================
         # ⏱️ Incubation Countdown 설정
         # ==============================
-        self.incubation_total_seconds = 10 * 60  # 10분
+        # self.incubation_total_seconds = 10 * 60  # 10분
+        self.incubation_total_seconds = 1 * 60  # 10분
         self.incubation_elapsed = 0
         self.incubation_timer = None
 
@@ -93,6 +95,12 @@ class IncubationView(QMainWindow):
 
 
     def init_ui(self):
+        # 초기 날짜와 시간 설정
+        self.update_date_time()
+
+        self._load_test_info()
+        print(f"[IncubationView] 1 start_measurement test_type 로드: {self.test_type}")
+
         # 🔙 뒤로 가기 버튼 (UI objectName 불일치 대비)
         if hasattr(self, "pushButton_BackArrow"):
             self.pushButton_BackArrow.clicked.connect(self.on_back_button_clicked)
@@ -101,12 +109,6 @@ class IncubationView(QMainWindow):
                 "[IncubationView][WARN] pushButton_BackArrow not found in UI. "
                 "Back button connection skipped."
             )
-        # 초기 날짜와 시간 설정
-        self.update_date_time()
-
-        self._load_test_info()
-        print(f"[IncubationView] 1 start_measurement test_type 로드: {self.test_type}")
-
         
 
     def showEvent(self, event):
@@ -143,9 +145,69 @@ class IncubationView(QMainWindow):
 
         super().closeEvent(event)
 
+
     def on_back_button_clicked(self):
-        print("[IncubationView] on_back_button_clicked")
-        self.switch_to_test_info_view.emit(self.test_type) 
+        print(f"[IncubationView] 1 on_back_button_clicked self.auto_test:{self.auto_test}")
+
+        # 🔴 타이머가 돌고 있으면 QMessageBox 전에 정지 (중요)
+        if self.incubation_timer and self.incubation_timer.isActive():
+            print("[IncubationView] Stop incubation timer before QMessageBox")
+            self.incubation_timer.stop()
+
+        try:
+            # ✅ 1단계: JSON 읽기 (읽기 전용 OK)
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.test_type = data.get("test_type1", "")
+            self.auto_test = data.get("auto_test", False)
+
+            print(f"[IncubationView] 2 on_back_button_clicked self.auto_test:{self.auto_test}")
+
+            # ✅ Auto Test 아닐 경우 → 기존 흐름 유지
+            if not self.auto_test:
+                self.switch_to_test_info_view.emit(self.test_type)
+                return
+
+            # ✅ Auto Test 일 경우 QMessageBox
+            reply = QMessageBox.question(
+                self,
+                "Warning",
+                "This is Auto Test mode.\n\nDo you want to stop it?",
+                QMessageBox.Ok | QMessageBox.Cancel,
+                QMessageBox.Cancel
+            )
+
+            print(f"[IncubationView] QMessageBox reply = {reply}")
+
+            # ✅ OK 클릭 시
+            if reply == QMessageBox.Ok:
+                try:
+                    # 🔴 핵심 수정: r+ 모드 (읽기 + 쓰기)
+                    with open(self.current_json_path, "r+", encoding="utf-8") as f:
+                        data = json.load(f)
+                        data["auto_test"] = False
+                        f.seek(0)
+                        json.dump(data, f, indent=4)
+                        f.truncate()
+
+                    print("[IncubationView] auto_test successfully set to False")
+
+                except Exception as e:
+                    print(f"[IncubationView] auto_test update failed: {e}")
+
+                # ✅ 홈으로 이동
+                self.switch_to_home.emit()
+
+            else:
+                # ❗ Cancel 시 타이머 재개 (UX 안정성)
+                if self.incubation_timer:
+                    self.incubation_timer.start(1000)
+
+        except Exception as e:
+            print(f"[IncubationView] Auto Test flow error: {e}")
+   
+
 
     def update_date_time(self):
         update_date_time(self)    
@@ -174,8 +236,9 @@ class IncubationView(QMainWindow):
                 data = json.load(f)
 
             self.test_type = data.get("test_type1", "")
+            self.auto_test = data.get("auto_test", False)
 
-            print(f"[IncubationView] _load_test_info test_type 로드: {self.test_type}")
+            print(f"[IncubationView] _load_test_info test_type / auto_test 로드: {self.test_type}, {self.auto_test}")
 
         except Exception as e:
             print(f"[IncubationView] JSON 로드 오류: {e}")

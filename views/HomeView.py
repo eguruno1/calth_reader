@@ -49,6 +49,10 @@ class HomeView(QMainWindow):
         self.pushButton_Settings.clicked.connect(self.on_settings_button_clicked)
         self.pushButton_Statistics.clicked.connect(self.on_statistics_button_clicked)
 
+        # Auto Test 버튼 추가
+        # Auto Test 버튼 연결 (신규)
+        self.pushButton_AutoTest.clicked.connect(self.on_auto_test_button_clicked)
+
         # 날짜와 시간 표시
         self.update_date_time()
         
@@ -86,6 +90,7 @@ class HomeView(QMainWindow):
                 data['select_menu'] = button_name
                 # 인증 COVID19  고정.
                 data['test_type1'] = "COVID19" 
+                data["auto_test"] = False
                 f.seek(0)
                 json.dump(data, f, indent=4)
                 f.truncate()
@@ -191,6 +196,44 @@ class HomeView(QMainWindow):
         except Exception as e:
             print(f"로그인/로그아웃 처리 오류: {e}")
             self.switch_to_info.emit()  # 오류 시 기존 동작
+
+    # Auto Test 버튼 클릭.
+    def on_auto_test_button_clicked(self):
+        """
+        Auto Test 버튼 클릭
+        - Auto Test 모드 활성화
+        - 기존 Standard Test 흐름 재사용
+        """
+        print("Auto Test 버튼이 클릭되었습니다.")
+
+        # ▶ 로그인 체크 (Standard Test와 동일)
+        if not self._require_login("AutoTest"):
+            return
+
+        try:
+            # current.json 업데이트
+            with open(self.current_json_path, 'r+') as f:
+                data = json.load(f)
+
+                # ✅ Auto Test 진입 플래그
+                data["select_menu"] = "StandardTest"
+                data["test_type1"] = "COVID19"
+                data["auto_test"] = True
+                data["auto_test_cycle"] = 0  # 시작 시 0으로 초기화
+
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+
+            print("[HomeView] Auto Test mode enabled")
+
+        except Exception as e:
+            print(f"[HomeView] Auto Test JSON 업데이트 오류: {e}")
+            return
+
+        # ✅ 기존 TestInfoView 흐름 그대로 사용
+        self.switch_to_select.emit("COVID19")
+        
 
     def update_date_time(self):
         update_date_time(self)

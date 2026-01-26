@@ -239,6 +239,7 @@ class AppController(QMainWindow):
         self.measure_view.switch_to_result.connect(self.switch_to_result_view)
         self.result_view0.switch_to_home.connect(self.switch_to_home_view)
         self.result_view0.switch_to_test_info.connect(self.switch_to_test_info_view)#20260117
+        self.result_view0.switch_to_incubation.connect(self.switch_to_incubation_view)#20260126
         self.datetime_settings_view.time_service.time_setting_changed.connect(self.on_time_setting_changed)
         self.calibration_view.switch_to_home.connect(self.switch_to_home_view)
         self.calibration_view.switch_to_next_step.connect(self.on_calibration_intro_next)
@@ -261,6 +262,9 @@ class AppController(QMainWindow):
         )
         self.incubation_view.switch_to_measure_view.connect(
             self.switch_to_measure_view
+        )
+        self.incubation_view.switch_to_home.connect(
+            self.switch_to_home_view
         )
 
         # 계정관련

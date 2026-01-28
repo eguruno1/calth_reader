@@ -30,8 +30,8 @@ class IncubationView(QMainWindow):
         # ==============================
         # ⏱️ Incubation Countdown 설정
         # ==============================
-        # self.incubation_total_seconds = 10 * 60  # 10분
-        self.incubation_total_seconds = 1 * 60  # 10분
+        self.incubation_total_seconds = 10 * 60  # 10분
+        # self.incubation_total_seconds = 1 * 60  # 1분
         self.incubation_elapsed = 0
         self.incubation_timer = None
 

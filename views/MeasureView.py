@@ -4,7 +4,7 @@ import threading
 from datetime import datetime
 
 from PyQt5              import uic
-from PyQt5.QtWidgets    import QMainWindow
+from PyQt5.QtWidgets    import QMainWindow, QMessageBox
 from PyQt5.QtCore       import (QTimer, pyqtSignal, QMetaObject, Qt, Q_ARG, pyqtSlot)
 from PyQt5.QtGui        import QPixmap
 
@@ -146,6 +146,9 @@ class MeasureView(QMainWindow):
         #QTimer.singleShot(100, lambda: start_battery_update(self))
         #QTimer.singleShot(500, self.start_measurement)  # 측정 시작
 
+        self._is_measuring = True               # ✅ 측정 중
+        self._set_back_button_enabled(False)    # 🔒 Back 비활성화
+
         # ✅ 1. LED 먼저 켠다
         QTimer.singleShot(300, self._prepare_and_start_measurement)
         
@@ -154,6 +157,7 @@ class MeasureView(QMainWindow):
         battery_info = model.get_battery_info()
         if battery_info:
             self._update_battery_ui(battery_info)
+
 
     def _prepare_and_start_measurement(self):
         """
@@ -318,6 +322,14 @@ class MeasureView(QMainWindow):
             print("[MeasureView] Back ignored: measurement in progress")
             return
 
+        QMessageBox.warning(
+                self,
+                "Warning",
+                "You cannot cancel while measuring."
+            )
+        return
+
+        """
         try:
             with open(self.current_json_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -334,7 +346,7 @@ class MeasureView(QMainWindow):
 
         except Exception as e:
             print(f"[MeasureView] Back flow error: {e}")
-
+        """
 
     #####################################################
     # DB 처리
@@ -549,16 +561,41 @@ class MeasureView(QMainWindow):
         """
         Back 버튼 활성/비활성 제어
         """
-        if hasattr(self, "pushButton_BackArrow"):
-            self.pushButton_BackArrow.setEnabled(enabled)
+        if hasattr(self, "pushButton_MeasureBackArrow"):
+            self.pushButton_MeasureBackArrow.setEnabled(enabled)
+
+            pushButton_style = """
+                QPushButton {
+                    background-color: #606060;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #707070;
+                }
+                QPushButton:pressed {
+                    background-color: #505050;
+                }
+            """
 
             # 시각적으로도 명확하게
             if enabled:
-                self.pushButton_BackArrow.setStyleSheet("")
+                self.pushButton_MeasureBackArrow.setStyleSheet(pushButton_style)
             else:
-                self.pushButton_BackArrow.setStyleSheet(
-                    "QPushButton { color: gray; }"
-                )
+                pushButton_style = """
+                    QPushButton {
+                        background-color: gray;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        font-weight: bold;
+                    }
+                """
+                self.pushButton_MeasureBackArrow.setStyleSheet(pushButton_style)
 
 
     # -------------------------------------------------

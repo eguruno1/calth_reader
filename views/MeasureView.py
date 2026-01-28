@@ -27,7 +27,7 @@ class MeasureView(QMainWindow):
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
 
-        self._is_measuring = False  # ✅ 측정 중 여부 플래그
+        # self._is_measuring = False  # ✅ 측정 중 여부 플래그
 
         # ✅ FIX: select_menu, test_type 기본값 선언 (AttributeError 방지)
         self.select_menu = None
@@ -146,8 +146,8 @@ class MeasureView(QMainWindow):
         #QTimer.singleShot(100, lambda: start_battery_update(self))
         #QTimer.singleShot(500, self.start_measurement)  # 측정 시작
 
-        self._is_measuring = True               # ✅ 측정 중
-        self._set_back_button_enabled(False)    # 🔒 Back 비활성화
+        # self._is_measuring = True               # ✅ 측정 중
+        # self._set_back_button_enabled(False)    # 🔒 Back 비활성화
 
         # ✅ 1. LED 먼저 켠다
         QTimer.singleShot(300, self._prepare_and_start_measurement)
@@ -199,8 +199,8 @@ class MeasureView(QMainWindow):
         """측정 시작됨 (컨트롤러에서 알림)"""
         print("[MeasureView] 측정이 시작되었습니다")
 
-        self._is_measuring = True               # ✅ 측정 중
-        self._set_back_button_enabled(False)    # 🔒 Back 비활성화
+        # self._is_measuring = True               # ✅ 측정 중
+        # self._set_back_button_enabled(False)    # 🔒 Back 비활성화
 
         self.progressBar_Meas.setValue(0)
         self.progressBar_Meas.setFormat("%p%")
@@ -217,8 +217,8 @@ class MeasureView(QMainWindow):
         """측정 완료 (컨트롤러에서 알림)"""
         print(f"[MeasureView] 측정 완료: {result}")
         
-        self._is_measuring = False              # ✅ 측정 종료
-        self._set_back_button_enabled(True)     # 🔓 Back 활성화
+        # self._is_measuring = False              # ✅ 측정 종료
+        # self._set_back_button_enabled(True)     # 🔓 Back 활성화
 
         """
         측정 완료 후 DB 저장을 위한 파라미터 세팅
@@ -272,8 +272,8 @@ class MeasureView(QMainWindow):
         """측정 오류 (컨트롤러에서 알림)"""
         print(f"측정 오류: {error_message}")
 
-        self._is_measuring = False
-        self._set_back_button_enabled(True)
+        # self._is_measuring = False
+        # self._set_back_button_enabled(True)
 
         self.progressBar_Meas.setFormat(f"오류: {error_message}")
         # 진단 오류 저장.
@@ -282,8 +282,11 @@ class MeasureView(QMainWindow):
 
     def closeEvent(self, event):
         """뷰 종료시 정리"""
-        self._is_measuring = False
-        self._set_back_button_enabled(True)
+        # self._is_measuring = False
+        # self._set_back_button_enabled(True)
+
+        # ✅ 열려있는 QMessageBox 강제 종료
+        self._close_back_warning_box()
 
         stop_date_time_update(self)
         # stop_battery_update(self)
@@ -296,6 +299,18 @@ class MeasureView(QMainWindow):
         self._reset_progress_bar()
 
         super().closeEvent(event)
+
+    
+    def hideEvent(self, event):
+        """
+        다른 View로 전환될 때 호출됨 (closeEvent보다 중요)
+        """
+        print("[MeasureView] hideEvent → close warning QMessageBox")
+
+        self._close_back_warning_box()
+
+        super().hideEvent(event)
+        
 
 
     def update_date_time(self):
@@ -318,18 +333,25 @@ class MeasureView(QMainWindow):
         """
         print("[MeasureView] Back button clicked")
 
+        # ✅ QMessageBox를 객체로 생성
+        self._back_warning_box = QMessageBox(
+            QMessageBox.Warning,
+            "Warning",
+            "You cannot cancel while measuring.",
+            QMessageBox.Ok,
+            self
+        )
+
+        # 모달 설정 (기존 동작 유지)
+        self._back_warning_box.setWindowModality(Qt.ApplicationModal)
+
+        # 표시
+        self._back_warning_box.show()
+
+        """
         if self._is_measuring:
             print("[MeasureView] Back ignored: measurement in progress")
             return
-
-        QMessageBox.warning(
-                self,
-                "Warning",
-                "You cannot cancel while measuring."
-            )
-        return
-
-        """
         try:
             with open(self.current_json_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -600,7 +622,18 @@ class MeasureView(QMainWindow):
 
     # -------------------------------------------------
     # Auto Test Overlay (Back Button용)
-    # -------------------------------------------------            
+    # ------------------------------------------------- 
+
+    def _close_back_warning_box(self):
+        """
+        Back 버튼으로 열린 QMessageBox가 있다면 안전하게 닫는다
+        """
+        if hasattr(self, "_back_warning_box") and self._back_warning_box:
+            if self._back_warning_box.isVisible():
+                print("[MeasureView] Closing back warning QMessageBox")
+                self._back_warning_box.close()
+            self._back_warning_box = None
+           
 
     def _show_auto_test_overlay(self):
         """
@@ -631,6 +664,9 @@ class MeasureView(QMainWindow):
         """
         print("[MeasureView] Stop measurement and go Home")
 
+        # ✅ QMessageBox 먼저 닫기
+        self._close_back_warning_box()
+
         # 1️⃣ 측정 중단
         if hasattr(self, "measurement_controller"):
             self.measurement_controller.stop_measurement()
@@ -652,6 +688,9 @@ class MeasureView(QMainWindow):
         - Home 이동
         """
         print("[MeasureView] Auto Test stopped by user")
+
+        # ✅ QMessageBox 먼저 닫기
+        self._close_back_warning_box()
 
         # 1️⃣ 측정 중단
         if hasattr(self, "measurement_controller"):

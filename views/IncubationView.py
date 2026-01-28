@@ -11,7 +11,8 @@ from PyQt5.QtCore import pyqtSignal, QTimer, QMetaObject, Qt, Q_ARG, pyqtSlot
 from PyQt5.QtGui     import QResizeEvent, QPixmap
 from views.Utils import (center_window, update_date_time, start_date_time_update, stop_date_time_update)
 from config.pretest_config import PretestConfig
-
+# AutoTest
+from views.widgets.auto_test_overlay import AutoTestOverlayWidget
 
 class IncubationView(QMainWindow):
 
@@ -147,6 +148,34 @@ class IncubationView(QMainWindow):
 
 
     def on_back_button_clicked(self):
+        print(f"[IncubationView] Back clicked, auto_test={self.auto_test}")
+
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.test_type = data.get("test_type1", "")
+            self.auto_test = data.get("auto_test", False)
+
+            # ⏱️ Back 버튼 클릭 시 타이머 일시 중지
+            if self.incubation_timer and self.incubation_timer.isActive():
+                print("[IncubationView] Stop incubation timer for back action")
+                self.incubation_timer.stop()
+
+            # ✅ Standard Test → 기존 동작 유지
+            if not self.auto_test:
+                self.switch_to_test_info_view.emit(self.test_type)
+                return
+
+            # ✅ Auto Test → Overlay 표시
+            self._show_auto_test_overlay()
+
+        except Exception as e:
+            print(f"[IncubationView] Back button flow error: {e}")
+    
+
+    """ Old
+    def on_back_button_clicked(self):
         print(f"[IncubationView] 1 on_back_button_clicked self.auto_test:{self.auto_test}")
 
         # 🔴 타이머가 돌고 있으면 QMessageBox 전에 정지 (중요)
@@ -183,7 +212,7 @@ class IncubationView(QMainWindow):
             # ✅ OK 클릭 시
             if reply == QMessageBox.Ok:
                 try:
-                    # 🔴 핵심 수정: r+ 모드 (읽기 + 쓰기)
+                    # 수정: r+ 모드 (읽기 + 쓰기)
                     with open(self.current_json_path, "r+", encoding="utf-8") as f:
                         data = json.load(f)
                         data["auto_test"] = False
@@ -206,7 +235,7 @@ class IncubationView(QMainWindow):
 
         except Exception as e:
             print(f"[IncubationView] Auto Test flow error: {e}")
-   
+    """
 
 
     def update_date_time(self):
@@ -328,3 +357,92 @@ class IncubationView(QMainWindow):
 
         except Exception as e:
             print(f"[IncubationView] Battery UI update error: {e}")    
+
+
+    # -------------------------------------------------
+    # Auto Test Overlay (Back Button용)
+    # -------------------------------------------------
+    def _show_auto_test_overlay(self):
+        """
+        Auto Test 중지 확인 Overlay 표시
+        - OK  → Auto Test 종료 + Home 이동
+        - Cancel → Overlay 닫힘, Incubation 계속
+        """
+        print("[IncubationView] Show Auto Test Overlay")
+
+        self.auto_test_overlay = AutoTestOverlayWidget(parent=self)
+
+        # OK → Auto Test 중지
+        self.auto_test_overlay.signal_stop.connect(
+            self._stop_auto_test_and_go_home
+        )
+
+        # Cancel → 아무 것도 하지 않음 (Overlay만 닫힘)
+        self.auto_test_overlay.signal_timeout.connect(
+            self._resume_incubation_after_overlay
+        )
+
+        self.auto_test_overlay.show()
+
+
+    def _stop_auto_test_and_go_home(self):
+        """
+        Auto Test 중지 → Home 이동
+        + Incubation 진행 상태 완전 초기화
+        """
+        print("[IncubationView] Auto Test stopped by overlay")
+
+        # ==================================================
+        # ⏹️ Incubation 타이머 정지
+        # ==================================================
+        if self.incubation_timer and self.incubation_timer.isActive():
+            self.incubation_timer.stop()
+
+        # ==================================================
+        # 🔄 Incubation 상태 변수 초기화
+        # ==================================================
+        self.incubation_elapsed = 0
+
+        # ==================================================
+        # 📊 ProgressBar 초기화
+        # ==================================================
+        if hasattr(self, "progressBar"):
+            self.progressBar.setValue(0)
+
+        # ==================================================
+        # ⏳ Countdown Label 초기화
+        # ==================================================
+        if hasattr(self, "label_Countdown"):
+            minutes = self.incubation_total_seconds // 60
+            seconds = self.incubation_total_seconds % 60
+            self.label_Countdown.setText(f"{minutes:02d}:{seconds:02d}")
+
+        # ==================================================
+        # 📝 auto_test = False 로 JSON 업데이트
+        # ==================================================
+        try:
+            with open(self.current_json_path, "r+", encoding="utf-8") as f:
+                data = json.load(f)
+                data["auto_test"] = False
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+        except Exception as e:
+            print(f"[IncubationView] auto_test update error: {e}")
+
+        # ==================================================
+        # 🏠 Home 이동
+        # ==================================================
+        self.switch_to_home.emit()
+
+
+
+    def _resume_incubation_after_overlay(self):
+        """
+        Cancel 클릭 시 → Incubation 계속
+        """
+        print("[IncubationView] Auto Test 유지 (Cancel)")
+
+        if self.incubation_timer and not self.incubation_timer.isActive():
+            self.incubation_timer.start(1000)
+            

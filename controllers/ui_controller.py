@@ -237,6 +237,7 @@ class AppController(QMainWindow):
         self.test_info_view.switch_to_home.connect(self.switch_to_home_view)
         self.test_info_view.switch_to_measure.connect(self._on_testinfo_next_requested)#선택한 메뉴에 따라 이동처리를 위해.
         self.measure_view.switch_to_result.connect(self.switch_to_result_view)
+        self.measure_view.switch_to_home.connect(self.switch_to_home_view)#HomeView로
         self.result_view0.switch_to_home.connect(self.switch_to_home_view)
         self.result_view0.switch_to_test_info.connect(self.switch_to_test_info_view)#20260117
         self.result_view0.switch_to_incubation.connect(self.switch_to_incubation_view)#20260126
@@ -257,6 +258,7 @@ class AppController(QMainWindow):
             self._on_insert_device_next_requested
         )
 
+        # 10분 대기
         self.incubation_view.switch_to_test_info_view.connect(
             self.switch_to_test_info_view
         )

@@ -22,9 +22,13 @@ class MeasureView(QMainWindow):
     #switch_to_test_info = pyqtSignal()
     #measure_finished    = pyqtSignal()
     switch_to_result = pyqtSignal(int)  # ResultView0로 전환하기 위한 시그널
+    switch_to_home = pyqtSignal()
 
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
+
+        self._is_measuring = False  # ✅ 측정 중 여부 플래그
+
         # ✅ FIX: select_menu, test_type 기본값 선언 (AttributeError 방지)
         self.select_menu = None
         self.test_type = None
@@ -59,6 +63,14 @@ class MeasureView(QMainWindow):
 
 
     def init_ui(self):
+
+        # Back Button
+        # 🔙 Back 버튼 (UI objectName 기준)
+        if hasattr(self, "pushButton_MeasureBackArrow"):
+            self.pushButton_MeasureBackArrow.clicked.connect(self.on_back_button_clicked)
+        else:
+            print("[MeasureView][WARN] pushButton_MeasureBackArrow not found")
+        
         
         self.progressBar_Meas.setMinimum(0)
         self.progressBar_Meas.setMaximum(100)  # 100%로 설정
@@ -182,20 +194,27 @@ class MeasureView(QMainWindow):
     def on_measurement_started(self):
         """측정 시작됨 (컨트롤러에서 알림)"""
         print("[MeasureView] 측정이 시작되었습니다")
+
+        self._is_measuring = True               # ✅ 측정 중
+        self._set_back_button_enabled(False)    # 🔒 Back 비활성화
+
         self.progressBar_Meas.setValue(0)
         self.progressBar_Meas.setFormat("%p%")
 
-        
 
     def on_progress_updated(self, progress: int, phase_name: str):
         """진행률 업데이트 (컨트롤러에서 알림)"""
         self.progressBar_Meas.setValue(progress)
         #self.progressBar_Meas.setFormat(f"{phase_name} - %p%")
         self.progressBar_Meas.setFormat(f"%p%")
+        
 
     def on_measurement_finished(self, result: dict):
         """측정 완료 (컨트롤러에서 알림)"""
         print(f"[MeasureView] 측정 완료: {result}")
+        
+        self._is_measuring = False              # ✅ 측정 종료
+        self._set_back_button_enabled(True)     # 🔓 Back 활성화
 
         """
         측정 완료 후 DB 저장을 위한 파라미터 세팅
@@ -244,15 +263,24 @@ class MeasureView(QMainWindow):
         # 1초 후 결과 화면으로 전환 : 현재 test_session_id를 파라미터로 전달 & 데이터 조회용.
         QTimer.singleShot(1000, lambda: self.switch_to_result.emit(self.test_session_id))
 
+
     def on_measurement_error(self, error_message: str):
         """측정 오류 (컨트롤러에서 알림)"""
         print(f"측정 오류: {error_message}")
+
+        self._is_measuring = False
+        self._set_back_button_enabled(True)
+
         self.progressBar_Meas.setFormat(f"오류: {error_message}")
         # 진단 오류 저장.
         self.mark_session_failed(error_message)
 
+
     def closeEvent(self, event):
         """뷰 종료시 정리"""
+        self._is_measuring = False
+        self._set_back_button_enabled(True)
+
         stop_date_time_update(self)
         # stop_battery_update(self)
         
@@ -265,6 +293,7 @@ class MeasureView(QMainWindow):
 
         super().closeEvent(event)
 
+
     def update_date_time(self):
         update_date_time(self)
 
@@ -274,6 +303,39 @@ class MeasureView(QMainWindow):
         self.progressBar_Meas.setValue(0)
         self.progressBar_Meas.setFormat("")
         self.progressBar_Meas.repaint()
+
+
+    def on_back_button_clicked(self):
+        """
+        Back 버튼 클릭
+        - Auto Test 여부 판단
+        - Auto Test → Overlay
+        - Standard → 즉시 Home
+        """
+        print("[MeasureView] Back button clicked")
+
+        if self._is_measuring:
+            print("[MeasureView] Back ignored: measurement in progress")
+            return
+
+        try:
+            with open(self.current_json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            auto_test = data.get("auto_test", False)
+            print(f"[MeasureView] auto_test = {auto_test}")
+
+            if not auto_test:
+                # Standard Test → 즉시 중단 후 Home
+                self._stop_measurement_and_go_home()
+            else:
+                # Auto Test → Overlay 표시
+                self._show_auto_test_overlay()
+
+        except Exception as e:
+            print(f"[MeasureView] Back flow error: {e}")
+
+
     #####################################################
     # DB 처리
     #####################################################
@@ -480,3 +542,98 @@ class MeasureView(QMainWindow):
 
         except Exception as e:
             print(f"[MeasureView] Battery UI update error: {e}")    
+
+
+
+    def _set_back_button_enabled(self, enabled: bool):
+        """
+        Back 버튼 활성/비활성 제어
+        """
+        if hasattr(self, "pushButton_BackArrow"):
+            self.pushButton_BackArrow.setEnabled(enabled)
+
+            # 시각적으로도 명확하게
+            if enabled:
+                self.pushButton_BackArrow.setStyleSheet("")
+            else:
+                self.pushButton_BackArrow.setStyleSheet(
+                    "QPushButton { color: gray; }"
+                )
+
+
+    # -------------------------------------------------
+    # Auto Test Overlay (Back Button용)
+    # -------------------------------------------------            
+
+    def _show_auto_test_overlay(self):
+        """
+        Auto Test 중지 확인 Overlay 표시
+        """
+        from views.widgets.auto_test_overlay import AutoTestOverlayWidget
+
+        print("[MeasureView] Show AutoTestOverlay")
+
+        self.auto_test_overlay = AutoTestOverlayWidget(parent=self)
+
+        # OK → Auto Test 중지
+        self.auto_test_overlay.signal_stop.connect(
+            self._stop_auto_test_and_go_home
+        )
+
+        # Cancel / Timeout → 아무것도 안 함 (측정 계속)
+        self.auto_test_overlay.signal_timeout.connect(
+            lambda: print("[MeasureView] Auto Test continue")
+        )
+
+        self.auto_test_overlay.show()
+
+
+    def _stop_measurement_and_go_home(self):
+        """
+        측정 중단 + Home 이동 (Standard Test)
+        """
+        print("[MeasureView] Stop measurement and go Home")
+
+        # 1️⃣ 측정 중단
+        if hasattr(self, "measurement_controller"):
+            self.measurement_controller.stop_measurement()
+
+        # 2️⃣ ProgressBar 초기화
+        self._reset_progress_bar()
+
+        # 3️⃣ Home 이동
+        self.switch_to_result.disconnect() if self.switch_to_result.receivers() else None
+        #self.close()
+        self.switch_to_home.emit()
+
+
+    def _stop_auto_test_and_go_home(self):
+        """
+        Auto Test 중지
+        - 측정 중단
+        - auto_test = False
+        - Home 이동
+        """
+        print("[MeasureView] Auto Test stopped by user")
+
+        # 1️⃣ 측정 중단
+        if hasattr(self, "measurement_controller"):
+            self.measurement_controller.stop_measurement()
+
+        # 2️⃣ ProgressBar 초기화
+        self._reset_progress_bar()
+
+        # 3️⃣ auto_test False 저장
+        try:
+            with open(self.current_json_path, "r+", encoding="utf-8") as f:
+                data = json.load(f)
+                data["auto_test"] = False
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+        except Exception as e:
+            print(f"[MeasureView] auto_test update error: {e}")
+
+        # 4️⃣ Home 이동
+        #self.close()
+        self.switch_to_home.emit()

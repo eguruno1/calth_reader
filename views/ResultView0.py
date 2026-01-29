@@ -483,16 +483,17 @@ class ResultView0(QMainWindow):
         print("[ResultView0] Auto Test stopped by user")
 
         try:
-            with open(self.current_json_path, "r", encoding="utf-8") as f:
+            with open(self.current_json_path, "r+", encoding="utf-8") as f:
                 data = json.load(f)
                 data["auto_test"] = False
                 f.seek(0)
                 json.dump(data, f, indent=4)
                 f.truncate()
-        except:
-            pass
+        except Exception as e:
+            print(f"[IncubationView] auto_test update error: {e}")
 
         self.switch_to_home.emit()
+
     
     def _go_next_auto_cycle(self):
         """

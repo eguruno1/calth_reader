@@ -137,7 +137,7 @@ class ResultListView(QMainWindow):
         # ★ 헤더 폰트 크기 설정 (16)
         # -------------------------------------------------
         header_font = QFont()
-        header_font.setPointSize(16)
+        header_font.setPointSize(14)
         header_font.setBold(True)   # 헤더 가독성 ↑ (선택사항)
 
         self.table.horizontalHeader().setFont(header_font)
@@ -218,7 +218,7 @@ class ResultListView(QMainWindow):
 
         # _populate_table() 상단 또는 for row 루프 전에
         item_font = QFont()
-        item_font.setPointSize(16)
+        item_font.setPointSize(12)
 
         # ▶ 헤더 텍스트 수동 설정 (색상 제어용)
         for col, text in enumerate(headers):

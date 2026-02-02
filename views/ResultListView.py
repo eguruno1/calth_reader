@@ -175,7 +175,8 @@ class ResultListView(QMainWindow):
 
             results: List[MeasurementResult] = (
                 query
-                .order_by(MeasurementResult.measured_at.desc())
+                .order_by(MeasurementResult.session_id.desc())
+                #.order_by(MeasurementResult.measured_at.desc())
                 .all()
             )
 

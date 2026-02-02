@@ -8,7 +8,7 @@ from PyQt5.QtWidgets    import QMainWindow, QMessageBox
 from PyQt5.QtCore       import (QTimer, pyqtSignal, QMetaObject, Qt, Q_ARG, pyqtSlot)
 from PyQt5.QtGui        import QPixmap
 
-from views.Utils        import (update_date_time, start_date_time_update, stop_date_time_update)
+from views.Utils        import (get_time_service, update_date_time, start_date_time_update, stop_date_time_update)
 from controllers import measurement_controller, app_controller
 
 # 진단 분석 진행상태 DB 처리
@@ -27,6 +27,7 @@ class MeasureView(QMainWindow):
     def __init__(self, parent=None, uart_model=None):
         super().__init__(parent)
 
+        self.ui_datetime = None  # UI에서 설정된 기준 시간 : DB 저장용.
         # self._is_measuring = False  # ✅ 측정 중 여부 플래그
 
         # ✅ FIX: select_menu, test_type 기본값 선언 (AttributeError 방지)
@@ -316,6 +317,15 @@ class MeasureView(QMainWindow):
     def update_date_time(self):
         update_date_time(self)
 
+        # ✅ Utils.py 와 동일한 기준 시간 사용
+        try:
+            time_service = get_time_service()
+            self.ui_datetime = time_service.get_current_display_time()
+        except Exception as e:
+            # Utils 와 동일한 폴백 전략
+            self.ui_datetime = datetime.now()
+            print(f"[MeasureView] UI 기준 시간 획득 실패, 시스템 시간 사용: {e}")
+
 
     def _reset_progress_bar(self):
         """progressBar 초기화"""
@@ -396,7 +406,8 @@ class MeasureView(QMainWindow):
                 temperature=None,
                 humidity=None,
                 status="in_progress",
-                started_at=datetime.now()
+                started_at=self.ui_datetime or datetime.now()
+                # started_at=datetime.now()
             )
 
             session.add(test_session)
@@ -428,18 +439,23 @@ class MeasureView(QMainWindow):
                 expected_lines=2 if self.analysis_result["mode"] == 2 else 3
             )
 
+            base_time = self.ui_datetime or datetime.now()
+
             # 결과 저장
             result = MeasurementResult(
                 session_id=self.test_session_id,        # FK
                 measurement_type=self.test_type,        # 예: COVID19
                 result_data={
                     "analysis_result": self.analysis_result,
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": base_time.isoformat()
+                    #"timestamp": datetime.now().isoformat()
                 },
                 image_path=self.result_image_path, #self.captured_image_path
                 thumbnail_path=self.thumbnail_path,
                 quality_score=quality_score,
                 select_menu=self.select_menu,
+                measured_at=base_time,
+                processed_at=base_time,
                 is_valid=True
             )
             session.add(result)
@@ -449,7 +465,8 @@ class MeasureView(QMainWindow):
             # TestSession 세션 완료 처리
             ts = session.query(TestSession).get(self.test_session_id)
             ts.status = "completed"
-            ts.completed_at = datetime.now()
+            ts.completed_at = base_time
+            #ts.completed_at = datetime.now()
 
             session.commit()
             print("[MeasureView] measurement_result + session completed 저장 완료")
@@ -471,7 +488,8 @@ class MeasureView(QMainWindow):
             ts = session.query(TestSession).get(self.test_session_id)
             ts.status = "failed"
             ts.error_message = error_msg
-            ts.completed_at = datetime.now()
+            ts.completed_at = self.ui_datetime or datetime.now()
+            #ts.completed_at = datetime.now()
             session.commit()
         except Exception:
             session.rollback()
